@@ -75,6 +75,21 @@
         #open-agenda-btn:hover {
             background-color: var(--accent-color-hover) !important;
         }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-drawer-container {
+                display: none;
+            }
+            .content-area {
+                padding: 1rem;
+            }
+            #open-agenda-btn {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -96,7 +111,7 @@
                 </button>
             </header>
 
-            <div id="links-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div id="links-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <!-- Links werden hier per JS eingefügt -->
             </div>
         </main>
