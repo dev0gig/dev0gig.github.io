@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Kalender - Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link für Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* CSS für den Dark-Mode-Effekt auf dem iFrame */
+        .calendar-dark-mode {
+            filter: invert(1) hue-rotate(180deg) brightness(85%) contrast(75%);
+        }
+        
+        /* Stellt sicher, dass der iFrame den gesamten Bildschirm ausfüllt */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* Füllt die gesamte Viewport-Höhe */
+            width: 100vw;  /* Füllt die gesamte Viewport-Breite */
+            overflow: hidden; 
+            background-color: #1a202c; /* Hintergrund, falls der iFrame nicht lädt */
+        }
+
+        /* Verhindert, dass die Buttons beim Klicken einen blauen Rahmen bekommen */
+        .no-focus-outline:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+    <!-- 
+        Der iFrame füllt den gesamten Bildschirm aus.
+        Die Klasse 'calendar-dark-mode' ist standardmässig gesetzt.
+        Eine ID wurde hinzugefügt, um ihn mit JavaScript ansprechen zu können.
+    -->
+    <iframe 
+        id="calendar-iframe"
+        class="calendar-dark-mode w-full h-full"
+        src="https://calendar.google.com/calendar/embed?height=600&wkst=2&ctz=Europe%2FZurich&showTitle=0&showTz=0&mode=WEEK&src=Ymlvc2dpZ2FAZ21haWwuY29t&src=Y2JiOWVhN2I1MzMxM2U3NGIyMjJhOTNmZTc2MjE1MWRkM2Y4Mjg3NDIwMzQwNWZjNTJhNjE2ODhkNDkyZGNmOUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=ZGUuYXVzdHJpYW4jaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&src=NDZhcXBubGV1Y2RlZ2Nic2Q4anY1NzloZGVudjJ1MzhAaW1wb3J0LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23039be5&color=%23d50000&color=%235ecc89&color=%23e67c73" 
+        style="border-width:0" 
+        frameborder="0" 
+        scrolling="no">
+    </iframe>
+
+    <!-- Schwebende Aktionsbuttons -->
+    <div class="fixed bottom-6 right-6 flex flex-col items-center space-y-4 z-10">
+        
+
+        <!-- Google Tasks Button -->
+        <a href="https://tasks.google.com/" target="_blank" rel="noopener noreferrer" title="Google Tasks öffnen" 
+           class="bg-blue-500 hover:bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
+            <span class="material-icons" style="font-size: 28px;">task_alt</span>
+        </a>
+
+        <!-- Google Keep Button -->
+        <a href="https://keep.google.com/" target="_blank" rel="noopener noreferrer" title="Google Keep öffnen" 
+           class="bg-yellow-500 hover:bg-yellow-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
+            <span class="material-icons" style="font-size: 28px;">lightbulb</span>
+        </a>
+
+    </div>
+
+    <script>
+        // Elemente aus dem DOM holen
+        const calendarIframe = document.getElementById('calendar-iframe');
+
+        // Listen for theme changes from the parent window
+        window.addEventListener('message', (event) => {
+            if (event.source !== window.parent) {
+                return;
+            }
+            const message = event.data;
+            if (typeof message === 'string' && message.startsWith('set-theme-')) {
+                const theme = message.split('-')[2];
+                if (theme === 'dark') {
+                    calendarIframe.classList.add('calendar-dark-mode');
+                } else {
+                    calendarIframe.classList.remove('calendar-dark-mode');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

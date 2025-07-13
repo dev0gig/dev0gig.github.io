@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppDrawer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #171717; /* neutral-900 */
+            --text-color: #f5f5f5; /* neutral-100 */
+            --text-color-light: #a3a3a3; /* neutral-400 */
+            --dock-bg: rgba(23, 23, 23, 0.7);
+            --dock-border: #404040; /* neutral-700 */
+            --card-bg: #262626; /* neutral-800 */
+            --app-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --app-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --danger-color: #ef4444;
+            --danger-color-hover: #dc2626;
+            --primary-color: #525252; /* neutral-600 */
+            --primary-color-hover: #737373; /* neutral-500 */
+            --app-icon-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--dock-border);
+            border-radius: 10px;
+            border: 3px solid var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--text-color-light);
+        }
+
+        .header-container {
+            padding: 2rem 2rem 0;
+            max-width: 1660px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            /* Ensure it takes full width of the parent */
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 2.5rem;
+            border: 1px solid var(--dock-border);
+            border-radius: 0.75rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .search-input:focus {
+            outline: 2px solid var(--text-color-light);
+            outline-offset: 2px;
+        }
+
+        .search-icon,
+        #clear-search-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-color-light);
+        }
+
+        .search-icon {
+            left: 0.75rem;
+            pointer-events: none;
+        }
+
+        #clear-search-btn {
+            right: 0.75rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0 1rem;
+            gap: 1.5rem;
+            max-width: 1660px;
+            margin: 0 auto;
+        }
+
+        .app-drawer-container {
+            flex-grow: 1;
+            min-width: 300px;
+        }
+
+        /* App Grid */
+        #app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1.25rem;
+            padding: 2rem;
+        }
+
+        .app-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: transform 0.2s ease;
+        }
+
+        .app-item:hover {
+            transform: scale(1.05);
+        }
+
+        .app-icon-wrapper {
+            position: relative;
+            width: 45px;
+            height: 45px;
+        }
+
+        .app-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: var(--app-shadow);
+            transition: box-shadow 0.2s ease;
+            background-color: var(--app-icon-bg);
+        }
+
+        .app-item:hover .app-icon {
+            box-shadow: var(--app-shadow-hover);
+        }
+
+        .app-label {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 80px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .favorite-star {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            cursor: pointer;
+            z-index: 10;
+            color: var(--text-color-light);
+            background-color: transparent;
+            border-radius: 50%;
+            padding: 2px;
+            display: none;
+            /* Initially hidden */
+        }
+
+        .app-item:hover .favorite-star {
+            display: block;
+            /* Show on hover */
+        }
+
+        .favorite-star.favorited {
+            display: block;
+            color: #facc15;
+            /* Yellow star for favorited */
+        }
+
+        #favorites-section {
+            padding: 1rem 2rem 0;
+            max-width: 1660px;
+            margin: 0 auto;
+        }
+
+        #favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .section-title {
+            color: var(--text-color-light);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .divider {
+            border-top: 1px solid var(--dock-border);
+            margin: 1rem auto;
+            max-width: 1660px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="header-container">
+        <div class="search-container">
+            <svg class="search-icon w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="App suchen...">
+            <button id="clear-search-btn" class="hidden"><svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg></button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="app-drawer-container">
+            <div id="favorites-section">
+                <h2 class="section-title">Favoriten</h2>
+                <div id="favorites-grid"></div>
+            </div>
+
+            <hr class="divider">
+
+            <div id="app-grid"></div>
+        </div>
+    </div>
+
+
+    <script>
+        // Default app data
+        const appsData = [
+            { id: "FinanzOnline", iconUrl: "https://play-lh.googleusercontent.com/QQdz7x2gcVhe88tgzfT-2CNfh3nD6YNB8_ATmlvmItBZX4hcavVUUbVrODLyYDqQjmg=w240-h480-rw", targetUrl: "https://finanzonline.bmf.gv.at/fon/", ariaLabel: "FinanzOnline" },
+            { id: "Post", iconUrl: "https://play-lh.googleusercontent.com/LCn0zMVjJXauMDNclMVMv8Ht-TNHHLqbCA61Xa7OR3X489dtOgpdFpzXT7H8KM_yTppO=s48-rw", targetUrl: "https://www.post.at/s/sendungsuebersicht#panelEmpfangen", ariaLabel: "Post" },
+            { id: "WienerStädtische", iconUrl: "https://play-lh.googleusercontent.com/w_Q8D-sCwYn5eKykRC-0377S9V8a2a_syDJ64hfDsenJmtjHAdLTZ7FEEaJWRQrgHzs=s48-rw", targetUrl: "https://losleben.wienerstaedtische.at/app/dashboard", ariaLabel: "WienerStädtische" },
+            { id: "SmartMeter", iconUrl: "https://www.wienernetze.at/documents/34846/0/raute_freigestellt.png/198df669-6c8c-b05a-df7c-ef0be7a027ee?version=1.0&t=1583916092746&imagePreview=1", targetUrl: "https://smartmeter-web.wienernetze.at/uebersicht", ariaLabel: "SmartMeter" },
+            { id: "WienEnergie", iconUrl: "https://avatars.githubusercontent.com/u/55399799?s=200&v=4", targetUrl: "https://meine.wienenergie.at/privat/meine-produkte", ariaLabel: "WienEnergie" },
+            { id: "Passwords", iconUrl: "https://img.icons8.com/fluent/600/google-password.png", targetUrl: "https://passwords.google.com/", ariaLabel: "Passwords" },
+            { id: "Office365", iconUrl: "https://play-lh.googleusercontent.com/Cf6rGlvAZJx2iG4c5f5H5N5XWGKFk5XZ_uz0A0YIIyuFPFybIfQaxSlDIQyU2W8btfv6=w240-h480-rw", targetUrl: "https://m365.cloud.microsoft/?auth=1", ariaLabel: "Office365" },
+            { id: "Github", iconUrl: "https://play-lh.googleusercontent.com/PCpXdqvUWfCW1mXhH1Y_98yBpgsWxuTSTofy3NGMo9yBTATDyzVkqU580bfSln50bFU=s48-rw", targetUrl: "https://github.com/dev0gig", ariaLabel: "Github" },
+            { id: "Paypal", iconUrl: "https://play-lh.googleusercontent.com/xOKbvDt362x1uzW-nnggP-PgO9HM4L1vwBl5HgHFHy_n1X3mqeBtOSoIyNJzTS3rrj70=w240-h480-rw", targetUrl: "https://www.paypal.com/myaccount/summary", ariaLabel: "Paypal" },
+            { id: "GooglePhotos", iconUrl: "https://play-lh.googleusercontent.com/ZyWNGIfzUyoajtFcD7NhMksHEZh37f-MkHVGr5Yfefa-IX7yj9SMfI82Z7a2wpdKCA=w240-h480-rw", targetUrl: "https://photos.google.com/", ariaLabel: "GooglePhotos" },
+            { id: "Udemy", iconUrl: "https://play-lh.googleusercontent.com/dsCkmJE2Fa8IjyXERAcwc5YeQ8_NvbZ4_OI8LgqyjILpXUfS5YhEcnAMajKPrZI-og=s48-rw", targetUrl: "https://www.udemy.com/home/my-courses/learning/", ariaLabel: "Udemy" },
+            { id: "Tolino", iconUrl: "https://play-lh.googleusercontent.com/gj2xFcVsPRfjeAMMX0zG9_9TqcHeH30YbR3FdtPo2cHhcHbU6OGKsEqERriVuo8OCpg=s48-rw", targetUrl: "https://webreader.mytolino.com/library/", ariaLabel: "Tolino" },
+            { id: "NotebookLM", iconUrl: "https://pbs.twimg.com/profile_images/1861084152054849547/uKBhfKBo_400x400.jpg", targetUrl: "https://notebooklm.google.com/", ariaLabel: "NotebookLM" },
+            { id: "Bitpanda", iconUrl: "https://play-lh.googleusercontent.com/0J5yWiMExRQ5wB92-KOpE42PoohTLw-IcPdq5GBLGAPmHMkuvD9EIUNt11bedYI_OcM=w240-h480-rw", targetUrl: "https://account.bitpanda.com/login", ariaLabel: "Bitpanda" },
+            { id: "CoinMarketCap", iconUrl: "https://play-lh.googleusercontent.com/kCKeckQNFF9P2470x4lF9v3OW_ZZtvk1SIo9RmvJDa6WtBboqfzyefEZ2_rwWRYgM_M=s48-rw", targetUrl: "https://coinmarketcap.com/", ariaLabel: "CoinMarketCap" },
+            { id: "GeorgeErsteBank", iconUrl: "https://play-lh.googleusercontent.com/iO3mw3CXFdTFhH_IMBirs-caiJO301aEeOXzPgr13J22W1U0z-PWr6GSnTgbZeu6vCA=w240-h480-rw", targetUrl: "https://george.sparkasse.at/r/index.html?at=c#/overview", ariaLabel: "GeorgeErsteBank" },
+            { id: "Revolut", iconUrl: "https://play-lh.googleusercontent.com/Zk8VcibrnwxdnlEydb5ytJOPGQuCVwceanusUprYjF06eLaPqO-pqYfkq7-LwMhMo7ZF=w240-h480-rw", targetUrl: "https://sso.revolut.com/signin?client_id=o3r08ao16zvdlf2y5fdc&code_challenge=7EVFQ49eb3I_mM8CF4VSd5ZXTG0xKJ18eWYZrycWhas&code_challenge_method=S256&response_type=code&redirect_uri=https%3A%2F%2Fapp.revolut.com%2Fhome&response_mode=query&ui_color_scheme=dark&ui_locales=en&state=KPbgwrh2iBUue1C4", ariaLabel: "Revolut" },
+            { id: "N26", iconUrl: "https://play-lh.googleusercontent.com/pCFXCIyrT0zxLral7LuFhBj6K2Bwl4Xj_zH_BXNKOJ7IJ2Gl8fE6cQ4IbQzX4uDSSw=w240-h480-rw", targetUrl: "https://app.n26.com/login", ariaLabel: "N26" },
+            { id: "pCloud", iconUrl: "https://play-lh.googleusercontent.com/5C2U8bk9x9-SzmJqy4xb9urLqwY1JvX-kU4EEVL-bSSEjv1wyM7IT7o4svuAKbsHUoA=w240-h480-rw", targetUrl: "https://my.pcloud.com/", ariaLabel: "pCloud" },
+            { id: "GoogleDrive", iconUrl: "https://play-lh.googleusercontent.com/t-juVwXA8lDAk8uQ2L6d6K83jpgQoqmK1icB_l9yvhIAQ2QT_1XbRwg5IpY08906qEw=w240-h480-rw", targetUrl: "https://drive.google.com/", ariaLabel: "GoogleDrive" },
+            { id: "OneDrive", iconUrl: "https://play-lh.googleusercontent.com/6AWr-qrhGT0ohjw0koq3bM8GHEFg1gTurald4FjCDg2RulTp4y_VVsYWUtw7Fo6lsQo=s48-rw", targetUrl: "https://onedrive.live.com/?id=root&cid=0C6CCA416C0AEF80", ariaLabel: "OneDrive" },
+            { id: "Gemini", iconUrl: "https://play-lh.googleusercontent.com/Pkwn0AbykyjSuCdSYCbq0dvOqHP-YXcbBLTZ8AOUZhvnRuhUnZ2aJrw_YCf6kVMcZ4PM=w240-h480-rw", targetUrl: "https://gemini.google.com/app", ariaLabel: "Gemini" },
+            { id: "DeepL", iconUrl: "https://play-lh.googleusercontent.com/0IH4L3pX-jqQXKYCDmxTM5t3Tvak2cb_zUuIs9nKCHPeOqkaRJ_bRTq1qKawsSvunw=w240-h480-rw", targetUrl: "https://www.deepl.com/en/translator", ariaLabel: "DeepL" },
+            { id: "Copilot", iconUrl: "https://play-lh.googleusercontent.com/p8R1lAZI5_WCOzmvBYnOQasCWcjc9d2vM7z4PaVku8b9AfxGhqQqM0ldJ8KULHblVj-g=w240-h480-rw", targetUrl: "https://copilot.microsoft.com/", ariaLabel: "Copilot" },
+            { id: "Hoyolab", iconUrl: "https://play-lh.googleusercontent.com/rkfVCuPdNJwhNj4-_jfueW56NM4fFohqVF-Y_ynFesGQVy-Jco84Opxp_UPxpeC5EeaH=s48-rw", targetUrl: "https://www.hoyolab.com/home", ariaLabel: "Hoyolab" },
+            { id: "Game8", iconUrl: "https://storage.googleapis.com/accesswire/logos/subaccounts/37677.png?v=1", targetUrl: "https://game8.co", ariaLabel: "Game8" },
+            { id: "DeckStats", iconUrl: "https://pbs.twimg.com/profile_images/1170359141312974848/Dx2dTRcl_400x400.jpg", targetUrl: "https://deckstats.net/", ariaLabel: "DeckStats" },
+            { id: "Chess", iconUrl: "https://play-lh.googleusercontent.com/a7R5nyeaX8lIEWdBOxjlvbyq9LcFwh3XMvNtBPEKR3LPGgdvgGrec4sJwn8tUaaSkw=s48-rw", targetUrl: "https://www.chess.com/daily-chess-puzzle", ariaLabel: "Chess" },
+            { id: "EpicGames", iconUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYIn8lRMcFqpozaGneuqfI8-3cgRtKMUk9uw&s", targetUrl: "https://store.epicgames.com/de/", ariaLabel: "EpicGames" },
+            { id: "AmazonGaming", iconUrl: "https://cdn-1.webcatalog.io/catalog/amazon-prime-gaming/amazon-prime-gaming-icon-filled-256.webp?v=1714773207214", targetUrl: "https://gaming.amazon.com/home", ariaLabel: "AmazonGaming" },
+            { id: "Steam", iconUrl: "https://play-lh.googleusercontent.com/52_DMY5417awaEgJf3_9mWgEuO2t1JfkGab8kM-LD6l5u6cGm_1-GsoQ_IyWFHdbkA=w240-h480-rw", targetUrl: "https://store.steampowered.com/", ariaLabel: "Steam" },
+            { id: "Itch.io", iconUrl: "https://play-lh.googleusercontent.com/vutNmbJfKNO-bEH2NJnaImSl49JT7f3t85nsev75-JyBoGoUdee3Q_2CG8dgQGRVlQ=w240-h480-rw", targetUrl: "https://itch.io/my-purchases", ariaLabel: "Itch.io" },
+            { id: "Youtube", iconUrl: "https://play-lh.googleusercontent.com/6am0i3walYwNLc08QOOhRJttQENNGkhlKajXSERf3JnPVRQczIyxw2w3DxeMRTOSdsY=s48-rw", targetUrl: "https://www.youtube.com/", ariaLabel: "Youtube" },
+            { id: "Netflix", iconUrl: "https://play-lh.googleusercontent.com/TBRwjS_qfJCSj1m7zZB93FnpJM5fSpMA_wUlFDLxWAb45T9RmwBvQd5cWR5viJJOhkI=w240-h480-rw", targetUrl: "https://www.netflix.com", ariaLabel: "Netflix" },
+            { id: "Crunchyroll", iconUrl: "https://play-lh.googleusercontent.com/Fnor8mzNEsiWTfSTI_RXUmsaZW0eYw0RkIgIhSCphG4Y0ZgwC-zK2qzik-9VIxQDWQ=s48-rw", targetUrl: "https://www.crunchyroll.com/de/", ariaLabel: "Crunchyroll" },
+            { id: "Pinterest", iconUrl: "https://play-lh.googleusercontent.com/6CFQQ0b9r5fzF1v6f0gIirWsOGL7sGWkJifuUQxxhbCMcBx5aSG_cNXpjDKDn5c1jwjq=w240-h480-rw", targetUrl: "https://at.pinterest.com/", ariaLabel: "Pinterest" },
+            { id: "Reddit", iconUrl: "https://play-lh.googleusercontent.com/6Bexlvoh-v0z0YnxzXo_U5e5A6UdAETe8pIYyQ2E2KfhVf2BK5J83pFXKZbt125FHHQ=w240-h480-rw", targetUrl: "https://www.reddit.com", ariaLabel: "Reddit" },
+            { id: "Temu", iconUrl: "https://play-lh.googleusercontent.com/Nz5sdWyh7jn4eTy_GSaRBDgaKhLC1pvYywC6fklDOlPGbopmeFN9NkqgKGjsvJMbKVEI=w240-h480-rw", targetUrl: "https://www.temu.com", ariaLabel: "Temu" },
+            { id: "Hockerty", iconUrl: "https://s3-eu-west-1.amazonaws.com/tpd/logos/5cdad622334459000156b02a/0x0.png", targetUrl: "https://www.hockerty.at", ariaLabel: "Hockerty" },
+            { id: "Willhaben", iconUrl: "https://play-lh.googleusercontent.com/_35j5GWebpnajJ5jCHVEtvbBm6Xt5CrkeTZ2mWqX-p7e2iCvNSO3qMf6mDWF6x5ZPg=w240-h480-rw", targetUrl: "https://www.willhaben.at", ariaLabel: "Willhaben" },
+            { id: "Amazon", iconUrl: "https://play-lh.googleusercontent.com/1Ns1T_qN0pEXMvZeZ5lQNAR8z4blP7ce2J2Nn5doXvt2T1g_W7VMORdWHaApkOooupI=s48-rw", targetUrl: "https://www.amazon.de", ariaLabel: "Amazon" },
+            { id: "Thalia", iconUrl: "https://play-lh.googleusercontent.com/Z2mljIDYihYbBWuyp-rcUAi-G-ThgexF1wekQboFfxkTBIoSEfj8M_6LdZJfwqMYhUk=w240-h480-rw", targetUrl: "https://www.thalia.at/", ariaLabel: "Thalia" },
+            { id: "GoogleTranslate", iconUrl: "https://play-lh.googleusercontent.com/ZrNeuKthBirZN7rrXPN1JmUbaG8ICy3kZSHt-WgSnREsJzo2txzCzjIoChlevMIQEA=w240-h480-rw", targetUrl: "https://translate.google.com/", ariaLabel: "GoogleTranslate" },
+            { id: "GoogleContacts", iconUrl: "https://play-lh.googleusercontent.com/fvhPW8dpGXM42Y-6aQU8Yl25L1l_mVgeoM-n08FxAkM7umAHkNs8wcs4MA49E67a7WVt=w240-h480-rw", targetUrl: "https://contacts.google.com/", ariaLabel: "GoogleContacts" },
+            { id: "GoogleMaps", iconUrl: "https://play-lh.googleusercontent.com/Kf8WTct65hFJxBUDm5E-EpYsiDoLQiGGbnuyP6HBNax43YShXti9THPon1YKB6zPYpA=w240-h480-rw", targetUrl: "https://www.google.com/maps/", ariaLabel: "GoogleMaps" },
+            { id: "GoogleKeep", iconUrl: "https://play-lh.googleusercontent.com/9bJoeaPbGTB8Tz_h4N-p-6ReRd8vSS-frZb2tmJulaGIoTKElKj3zpmcFJvnS96ANZP5=w240-h480-rw", targetUrl: "https://keep.google.com/", ariaLabel: "GoogleKeep" },
+            { id: "GoogleSheets", iconUrl: "https://play-lh.googleusercontent.com/keE2gN0Hqh8-Tsf_RYZ_-yS2uo6ToqYVyRBv_UZaLXsgeeHBd2YPcEUWEF4DEtfGyb1h=s48-rw", targetUrl: "https://docs.google.com/spreadsheets/u/0/", ariaLabel: "GoogleSheets" },
+            { id: "GoogleDocs", iconUrl: "https://play-lh.googleusercontent.com/emmbClh_hm0WpWZqJ0X59B8Pz1mKoB9HVLkYMktxhGE6_-30SdGoa-BmYW73RJ8MGZQ=s48-rw", targetUrl: "https://docs.google.com/document/u/0/", ariaLabel: "GoogleDocs" },
+            { id: "GooglePlay", iconUrl: "https://cdn-icons-png.flaticon.com/512/732/732208.png", targetUrl: "https://play.google.com/", ariaLabel: "GooglePlay" },
+            { id: "GoogleTasks", iconUrl: "https://play-lh.googleusercontent.com/pjUulZ-Vdo7qPKxk3IRhnk8SORPlgSydSyYEjm7fGcoXO8wDyYisWXwQqEjMryZ_sqK2=w240-h480-rw", targetUrl: "https://tasks.google.com/tasks/", ariaLabel: "GoogleTasks" },
+            { id: "A1", iconUrl: "https://play-lh.googleusercontent.com/DG25DF36wwa7-TR1K5Zi-WnCziIwlPt4_ydYkxuYIY1nWG-L_sGhAyHTqwAmWeicgg=w240-h480-rw", targetUrl: "https://www.a1.net/mein-a1", ariaLabel: "Mein A1" },
+            { id: "Heritage", iconUrl: "https://play-lh.googleusercontent.com/TOeUOcW7cqu-2RSLp9514ETSQctPv0CY5rhWVLKqrMD5cJbsGTwYRZjDhtWAB857Zw=w240-h480-rw", targetUrl: "https://www.myheritage.com/", ariaLabel: "My Heritage" },
+            { id: "PDF24", iconUrl: "https://upload.wikimedia.org/wikipedia/commons/c/c0/PDF24_Creator_application_logo_256x256.png", targetUrl: "https://tools.pdf24.org/de/alle-tools", ariaLabel: "PDF24" },
+            { id: "GoogleWallet", iconUrl: "https://play-lh.googleusercontent.com/DHBlQKvUNbopIS-VjQb3fUKQ_QH0Em-Q66AwG6LwD1Sach3lUvEWDb6hh8xNvKGmctU=w240-h480-rw", targetUrl: "https://wallet.google.com/", ariaLabel: "GoogleWallet" },
+            { id: "AppleTV+", iconUrl: "https://play-lh.googleusercontent.com/zovfDsfyegE7SF3hCrN_hWPiQ2VLSh_Hreg20YsgQD5d9rfeq_HLA1fdq3q9zn-QNg=s48-rw", targetUrl: "https://tv.apple.com/at", ariaLabel: "AppleTV+" },
+            { id: "Discord", iconUrl: "https://play-lh.googleusercontent.com/RSKcY3dSvYVqPgabkZ3xmAjzpOBKmgmMZNOxLvxeab3cHmrcFvW_DeIPY863FWA1sOA=s48-rw", targetUrl: "https://discord.com/channels/@me", ariaLabel: "Discord" },
+            { id: "LEGO", iconUrl: "https://play-lh.googleusercontent.com/Yo7a2-xXFXSo8nl26mijVMxjfN6cPKUQTtbOQPYdY6ZPfA2ryA-xDosrpGCr01XwMQ=s48-rw", targetUrl: "https://www.lego.com/de-at/member", ariaLabel: "LEGO" },
+            { id: "SunContracting", iconUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0fg2blaCobbugLH35r6a_lkr94SU6ukqqjw&s", targetUrl: "https://xserv.kdportal.de/show/Kunde_Vertraege", ariaLabel: "SunContracting" },
+            { id: "WienMobil", iconUrl: "https://play-lh.googleusercontent.com/r342hitqOFjStwAhRFP8-KosAVepIDU3xAc-9NadGUlP80-3TkCBDsty8N3SqKUsIQ=w240-h480-rw", targetUrl: "https://www.wienmobil.at/", ariaLabel: "WienMobil" },
+            { id: "Google Calendar", iconUrl: "https://play-lh.googleusercontent.com/_bh6XK3B7TAk7kBXC1GHC0j9eS9cw9wQo2K7fiP7FDGAQlcOqgUPT2lx3WgZ0JlOJh8=w240-h480-rw", targetUrl: "https://calendar.google.com/calendar/u/0/r", ariaLabel: "Google Calendar" },
+            { id: "Gmail", iconUrl: "https://play-lh.googleusercontent.com/KSuaRLiI_FlDP8cM4MzJ23ml3og5Hxb9AapaGTMZ2GgR103mvJ3AAnoOFz1yheeQBBI=w240-h480-rw", targetUrl: "https://mail.google.com/mail/u/0/#inbox", ariaLabel: "Gmail" },
+            { id: "Outlook", iconUrl: "https://play-lh.googleusercontent.com/Zk9elS0eGXDr0L4W6-Ey7YwHbRNjkyezHC8iCc8rWp64lNIjlByS8TDF9qDSZbiEWY4=s48-rw", targetUrl: "https://outlook.live.com/mail/inbox", ariaLabel: "Outlook" },
+            { id: "Proton Mail", iconUrl: "https://play-lh.googleusercontent.com/99IPL5W1HvN1TM7awcJ2gihUie-LQ5Ae7W9g0FgCBFJ8hNZnFIOJElyBPNcx4Wcx7A=w240-h480-rw", targetUrl: "https://www.proton.me/de/mail", ariaLabel: "Proton Mail" },
+            { id: "Apple Mail", iconUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Mail_%28iOS%29.svg/1024px-Mail_%28iOS%29.svg.png", targetUrl: "https://www.icloud.com/mail/", ariaLabel: "Apple Mail" },
+            { id: "Nebo", iconUrl: "https://styles.redditmedia.com/t5_3pvt1m/styles/communityIcon_sh4dc7xrc3b61.png", targetUrl: "https://www.nebo.app/app/pages", ariaLabel: "Nebo" },
+            { id: "Manscaped", iconUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlG8vBVUmXcc4CGcLY4SxTg_WV5njUMKpzuBSTsIrINKgy0aam6gekQF27i5soToa8isc&usqp=CAU", targetUrl: "https://eu.manscaped.com/de", ariaLabel: "Manscaped" },
+            { id: "Google Messages", iconUrl: "https://play-lh.googleusercontent.com/9AZOTXU_CpreTFAXUPAmJNkm8VGCb1C90fjJ9pHGcVmpGMDSTq3cUbaQJdBT9Tdp9A=w240-h480-rw", targetUrl: "https://messages.google.com/web/conversations", ariaLabel: "Google Messages" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Theme is now fixed to dark mode, listener removed.
+
+            // Listen for focus message from parent
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'focusSearch') {
+                    searchInput.focus();
+                }
+            });
+
+            // --- MAIN APP LOGIC ---
+            lucide.createIcons();
+            const appGrid = document.getElementById('app-grid');
+            const favoritesGrid = document.getElementById('favorites-grid');
+            const favoritesSection = document.getElementById('favorites-section');
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+
+            let apps = [];
+
+            // --- DATA MANAGEMENT ---
+            function saveApps() {
+                localStorage.setItem('userApps', JSON.stringify(apps));
+            }
+
+            function initializeData() {
+                let storedApps = localStorage.getItem('userApps');
+                if (!storedApps || JSON.parse(storedApps).length === 0) {
+                    apps = appsData.map(app => ({
+                        id: app.id,
+                        name: app.ariaLabel,
+                        url: app.targetUrl,
+                        iconUrl: app.iconUrl,
+                        isFavorite: false // Add favorite property
+                    }));
+                    saveApps();
+                } else {
+                    apps = JSON.parse(storedApps);
+                }
+                renderAll();
+            }
+
+            // --- UI RENDERING ---
+            const renderAll = (searchTerm = '') => {
+                appGrid.innerHTML = '';
+                favoritesGrid.innerHTML = '';
+                const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+                const filteredApps = apps.filter(app =>
+                    app.name && app.name.toLowerCase().includes(lowerCaseSearchTerm)
+                );
+
+                const favorites = filteredApps.filter(app => app.isFavorite).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                const nonFavorites = filteredApps.filter(app => !app.isFavorite).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+                favorites.forEach(app => {
+                    favoritesGrid.appendChild(createAppElement(app));
+                });
+
+                nonFavorites.forEach(app => {
+                    appGrid.appendChild(createAppElement(app));
+                });
+
+                favoritesSection.style.display = favorites.length > 0 ? 'block' : 'none';
+                document.querySelector('.divider').style.display = favorites.length > 0 && nonFavorites.length > 0 ? 'block' : 'none';
+            };
+
+            const createAppElement = (app) => {
+                const item = document.createElement('a');
+                item.href = app.url;
+                item.target = '_blank';
+                item.className = 'app-item';
+                item.setAttribute('aria-label', app.name);
+
+                const iconWrapper = document.createElement('div');
+                iconWrapper.className = 'app-icon-wrapper';
+
+                const icon = document.createElement('img');
+                icon.src = app.iconUrl || `https://placehold.co/64x64/e0e0e0/ffffff?text=${(app.name || 'A').charAt(0)}`;
+                icon.alt = `${app.name} Icon`;
+                icon.className = 'app-icon';
+                icon.onerror = function () { this.onerror = null; this.src = `https://placehold.co/64x64/e0e0e0/ffffff?text=${(app.name || 'A').charAt(0)}`; };
+                iconWrapper.appendChild(icon);
+
+                const star = document.createElement('div');
+                star.className = 'favorite-star';
+                if (app.isFavorite) {
+                    star.classList.add('favorited');
+                }
+                star.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+                star.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleFavorite(app.id);
+                });
+                item.appendChild(star); // Add star to the item, not the wrapper
+
+                item.appendChild(iconWrapper);
+                const label = document.createElement('span');
+                label.className = 'app-label';
+                label.textContent = app.name || new URL(app.url).hostname;
+                item.appendChild(label);
+                return item;
+            };
+
+
+            // --- ACTIONS ---
+            function toggleFavorite(appId) {
+                const app = apps.find(a => a.id === appId);
+                if (app) {
+                    app.isFavorite = !app.isFavorite;
+                    saveApps();
+                    renderAll(searchInput.value);
+                }
+            }
+
+            // --- Event Listeners ---
+            searchInput.addEventListener('input', () => {
+                renderAll(searchInput.value);
+                clearSearchBtn.classList.toggle('hidden', !searchInput.value);
+            });
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                renderAll();
+                clearSearchBtn.classList.add('hidden');
+            });
+
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userApps') {
+                    console.log('AppDrawer detected storage change, re-rendering grid.');
+                    apps = JSON.parse(localStorage.getItem('userApps') || '[]');
+                    renderAll(searchInput.value);
+                }
+            });
+
+            // --- BACKUP INTEGRATION ---
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'backupDataRequest') {
+                    console.log('AppDrawer received backup request.');
+                    const backupPayload = {
+                        apps: apps
+                    };
+                    window.parent.postMessage({
+                        type: 'backupDataResponse',
+                        key: 'appdrawer',
+                        data: backupPayload
+                    }, '*');
+                }
+            });
+
+            initializeData();
+        });
+    </script>
+</body>
+
+</html>
