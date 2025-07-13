@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AxisMea</title>
+    <meta name="theme-color" content="#000000"/>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/icons/axismea-favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        :root {
+            --bg-color: #f9fafb;
+            --text-color: #111827;
+            --text-color-light: #6b7280;
+            --header-text-color: #111827;
+            --sidebar-bg: #f3f4f6cc;
+            /* Kept for modal consistency */
+            --sidebar-border: #e5e7eb;
+            /* Kept for modal consistency */
+            --modal-bg: #ffffff;
+            --accent-color: #7c3aed;
+            --accent-color-hover: #8b5cf6;
+            --dock-bg: #f3f4f6cc;
+            --dock-border: #e5e7eb;
+            --app-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --app-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        html[data-theme='dark'] {
+            --bg-color: #171717;
+            --text-color: #fafafa;
+            --text-color-light: #a3a3a3;
+            --header-text-color: #fafafa;
+            --sidebar-bg: #262626cc;
+            /* Kept for modal consistency */
+            --sidebar-border: #404040;
+            /* Kept for modal consistency */
+            --modal-bg: #262626;
+            --dock-bg: #262626cc;
+            --dock-border: #404040;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Ubuntu', sans-serif;
+            /* Changed font */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* Base style for Material Symbols */
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24;
+            vertical-align: middle;
+            /* Helps with alignment */
+        }
+
+        #main-content {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 60px);
+            /* Full height minus dock height */
+            margin-bottom: 60px;
+            /* Space for the dock */
+            box-sizing: border-box;
+        }
+
+        .content-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            opacity: 0;
+            transition: opacity 200ms ease-in-out;
+            pointer-events: none;
+        }
+
+        .content-iframe.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* === Appdrawer Modal Styling === */
+        #appdrawer-modal {
+            position: fixed;
+            bottom: 75px;
+            left: 1rem;
+            width: clamp(400px, 45vw, 700px);
+            height: 75vh;
+            background-color: var(--modal-bg);
+            border-radius: 12px;
+            box-shadow: var(--app-shadow-hover);
+            z-index: 80;
+            overflow: hidden;
+            border: 1px solid var(--dock-border);
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            transform-origin: bottom left;
+            transform: translateY(10px) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #appdrawer-modal:not(.hidden) {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #appdrawer-modal iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        #appdrawer-loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--modal-bg);
+            z-index: 10;
+        }
+
+        #appdrawer-loader.hidden {
+            display: none;
+        }
+
+
+        #settings-modal {
+            background-color: var(--modal-bg);
+            z-index: 100;
+            border: 1px solid var(--dock-border);
+        }
+
+        .theme-radio-label {
+            border: 2px solid var(--sidebar-border);
+            color: var(--text-color-light);
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .theme-radio-label:hover {
+            background-color: var(--sidebar-border);
+            color: var(--header-text-color);
+        }
+
+        .theme-radio-peer:checked~.theme-radio-label {
+            border-color: var(--accent-color);
+            color: var(--header-text-color);
+            background-color: transparent;
+        }
+
+        #notification-toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transition: bottom 0.5s ease-in-out;
+            z-index: 25000;
+        }
+
+        #notification-toast.show {
+            bottom: 20px;
+        }
+
+        /* === App Dock as Main Navigation === */
+        #app-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 0.25rem 1rem;
+            background-color: var(--dock-bg);
+            border-top: 1px solid var(--dock-border);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: row;
+            z-index: 90;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .dock-center-group,
+        .dock-right-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            /* Abstand für Suchfeld leicht vergrößert */
+        }
+
+        /* === Compact Dock Link Styles for Material Symbols === */
+        .dock-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            color: var(--text-color-light);
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            text-decoration: none;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .dock-icon {
+            width: 28px;
+            height: 28px;
+            filter: var(--icon-filter);
+        }
+
+        .dock-link:hover {
+            color: var(--text-color);
+            background-color: var(--sidebar-border);
+            transform: translateY(-4px);
+        }
+
+        .dock-link.active {
+            color: var(--accent-color);
+            background-color: transparent;
+            transform: translateY(-4px);
+        }
+
+        html[data-theme='dark'] .dock-icon {
+            filter: invert(1);
+        }
+
+        .dock-link.active .dock-icon {
+            filter: invert(48%) sepia(61%) saturate(2000%) hue-rotate(225deg) brightness(95%) contrast(90%);
+        }
+
+        /* === Clock Style === */
+        #dock-clock {
+            color: var(--text-color-light);
+            font-size: 1rem;
+            font-weight: 500;
+            white-space: nowrap;
+            padding: 0 0.5rem;
+        }
+
+        /* === NEU: Suchfeld in der Taskleiste === */
+        #dock-search-container {
+            display: flex;
+            align-items: center;
+            background-color: var(--sidebar-border);
+            border-radius: 12px;
+            transition: background-color 0.2s;
+        }
+
+        #dock-search-container:focus-within {
+            background-color: var(--dock-border);
+        }
+
+        #dock-search-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-color);
+            width: 200px;
+            padding: 8px 12px;
+            font-size: 1rem;
+        }
+
+        #dock-search-input::placeholder {
+            color: var(--text-color-light);
+            opacity: 0.7;
+        }
+
+        #dock-search-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            color: var(--text-color-light);
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            flex-shrink: 0;
+            border-radius: 12px;
+            transition: color 0.2s;
+        }
+
+        #dock-search-btn .material-symbols-outlined {
+            font-size: 28px;
+        }
+
+        #dock-search-btn:hover {
+            color: var(--accent-color);
+        }
+
+
+        /* Dark theme icon colors */
+        html[data-theme='dark'] .dock-link {
+            color: var(--text-color-light);
+        }
+
+        html[data-theme='dark'] .dock-link:hover {
+            color: var(--text-color);
+        }
+
+        html[data-theme='dark'] .dock-link.active {
+            color: var(--accent-color);
+        }
+
+        #context-menu {
+            position: fixed;
+            z-index: 10000;
+            width: 200px;
+            background-color: var(--modal-bg);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            border: 1px solid var(--sidebar-border);
+        }
+
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            color: var(--text-color);
+            border-radius: 4px;
+        }
+
+        .context-menu-item:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .dock-left-group,
+        .dock-center-group,
+        .dock-right-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dock-left-group,
+        .dock-right-group {
+            flex-shrink: 0;
+        }
+
+        .dock-center-group {
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        /* Hide the dock and search bar on small screens */
+        @media (max-width: 768px) {
+            #app-dock {
+                display: none;
+                /* Taskleiste auf Mobilgeräten ausblenden */
+            }
+
+            #mobile-menu-fab {
+                display: flex;
+                /* FAB auf Mobilgeräten anzeigen */
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Höhe des Hauptinhalts für Mobilgeräte anpassen, wenn die Taskleiste ausgeblendet ist */
+            #main-content {
+                height: 100%;
+                margin-bottom: 0;
+            }
+
+            /* Suchcontainer in der Taskleiste auf Mobilgeräten ausblenden */
+            #dock-search-container {
+                display: none;
+            }
+        }
+
+        /* Styles for the mobile sidebar */
+        #mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 65vw;
+            max-width: 240px;
+            height: 100vh;
+            background: var(--modal-bg, #fff);
+            box-shadow: 2px 0 16px rgba(0, 0, 0, 0.18);
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+            z-index: 10002;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            /* Innenabstand für die Sidebar */
+            box-sizing: border-box;
+            /* Padding in die Breite einbeziehen */
+            overflow-y: auto;
+            /* Macht die Sidebar auf Mobilgeräten scrollbar */
+            -webkit-overflow-scrolling: touch;
+            /* Verbessert das Scroll-Erlebnis auf iOS */
+        }
+
+        #mobile-sidebar.open {
+            transform: translateX(0);
+        }
+
+        #mobile-sidebar .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        #mobile-sidebar .mobile-nav-item:hover {
+            background-color: var(--sidebar-border);
+            color: var(--header-text-color);
+        }
+
+        #mobile-sidebar .mobile-nav-item.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .mobile-nav-icon {
+            width: 24px;
+            height: 24px;
+            filter: var(--icon-filter);
+        }
+
+        html[data-theme='dark'] .mobile-nav-icon {
+            filter: invert(1);
+        }
+
+        .mobile-nav-link.active .mobile-nav-icon {
+            filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(145deg) brightness(102%) contrast(102%);
+        }
+
+        /* FAB Styles */
+        .fab {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            right: auto;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            /* Immer im Vordergrund */
+            cursor: pointer;
+            font-size: 2rem;
+            transition: background 0.2s;
+        }
+
+        .fab:hover {
+            background: var(--accent-color-hover);
+        }
+
+        /* Media Query, um den FAB auf Desktop-Ansichten auszublenden */
+        @media (min-width: 769px) {
+            .fab {
+                display: none !important;
+            }
+        }
+
+        /* Media Query, um den FAB auf mobilen Ansichten anzuzeigen */
+        @media (max-width: 768px) {
+            .fab {
+                display: flex !important;
+            }
+        }
+
+        /* Close button for mobile sidebar */
+        .close-sidebar-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-color-light);
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .close-sidebar-btn:hover {
+            color: var(--header-text-color);
+        }
+        /* === Mobile Nav Link Styles === */
+        .mobile-nav-link {
+            color: var(--text-color);
+            background-color: transparent;
+        }
+
+        .mobile-nav-link:hover {
+            background-color: var(--sidebar-border);
+            color: var(--header-text-color);
+        }
+
+        .mobile-nav-link.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        /* === Custom Search Cancel Button === */
+        #dock-search-input::-webkit-search-cancel-button {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            margin-left: 4px;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        #dock-search-input::-webkit-search-cancel-button:hover {
+            opacity: 1;
+        }
+
+        /* Light Theme 'x' Icon */
+        html:not([data-theme='dark']) #dock-search-input::-webkit-search-cancel-button {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>");
+        }
+
+        /* Dark Theme 'x' Icon */
+        html[data-theme='dark'] #dock-search-input::-webkit-search-cancel-button {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a3a3a3'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>");
+        }
+        /* === Context Menu Styling === */
+        #context-menu {
+            /* Positionierung und Z-Index werden dynamisch im JS gesetzt */
+            min-width: 180px;
+            background-color: var(--modal-bg);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 6px;
+            border: 1px solid var(--sidebar-border);
+            z-index: 10002; /* Ensure it's above the overlay */
+        }
+
+        #context-menu a {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: var(--text-color);
+            border-radius: 6px;
+            transition: background-color 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+
+        #context-menu a:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        #context-menu a:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        #context-menu img {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            transition: filter 0.2s;
+        }
+
+        html[data-theme='dark'] #context-menu img {
+            filter: invert(1);
+        }
+    </style>
+</head>
+
+<body data-theme="dark" class="h-full">
+
+    <main id="main-content" class="h-full">
+        <div id="iframe-wrapper" class="relative w-full h-full">
+            <div id="iframe-loader" class="hidden absolute inset-0 z-10 flex items-center justify-center">
+                <img src="assets/loading/zzz-loading.gif" alt="Ladeanimation" class="w-30">
+            </div>
+            <iframe id="frame-aurimea" data-src="components/aurimea/aurimea.html" class="content-iframe"
+                data-key="aurimea"></iframe>
+            <iframe id="frame-widgets" data-src="components/widgets-collection/widgets-collection.html"
+                class="content-iframe" data-key="widgets"></iframe>
+            <iframe id="frame-readlater" data-src="components/readlater/readlater.html" class="content-iframe"
+                data-key="readlater"></iframe>
+            <iframe id="frame-rss" data-src="components/rss-reader/rss-reader.html" class="content-iframe"
+                data-key="rss"></iframe>
+            <iframe id="frame-memomea" data-src="components/memomea/memomea.html" class="content-iframe"
+                data-key="memomea"></iframe>
+            <iframe id="frame-actamea" data-src="components/actamea/actamea.html" class="content-iframe"
+                data-key="actamea"></iframe>
+            <iframe id="frame-agenda" data-src="components/agenda/agenda.html" class="content-iframe"
+                data-key="agenda"></iframe>
+            <iframe id="frame-habitmea" data-src="components/habitmea/habitmea.html" class="content-iframe"
+                data-key="habitmea"></iframe>
+        </div>
+    </main>
+
+    <!-- Floating Action Button für das mobile Menü -->
+    <button id="mobile-menu-fab" class="fab" aria-label="Menü">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <div id="app-dock"></div>
+
+    <!-- Mobile Sidebar -->
+    <aside id="mobile-sidebar" class="mobile-sidebar">
+        <nav id="mobile-nav-list"></nav>
+    </aside>
+<div id="mobile-sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-20 z-[10001]"></div>
+
+    <div id="appdrawer-modal" class="hidden">
+        <div id="appdrawer-loader" class="hidden">
+            <img src="assets/loading/zzz-loading.gif" alt="Ladeanimation" class="w-30">
+        </div>
+        <iframe id="frame-appdrawer" data-src="components/appdrawer/appdrawer.html" data-key="appdrawer"></iframe>
+    </div>
+
+    <div id="modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50"></div>
+    <div id="settings-modal"
+        class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-lg shadow-2xl p-6 z-[60]">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold" style="color: var(--header-text-color);">Einstellungen</h2>
+            <button id="close-modal-btn" class="hover:text-white text-2xl"
+                style="color: var(--text-color-light);">&times;</button>
+        </div>
+        <div class="space-y-6">
+            <div>
+                <h3 class="text-lg font-semibold mb-3" style="color: var(--header-text-color);">Erscheinungsbild</h3>
+                <fieldset class="space-y-3">
+                    <legend class="sr-only">Theme selection</legend>
+                    <div>
+                        <input type="radio" name="theme" id="theme-light" value="light" class="theme-radio-peer hidden">
+                        <label for="theme-light"
+                            class="theme-radio-label flex items-center justify-center w-full p-3 rounded-lg cursor-pointer">
+                            <span class="material-symbols-outlined mr-2">light_mode</span>
+                            <span>Light</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="theme" id="theme-dark" value="dark" class="theme-radio-peer hidden">
+                        <label for="theme-dark"
+                            class="theme-radio-label flex items-center justify-center w-full p-3 rounded-lg cursor-pointer">
+                            <span class="material-symbols-outlined mr-2">dark_mode</span>
+                            <span>Dark</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="theme" id="theme-system" value="system"
+                            class="theme-radio-peer hidden">
+                        <label for="theme-system"
+                            class="theme-radio-label flex items-center justify-center w-full p-3 rounded-lg cursor-pointer">
+                            <span class="material-symbols-outlined mr-2">desktop_windows</span>
+                            <span>System</span>
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-3" style="color: var(--header-text-color);">Datenverwaltung</h3>
+                <div class="flex flex-col space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button id="backup-all-btn"
+                            class="flex-1 text-white font-semibold rounded-md px-6 py-2.5 transition duration-200 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700">
+                            <span class="material-symbols-outlined">download</span>
+                            <span>Backup All</span>
+                        </button>
+                        <label for="restore-all-input"
+                            class="flex-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md px-6 py-2.5 transition duration-200 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">upload</span>
+                            <span>Restore All</span>
+                        </label>
+                        <input type="file" id="restore-all-input" class="hidden" accept=".zip">
+                    </div>
+                    <button id="delete-all-btn"
+                        class="w-full text-white bg-red-600 hover:bg-red-700 font-semibold rounded-md px-6 py-2.5 transition duration-200 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">delete</span>
+                        <span>Delete All</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 z-[110] flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-lg shadow-2xl p-6" style="background-color: var(--modal-bg);">
+            <h3 id="confirm-modal-title" class="text-xl font-bold mb-4" style="color: var(--header-text-color);"></h3>
+            <p id="confirm-modal-text" class="mb-6" style="color: var(--text-color-light);"></p>
+            <div class="flex justify-end gap-4">
+                <button id="confirm-modal-cancel-btn" class="font-bold py-2 px-4 rounded-lg transition"
+                    style="background-color: var(--sidebar-border); color: var(--text-color);">Abbrechen</button>
+                <button id="confirm-modal-confirm-btn"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition">Bestätigen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-toast"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Core elements
+            const iframeLoader = document.getElementById('iframe-loader');
+            const appDock = document.getElementById('app-dock');
+            const settingsModal = document.getElementById('settings-modal');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const notificationToast = document.getElementById('notification-toast');
+
+            // --- Appdrawer Modal Elements ---
+            const appdrawerModal = document.getElementById('appdrawer-modal');
+            const appdrawerFrame = document.getElementById('frame-appdrawer');
+            const appdrawerLoader = document.getElementById('appdrawer-loader');
+
+            // Settings modal elements
+            const backupAllBtn = document.getElementById('backup-all-btn');
+            const restoreAllInput = document.getElementById('restore-all-input');
+            const deleteAllBtn = document.getElementById('delete-all-btn');
+            const themeRadios = document.querySelectorAll('input[name="theme"]');
+
+            const mobileMenuFab = document.getElementById('mobile-menu-fab');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+            const mobileNavList = document.getElementById('mobile-nav-list');
+
+            const openMobileSidebar = () => {
+                mobileSidebar.classList.add('open');
+                mobileSidebarOverlay.classList.remove('hidden');
+            };
+
+            const closeMobileSidebar = () => {
+                mobileSidebar.classList.remove('open');
+                mobileSidebarOverlay.classList.add('hidden');
+            };
+
+            if (mobileMenuFab) {
+                mobileMenuFab.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (mobileSidebar.classList.contains('open')) {
+                        closeMobileSidebar();
+                    } else {
+                        openMobileSidebar();
+                    }
+                });
+            }
+
+            if (mobileSidebarOverlay) {
+                mobileSidebarOverlay.addEventListener('click', closeMobileSidebar);
+            }
+
+            // --- NAVIGATION SETUP ---
+            const navItems = [
+                { key: 'appdrawer', href: 'components/appdrawer/appdrawer.html', icon: 'assets/icons/appdrawer.svg', text: 'Appdrawer' },
+                { key: 'aurimea', target: 'frame-aurimea', href: 'components/aurimea/aurimea.html', icon: 'assets/icons/aurimea.svg', text: 'AuriMea' },
+                { key: 'readlater', target: 'frame-readlater', href: 'components/readlater/readlater.html', icon: 'assets/icons/readlater.svg', text: 'ReadlateR' },
+                { key: 'rss', target: 'frame-rss', href: 'components/rss-reader/rss-reader.html', icon: 'assets/icons/rss.svg', text: 'RSS Reader' },
+                { key: 'memomea', target: 'frame-memomea', href: 'components/memomea/memomea.html', icon: 'assets/icons/memomea.svg', text: 'MemoMea' },
+                { key: 'actamea', target: 'frame-actamea', href: 'components/actamea/actamea.html', icon: 'assets/icons/notes.svg', text: 'ActaMea' },
+                { key: 'agenda', target: 'frame-agenda', href: 'components/agenda/agenda.html', icon: 'assets/icons/agenda.svg', text: 'Agenda' },
+                { key: 'habitmea', target: 'frame-habitmea', href: 'components/habitmea/habitmea.html', icon: 'assets/icons/habitmea.svg', text: 'HabitMea' },
+                { key: 'widgets', target: 'frame-widgets', href: 'components/widgets-collection/widgets-collection.html', icon: 'assets/icons/widgets.svg', text: 'Widgets' },
+                {
+                    key: 'other-programs',
+                    icon: 'assets/icons/other-programs.svg',
+                    text: 'Other Programs',
+                    isGroup: true,
+                    children: [
+                        { key: 'unicorn', href: 'unicorn/work-tools.html', icon: 'assets/icons/unicorn.svg', text: 'Unicorn', isExternal: true },
+                        { key: 'jap-mentor', href: 'japanese-learn/japanisch-ueben.html', icon: 'assets/icons/jap-mentor.svg', text: 'Japanisch Mentor', isExternal: true },
+                        { key: 'fit-data', href: 'fitness-data/fit-data.html', icon: 'assets/icons/fit-data.svg', text: 'Fitness Data', isExternal: true },
+                        { key: 'discere', href: 'https://dev0gig.github.io/web-discere/index.html', icon: 'assets/icons/discere.svg', text: 'Discere', isExternal: true },
+                    ]
+                },
+                { key: 'settings', target: 'settings-modal', icon: 'assets/icons/settings.svg', text: 'Einstellungen' }
+            ];
+
+            // --- NEU: Suchfunktion ---
+            const performSearch = () => {
+                const input = document.getElementById('dock-search-input');
+                const query = input.value.trim();
+                if (query) {
+                    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                    input.value = ''; // Feld nach der Suche leeren
+                    input.blur(); // Fokus vom Feld nehmen
+                }
+            };
+
+            // --- MODAL & TOAST FUNCTIONS ---
+            const toggleAppdrawer = () => {
+                const isHidden = appdrawerModal.classList.contains('hidden');
+                const appdrawerLink = document.querySelector('.dock-link[data-key="appdrawer"]');
+
+                if (isHidden) {
+                    if (!appdrawerFrame.src) {
+                        appdrawerLoader.classList.remove('hidden');
+                        appdrawerFrame.addEventListener('load', () => {
+                            const savedTheme = localStorage.getItem('theme') || 'system';
+                            applyThemeToFrame(appdrawerFrame, savedTheme);
+                            appdrawerLoader.classList.add('hidden');
+                        }, { once: true });
+                        appdrawerFrame.src = appdrawerFrame.dataset.src;
+                    }
+                    appdrawerModal.classList.remove('hidden');
+                    modalOverlay.classList.remove('hidden'); // Overlay anzeigen
+                    appdrawerLink?.classList.add('active');
+                    // Fokus auf das Suchfeld im Iframe setzen
+                    setTimeout(() => {
+                        appdrawerFrame.contentWindow.postMessage({ type: 'focusSearch' }, '*');
+                    }, 100); // Kleine Verzögerung, um sicherzustellen, dass der Iframe bereit ist
+                } else {
+                    appdrawerModal.classList.add('hidden');
+                    modalOverlay.classList.add('hidden'); // Overlay ausblenden
+                    appdrawerLink?.classList.remove('active');
+                }
+            };
+
+            const openConfirmModal = (title, text, onConfirm) => {
+                const confirmModal = document.getElementById('confirm-modal');
+                document.getElementById('confirm-modal-title').textContent = title;
+                document.getElementById('confirm-modal-text').textContent = text;
+
+                const confirmBtn = document.getElementById('confirm-modal-confirm-btn');
+                const newConfirmBtn = confirmBtn.cloneNode(true);
+                confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+                newConfirmBtn.addEventListener('click', () => {
+                    if (typeof onConfirm === 'function') onConfirm();
+                    closeConfirmModal();
+                });
+                confirmModal.classList.remove('hidden');
+            };
+
+            const closeConfirmModal = () => {
+                document.getElementById('confirm-modal').classList.add('hidden');
+            };
+
+            document.getElementById('confirm-modal-cancel-btn').addEventListener('click', closeConfirmModal);
+
+            const showToast = (message, type = 'success', duration = 3000) => {
+                notificationToast.textContent = message;
+                notificationToast.className = 'show';
+                if (type === 'success') notificationToast.style.backgroundColor = '#22c55e';
+                else if (type === 'error') notificationToast.style.backgroundColor = '#ef4444';
+                else notificationToast.style.backgroundColor = '#525252';
+
+                if (duration > 0) {
+                    setTimeout(() => { notificationToast.className = ''; }, duration);
+                }
+            };
+
+            const openSettingsModal = () => {
+                settingsModal.classList.remove('hidden');
+                modalOverlay.classList.remove('hidden');
+            };
+            const closeSettingsModal = () => {
+                settingsModal.classList.add('hidden');
+                modalOverlay.classList.add('hidden');
+            };
+
+            // --- DATA MANAGEMENT FUNCTIONS ---
+            const createAndDownloadZip = (backupData) => {
+                const zip = new JSZip();
+                let filesAdded = 0;
+                for (const key in backupData) {
+                    if (backupData[key] !== null && backupData[key] !== undefined) {
+                        zip.file(`${key}.json`, JSON.stringify(backupData[key], null, 2));
+                        filesAdded++;
+                    }
+                }
+                if (filesAdded === 0) {
+                    showToast('Keine Daten zum Sichern gefunden.', 'info');
+                    return;
+                }
+                zip.generateAsync({ type: "blob" })
+                    .then(content => {
+                        const link = document.createElement('a');
+                        const date = new Date().toISOString().slice(0, 10);
+                        link.href = URL.createObjectURL(content);
+                        link.download = `dashboard-backup-${date}.zip`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                        showToast('Backup erfolgreich heruntergeladen!', 'success');
+                    })
+                    .catch(err => {
+                        console.error('Zip generation failed:', err);
+                        showToast('Backup-Erstellung fehlgeschlagen.', 'error');
+                    });
+            };
+
+            const backupAllData = async () => {
+                showToast('Backup wird gestartet...', 'info', 0); // Show indefinite toast
+
+                const contentFrames = Array.from(document.querySelectorAll('.content-iframe')).filter(f => f.dataset.key && f.dataset.key !== 'widgets' && f.dataset.key !== 'agenda');
+                const appdrawerIframe = document.getElementById('frame-appdrawer');
+                const framesToBackup = [...contentFrames];
+                if (appdrawerIframe) {
+                    framesToBackup.push(appdrawerIframe);
+                }
+
+                if (framesToBackup.length === 0) {
+                    showToast('Keine Apps zum Sichern gefunden.', 'info');
+                    return;
+                }
+
+                let backupData = {};
+                const failedApps = [];
+
+                for (const frame of framesToBackup) {
+                    const key = frame.dataset.key;
+                    showToast(`Sichere ${key}...`, 'info', 0);
+
+                    try {
+                        // 1. Load iframe if not already loaded
+                        if (!frame.src) {
+                            await new Promise((resolve, reject) => {
+                                frame.addEventListener('load', resolve, { once: true });
+                                frame.addEventListener('error', () => reject(new Error(`Failed to load ${key}`)), { once: true });
+                                frame.src = frame.dataset.src;
+                                setTimeout(() => reject(new Error(`Timeout loading ${key}`)), 8000); // 8-second timeout per frame
+                            });
+                        }
+
+                        // Special handling for habitmea to wait for its API
+                        if (key === 'habitmea') {
+                            await new Promise((resolve, reject) => {
+                                const interval = 100;
+                                const timeout = 5000;
+                                let elapsedTime = 0;
+                                const checkApi = setInterval(() => {
+                                    if (frame.contentWindow && frame.contentWindow.HabitMeaAPI) {
+                                        clearInterval(checkApi);
+                                        resolve();
+                                    } else {
+                                        elapsedTime += interval;
+                                        if (elapsedTime >= timeout) {
+                                            clearInterval(checkApi);
+                                            reject(new Error(`Timeout waiting for HabitMeaAPI on ${key}`));
+                                        }
+                                    }
+                                }, interval);
+                            });
+                        }
+
+                        // 2. Request backup data and wait for its specific response
+                        await new Promise((resolve, reject) => {
+                            const timeoutId = setTimeout(() => {
+                                window.removeEventListener('message', specificMessageListener);
+                                reject(new Error(`Timeout waiting for backup response from ${key}`));
+                            }, 5000); // 5-second timeout for response
+
+                            const specificMessageListener = (event) => {
+                                const { type, key: responseKey, data } = event.data;
+                                if (type === 'backupDataResponse' && responseKey === key) {
+                                    if (data) {
+                                        backupData[key] = data;
+                                        console.log(`Backup data received for: ${key}`);
+                                    }
+                                    clearTimeout(timeoutId);
+                                    window.removeEventListener('message', specificMessageListener);
+                                    resolve();
+                                }
+                            };
+                            
+                            window.addEventListener('message', specificMessageListener);
+                            frame.contentWindow?.postMessage({ type: 'backupDataRequest' }, '*');
+                        });
+
+                    } catch (error) {
+                        console.error(`Failed to backup ${key}:`, error);
+                        failedApps.push(key);
+                    }
+                }
+
+                // 3. Create ZIP file
+                if (Object.keys(backupData).length > 0) {
+                    createAndDownloadZip(backupData);
+                } else {
+                    showToast('Keine Daten zum Sichern gefunden.', 'info');
+                }
+
+                if (failedApps.length > 0) {
+                    showToast(`Backup abgeschlossen. Fehler bei: ${failedApps.join(', ')}`, 'error', 8000);
+                } else if (Object.keys(backupData).length > 0) {
+                    showToast('Backup erfolgreich abgeschlossen!', 'success');
+                }
+            };
+
+            const restoreAllData = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const zip = await JSZip.loadAsync(e.target.result);
+                        let restoredCount = 0;
+                        for (const filename of Object.keys(zip.files)) {
+                            if (filename.endsWith('.json')) {
+                                const key = filename.replace('.json', '');
+                                let frame = document.querySelector(`.content-iframe[data-key="${key}"]`);
+                                if (!frame && key === 'appdrawer') {
+                                    frame = document.getElementById('frame-appdrawer');
+                                }
+                                if (frame) {
+                                    const content = await zip.file(filename).async('string');
+                                    const dataToRestore = JSON.parse(content);
+                                    const sendMessageOnLoad = async () => {
+                                        if (key === 'habitmea') {
+                                            await new Promise((resolve, reject) => {
+                                                const interval = 100;
+                                                const timeout = 5000;
+                                                let elapsedTime = 0;
+                                                const checkApi = setInterval(() => {
+                                                    if (frame.contentWindow && frame.contentWindow.HabitMeaAPI) {
+                                                        clearInterval(checkApi);
+                                                        resolve();
+                                                    } else {
+                                                        elapsedTime += interval;
+                                                        if (elapsedTime >= timeout) {
+                                                            clearInterval(checkApi);
+                                                            reject(new Error(`Timeout waiting for HabitMeaAPI on ${key}`));
+                                                        }
+                                                    }
+                                                }, interval);
+                                            });
+                                        }
+                                        frame.contentWindow.postMessage({ type: 'restoreBackupData', data: dataToRestore }, '*');
+                                        frame.removeEventListener('load', sendMessageOnLoad);
+                                    };
+                                    if (!frame.src) {
+                                        frame.addEventListener('load', sendMessageOnLoad);
+                                        frame.src = frame.dataset.src;
+                                    } else {
+                                        sendMessageOnLoad();
+                                    }
+                                    restoredCount++;
+                                }
+                            }
+                        }
+                        showToast(`${restoredCount} App(s) erfolgreich wiederhergestellt. Die Seiten werden neu geladen.`, 'success');
+                        setTimeout(() => window.location.reload(), 2000);
+                    } catch (err) {
+                        console.error('Restore failed:', err);
+                        showToast('Wiederherstellung fehlgeschlagen. Ist es eine gültige Backup-Datei?', 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+                restoreAllInput.value = '';
+            };
+
+            const deleteAllData = () => {
+                openConfirmModal(
+                    'Alle Daten löschen?',
+                    'Möchten Sie wirklich ALLE Anwendungsdaten aus Ihrem Browser löschen? Diese Aktion kann nicht rückgängig gemacht werden!',
+                    () => {
+                        localStorage.clear();
+                        showToast('Alle Daten wurden gelöscht. Die Seite wird neu geladen.', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                );
+            };
+
+            // --- THEME MANAGEMENT ---
+            function applyThemeToFrame(frame, theme) {
+                let effectiveTheme = (theme === 'system') ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+                if (frame.contentWindow) {
+                    frame.contentWindow.postMessage(`set-theme-${effectiveTheme}`, '*');
+                }
+            }
+
+            function applyTheme(theme) {
+                let effectiveTheme = (theme === 'system') ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
+                document.documentElement.setAttribute('data-theme', effectiveTheme);
+                document.querySelectorAll('iframe').forEach(frame => {
+                    if (frame.src) applyThemeToFrame(frame, theme);
+                });
+            }
+
+            // --- CORE NAVIGATION LOGIC ---
+            function activateTab(frameId) {
+                const targetFrame = document.getElementById(frameId);
+                const currentActiveFrame = document.querySelector('.content-iframe.active');
+
+                if (!targetFrame || (currentActiveFrame && currentActiveFrame.id === frameId)) {
+                    return;
+                }
+
+                currentActiveFrame?.classList.remove('active');
+                document.querySelectorAll('.dock-link.active').forEach(l => l.classList.remove('active'));
+
+                const targetLink = document.querySelector(`#app-dock [data-target="${frameId}"]`);
+                targetLink?.classList.add('active');
+
+                if (!targetFrame.src) {
+                    iframeLoader.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--bg-color');
+                    iframeLoader.classList.remove('hidden');
+
+                    targetFrame.addEventListener('load', () => {
+                        setTimeout(() => {
+                            iframeLoader.classList.add('hidden');
+                            targetFrame.classList.add('active');
+                        }, 500);
+
+                        const savedTheme = localStorage.getItem('theme') || 'system';
+                        applyThemeToFrame(targetFrame, savedTheme);
+                    }, { once: true });
+
+                    targetFrame.src = targetFrame.dataset.src;
+                } else {
+                    targetFrame.classList.add('active');
+                }
+                if (!appdrawerModal.classList.contains('hidden')) {
+                    toggleAppdrawer();
+                }
+            }
+
+            function handleNavLinkClick(e) {
+                const target = e.currentTarget;
+                const itemKey = target.dataset.key;
+                const navItem = navItems.find(item => item.key === itemKey);
+
+                if (navItem && navItem.isGroup) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    createContextMenu(target, navItem.children);
+                    return;
+                }
+
+                if (target.dataset.key === 'appdrawer') {
+                    e.preventDefault();
+                    toggleAppdrawer();
+                } else if (target.dataset.key === 'settings') {
+                    e.preventDefault();
+                    openSettingsModal();
+                } else if (target.dataset.external) {
+                    // Let it open in a new tab
+                } else {
+                    e.preventDefault();
+                    const targetFrameId = target.dataset.target;
+                    if (!targetFrameId) return;
+
+                    localStorage.setItem('lastActiveTab', targetFrameId);
+                    activateTab(targetFrameId);
+                }
+            }
+
+            const renderAppDock = () => {
+                appDock.innerHTML = '';
+
+                const appdrawerItem = navItems.find(item => item.key === 'appdrawer');
+                const settingsItem = navItems.find(item => item.key === 'settings');
+                const middleItems = navItems.filter(item => item.key !== 'appdrawer' && item.key !== 'settings');
+
+                const createDockElement = (item) => {
+                    const element = document.createElement((item.isExternal && !item.isGroup) ? 'a' : 'button');
+                    element.className = 'dock-link relative';
+                    element.dataset.key = item.key;
+                    element.title = item.text;
+
+                    if (item.isExternal && !item.isGroup) {
+                        element.href = item.href;
+                        element.target = '_blank';
+                        element.rel = 'noopener noreferrer';
+                    } else {
+                        if (item.target) {
+                            element.dataset.target = item.target;
+                        }
+                        element.addEventListener('click', handleNavLinkClick);
+                    }
+
+                    let innerHTML = `<img src="${item.icon}" alt="${item.text}" class="dock-icon">`;
+                    if (item.isGroup) {
+                        innerHTML += `<span class="material-symbols-outlined absolute top-0 right-0 text-base" style="transform: translate(20%, -20%); color: var(--text-color-light);">arrow_drop_up</span>`;
+                    }
+                    element.innerHTML = innerHTML;
+                    return element;
+                };
+
+                // --- UMSTRUKTURIERT ---
+
+                // Group 1: Linke Gruppe (Appdrawer & Suche)
+                const leftGroup = document.createElement('div');
+                leftGroup.className = 'dock-left-group';
+
+                if (appdrawerItem) {
+                    leftGroup.appendChild(createDockElement(appdrawerItem));
+                }
+
+                const searchContainer = document.createElement('div');
+                searchContainer.id = 'dock-search-container';
+                const searchInput = document.createElement('input');
+                searchInput.type = 'search';
+                searchInput.id = 'dock-search-input';
+                searchInput.placeholder = 'Google Suche...';
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') performSearch();
+                });
+                const searchBtn = document.createElement('button');
+                searchBtn.id = 'dock-search-btn';
+                searchBtn.title = 'Suchen';
+                searchBtn.innerHTML = `<span class="material-symbols-outlined">travel_explore</span>`;
+                searchBtn.addEventListener('click', performSearch);
+                searchContainer.appendChild(searchInput);
+                searchContainer.appendChild(searchBtn);
+                leftGroup.appendChild(searchContainer);
+
+                appDock.appendChild(leftGroup);
+
+
+                // Group 2: Mittlere Gruppe ( unverändert)
+                const centerGroup = document.createElement('div');
+                centerGroup.className = 'dock-center-group';
+                middleItems.forEach(item => {
+                    centerGroup.appendChild(createDockElement(item));
+                });
+                appDock.appendChild(centerGroup);
+
+
+                // Group 3: Rechte Gruppe (ohne Suche)
+                const rightGroup = document.createElement('div');
+                rightGroup.className = 'dock-right-group';
+
+                const clockElement = document.createElement('div');
+                clockElement.id = 'dock-clock';
+                rightGroup.appendChild(clockElement);
+
+                if (settingsItem) {
+                    rightGroup.appendChild(createDockElement(settingsItem));
+                }
+
+                appDock.appendChild(rightGroup);
+            };
+            
+            function handleMobileNavLinkClick(e) {
+                handleNavLinkClick(e);
+                if (mobileSidebar.classList.contains('open')) {
+                    closeMobileSidebar();
+                }
+            }
+            
+            const createMobileNavItem = (item) => {
+                const element = document.createElement(item.isExternal ? 'a' : 'button');
+                element.className = 'mobile-nav-link flex items-center w-full p-4 text-lg rounded-lg transition-colors';
+                element.dataset.key = item.key;
+                element.title = item.text;
+
+                if (item.isExternal) {
+                    element.href = item.href;
+                    element.target = '_blank';
+                    element.rel = 'noopener noreferrer';
+                } else {
+                    if (item.target) {
+                        element.dataset.target = item.target;
+                    }
+                    element.addEventListener('click', handleMobileNavLinkClick);
+                }
+
+                element.innerHTML = `
+                    <img src="${item.icon}" alt="${item.text}" class="mobile-nav-icon mr-4">
+                    <span>${item.text}</span>
+                `;
+                return element;
+            };
+
+            const renderMobileSidebar = () => {
+                if (!mobileNavList) return;
+                mobileNavList.innerHTML = '';
+
+                navItems.forEach(item => {
+                    if (item.isGroup) {
+                        // Optional: Add a header for the group in mobile view
+                        const header = document.createElement('div');
+                        header.className = 'px-4 pt-4 pb-2 text-sm font-semibold uppercase tracking-wider'
+                        header.style.color = 'var(--text-color-light)';
+                        header.textContent = item.text;
+                        mobileNavList.appendChild(header);
+                        // Add children
+                        item.children.forEach(childItem => {
+                            mobileNavList.appendChild(createMobileNavItem(childItem));
+                        });
+                    } else {
+                        mobileNavList.appendChild(createMobileNavItem(item));
+                    }
+                });
+            };
+
+            const createContextMenu = (anchorElement, menuItems) => {
+                const closeContextMenu = () => {
+                    const menu = document.getElementById('context-menu');
+                    if (menu) menu.remove();
+                    modalOverlay.classList.add('hidden');
+                    modalOverlay.removeEventListener('click', closeContextMenu);
+                };
+
+                // Close any existing menu first
+                closeContextMenu();
+
+                const menu = document.createElement('div');
+                menu.id = 'context-menu';
+                menu.className = 'absolute rounded-md shadow-lg p-2 z-[10002]';
+                menu.style.backgroundColor = 'var(--modal-bg)';
+                menu.style.border = '1px solid var(--sidebar-border)';
+
+                menuItems.forEach(item => {
+                    const link = document.createElement('a');
+                    link.href = item.href;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.className = 'flex items-center px-3 py-2 text-sm rounded-md transition-colors';
+                    link.style.color = 'var(--text-color)';
+                    link.onmouseover = () => link.style.backgroundColor = 'var(--sidebar-border)';
+                    link.onmouseout = () => link.style.backgroundColor = 'transparent';
+
+                    link.innerHTML = `
+                        <img src="${item.icon}" alt="${item.text}" class="w-5 h-5 mr-3">
+                        <span>${item.text}</span>
+                    `;
+                    // Close menu when an item is clicked
+                    link.addEventListener('click', closeContextMenu);
+                    menu.appendChild(link);
+                });
+
+                document.body.appendChild(menu);
+
+                const rect = anchorElement.getBoundingClientRect();
+                const menuHeight = menu.offsetHeight;
+
+                menu.style.top = `${rect.top - menuHeight - 8}px`; // 8px margin
+                menu.style.left = `${rect.left}px`;
+
+                // Show overlay and add listener to close menu
+                modalOverlay.classList.remove('hidden');
+                modalOverlay.addEventListener('click', closeContextMenu);
+            }
+
+            // --- CLOCK FUNCTION ---
+            const startClock = () => {
+                const clockElement = document.getElementById('dock-clock');
+                if (!clockElement) return;
+
+                const updateTime = () => {
+                    const now = new Date();
+                    const dateOptions = {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    };
+                    const timeOptions = {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    };
+                    const dateString = now.toLocaleDateString('de-AT', dateOptions);
+                    const timeString = now.toLocaleTimeString('de-AT', timeOptions);
+
+                    clockElement.textContent = `${dateString}, ${timeString}`;
+                };
+
+                updateTime();
+                setInterval(updateTime, 10000);
+            };
+
+
+            // --- INITIALIZATION ---
+            function preloadAppdrawer() {
+                if (appdrawerFrame && !appdrawerFrame.src) {
+                    console.log('Preloading Appdrawer...');
+                    appdrawerFrame.addEventListener('load', () => {
+                        const savedTheme = localStorage.getItem('theme') || 'system';
+                        applyThemeToFrame(appdrawerFrame, savedTheme);
+                        console.log('Appdrawer preloaded.');
+                    }, { once: true });
+                    appdrawerFrame.src = appdrawerFrame.dataset.src;
+                }
+            }
+
+            renderAppDock();
+            renderMobileSidebar();
+            startClock();
+            preloadAppdrawer(); // Appdrawer im Hintergrund laden
+
+            // Event Listeners for settings
+            closeModalBtn.addEventListener('click', closeSettingsModal);
+            modalOverlay.addEventListener('click', () => {
+                if (!settingsModal.classList.contains('hidden')) {
+                    closeSettingsModal();
+                }
+                if (!appdrawerModal.classList.contains('hidden')) {
+                    toggleAppdrawer();
+                }
+            });
+            backupAllBtn.addEventListener('click', backupAllData);
+            restoreAllInput.addEventListener('change', restoreAllData);
+            deleteAllBtn.addEventListener('click', deleteAllData);
+
+            // Theme setup
+            themeRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                const selectedTheme = e.target.value;
+                localStorage.setItem('theme', selectedTheme);
+                applyTheme(selectedTheme);
+            }));
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (localStorage.getItem('theme') === 'system') applyTheme('system'); });
+
+            // Set initial state from localStorage
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.querySelector(`input[name="theme"][value="${savedTheme}"]`)?.setAttribute('checked', 'true');
+            applyTheme(savedTheme);
+
+            let lastActiveTabId = localStorage.getItem('lastActiveTab');
+            if (!lastActiveTabId || lastActiveTabId === 'frame-appdrawer') {
+                lastActiveTabId = 'frame-actamea';
+            }
+            activateTab(lastActiveTabId);
+
+            // Die alten Event-Listener zum Schließen bei Klick außerhalb werden durch das Overlay überflüssig und können entfernt werden.
+
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
