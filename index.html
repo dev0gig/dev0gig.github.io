@@ -100,6 +100,11 @@
             #open-agenda-btn {
                 display: none;
             }
+
+            .card-image,
+            .card-url {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -153,9 +158,9 @@
                 { name: 'Widgets', url: 'https://dev0gig.github.io/web-widgets/', icon: 'widgets', imageUrl: 'assets/web-widgets.png' },
                 { name: 'RSS Reader', url: 'https://dev0gig.github.io/web-rssreader/', icon: 'rss_feed', imageUrl: 'assets/web-rssreader.png' },
                 { name: 'Read Later', url: 'https://dev0gig.github.io/web-readlater/', icon: 'bookmark', imageUrl: 'assets/web-readlater.png' },
-                { name: 'MemoMea', url: 'https://dev0gig.github.io/web-memomea/', icon: 'memory', imageUrl: 'assets/web-memomea.png' },
+                { name: 'MemoMea', url: 'https://dev0gig.github.io/web-memomea/', icon: 'edit_note', imageUrl: 'assets/web-memomea.png' },
                 { name: 'HabitMea', url: 'https://dev0gig.github.io/web-habitmea/', icon: 'checklist', imageUrl: 'assets/web-habitmea.png' },
-                { name: 'AuriMea', url: 'https://dev0gig.github.io/web-aurimea/', icon: 'headset', imageUrl: 'assets/web-aurimea.png' },
+                { name: 'AuriMea', url: 'https://dev0gig.github.io/web-aurimea/', icon: 'savings', imageUrl: 'assets/web-aurimea.png' },
                 { name: 'ActaMea', url: 'https://dev0gig.github.io/web-actamea/', icon: 'article', imageUrl: 'assets/web-actamea.png' },
                 { name: 'Jap Mentor', url: 'https://dev0gig.github.io/web-jap_mentor/', icon: 'school', imageUrl: 'assets/web-jap_mentor.png' },
                 { name: 'Fitness Data', url: 'https://dev0gig.github.io/web-fitness_data/', icon: 'fitness_center', imageUrl: 'assets/web-fitness_data.png' },
@@ -173,19 +178,19 @@
                 card.className = 'link-card block';
 
                 const imagePlaceholder = `
-                    <div class="w-full h-32 bg-neutral-700 flex items-center justify-center">
+                    <div class="w-full h-32 bg-neutral-700 flex items-center justify-center card-image">
                         <span class="material-icons text-4xl text-neutral-500">image</span>
                     </div>`;
-                const imageElement = `<img src="${link.imageUrl}" alt="${link.name}" class="w-full h-32 object-cover">`;
+                const imageElement = `<img src="${link.imageUrl}" alt="${link.name}" class="w-full h-32 object-cover card-image">`;
 
                 card.innerHTML = `
                     ${link.imageUrl ? imageElement : imagePlaceholder}
-                    <div class="p-4">
-                        <h3 class="text-xl font-semibold text-white flex items-center justify-center gap-2">
+                    <div class="p-4 flex flex-col h-full">
+                        <h3 class="text-xl font-semibold text-white flex items-center justify-center gap-2 flex-grow">
                             <span class="material-icons">${link.icon}</span>
                             <span>${link.name}</span>
                         </h3>
-                        <p class="text-gray-400 text-sm mt-2 truncate">${link.url}</p>
+                        <p class="text-gray-400 text-sm mt-2 truncate card-url">${link.url}</p>
                     </div>
                 `;
                 grid.appendChild(card);
