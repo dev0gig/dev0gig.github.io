@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linksammlung</title>
+    <title>AxisMea</title>
     <link rel="icon" href="assets/favicon.svg">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,13 +14,20 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #171717; /* neutral-900 */
-            --text-color: #f5f5f5; /* neutral-100 */
-            --card-bg: #262626; /* neutral-800 */
-            --border-color: #404040; /* neutral-700 */
-            --modal-bg: #262626; /* neutral-800 */
-            --accent-color: #525252; /* neutral-600 */
-            --accent-color-hover: #737373; /* neutral-500 */
+            --bg-color: #171717;
+            /* neutral-900 */
+            --text-color: #f5f5f5;
+            /* neutral-100 */
+            --card-bg: #262626;
+            /* neutral-800 */
+            --border-color: #404040;
+            /* neutral-700 */
+            --modal-bg: #262626;
+            /* neutral-800 */
+            --accent-color: #525252;
+            /* neutral-600 */
+            --accent-color-hover: #737373;
+            /* neutral-500 */
         }
 
         body {
@@ -72,6 +79,7 @@
             transform: scale(0.95);
             opacity: 0;
         }
+
         #open-agenda-btn:hover {
             background-color: var(--accent-color-hover) !important;
         }
@@ -80,12 +88,15 @@
             .main-grid {
                 grid-template-columns: 1fr;
             }
+
             .app-drawer-container {
                 display: none;
             }
+
             .content-area {
                 padding: 1rem;
             }
+
             #open-agenda-btn {
                 display: none;
             }
@@ -120,8 +131,8 @@
     <!-- Agenda Modal -->
     <div id="agenda-modal" class="fixed inset-0 z-50 hidden">
         <div id="modal-overlay" class="absolute inset-0 bg-black bg-opacity-75"></div>
-        <div
-            class="modal-container hidden relative rounded-xl shadow-2xl w-11/12 h-5/6 max-w-6xl mx-auto mt-12 flex flex-col" style="background-color: var(--modal-bg);">
+        <div class="modal-container hidden relative rounded-xl shadow-2xl w-11/12 h-5/6 max-w-6xl mx-auto mt-12 flex flex-col"
+            style="background-color: var(--modal-bg);">
             <header class="flex items-center justify-between p-4 border-b" style="border-color: var(--border-color);">
                 <h2 class="text-xl font-semibold text-white">Agenda</h2>
                 <button id="close-agenda-btn" class="text-gray-400 hover:text-white">
@@ -129,7 +140,8 @@
                 </button>
             </header>
             <div class="flex-grow p-1">
-                <iframe id="agenda-iframe" src="about:blank" data-src="agenda.html" class="w-full h-full border-0 rounded-b-lg"></iframe>
+                <iframe id="agenda-iframe" src="about:blank" data-src="agenda.html"
+                    class="w-full h-full border-0 rounded-b-lg"></iframe>
             </div>
         </div>
     </div>
@@ -147,6 +159,7 @@
                 { name: 'ActaMea', url: 'https://dev0gig.github.io/web-actamea/', icon: 'article', imageUrl: 'assets/web-actamea.png' },
                 { name: 'Jap Mentor', url: 'https://dev0gig.github.io/web-jap_mentor/', icon: 'school', imageUrl: 'assets/web-jap_mentor.png' },
                 { name: 'Fitness Data', url: 'https://dev0gig.github.io/web-fitness_data/', icon: 'fitness_center', imageUrl: 'assets/web-fitness_data.png' },
+                { name: 'Fernwärme Data', url: 'https://dev0gig.github.io/web-fw_data/', icon: 'whatshot', imageUrl: 'assets/web-fw_data.png' },
                 { name: 'Discere', url: 'https://dev0gig.github.io/web-discere/', icon: 'menu_book', imageUrl: 'assets/web-discere.png' },
                 { name: 'Work Tools', url: 'https://dev0gig.github.io/web-mywebsite/unicorn/work-tools.html', icon: 'work', imageUrl: 'assets/web-unicorn.jpg' }
             ];
@@ -207,7 +220,7 @@
             closeAgendaBtn.addEventListener('click', closeModal);
             modalOverlay.addEventListener('click', closeModal);
         });
-        
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
