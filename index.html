@@ -60,6 +60,8 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             border: 1px solid var(--border-color);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .link-card:hover {
@@ -185,11 +187,12 @@
 
                 card.innerHTML = `
                     ${link.imageUrl ? imageElement : imagePlaceholder}
-                    <div class="p-4 flex flex-col h-full">
-                        <h3 class="text-xl font-semibold text-white flex items-center justify-center gap-2 flex-grow">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="text-xl font-semibold text-white flex items-center justify-center gap-2">
                             <span class="material-icons">${link.icon}</span>
                             <span>${link.name}</span>
                         </h3>
+                        <div class="flex-grow"></div>
                         <p class="text-gray-400 text-sm mt-2 truncate card-url">${link.url}</p>
                     </div>
                 `;
