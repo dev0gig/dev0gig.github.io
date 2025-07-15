@@ -57,16 +57,26 @@
             background-color: var(--card-bg);
             border-radius: 0.75rem;
             text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
             border: 1px solid var(--border-color);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            aspect-ratio: 1 / 1;
+            gap: 0.5rem;
         }
 
         .link-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-color-hover);
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
         }
 
         .modal-overlay {
@@ -118,19 +128,21 @@
             <iframe src="appdrawer.html" class="app-drawer-iframe"></iframe>
         </aside>
 
-        <main class="content-area">
-            <header class="flex justify-between items-center mb-8">
-                <h1 class="text-4xl font-bold text-white">Meine Web-Apps</h1>
-                <button id="open-agenda-btn"
-                    class="text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
-                    style="background-color: var(--accent-color);">
-                    <span class="material-icons">calendar_month</span>
-                    Agenda
-                </button>
-            </header>
+        <main class="content-area flex flex-col">
+            <div class="my-auto">
+                <header class="flex justify-between items-center mb-8">
+                    <h1 class="text-4xl font-bold text-white">Meine Web-Apps</h1>
+                    <button id="open-agenda-btn"
+                        class="text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+                        style="background-color: var(--accent-color);">
+                        <span class="material-icons">calendar_month</span>
+                        Agenda
+                    </button>
+                </header>
 
-            <div id="links-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Links werden hier per JS eingefügt -->
+                <div id="links-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Links werden hier per JS eingefügt -->
+                </div>
             </div>
         </main>
     </div>
@@ -181,14 +193,8 @@
                 card.className = 'link-card block';
 
                 card.innerHTML = `
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h3 class="text-xl font-semibold text-white flex items-center justify-center gap-2">
-                            <span class="material-icons">${link.icon}</span>
-                            <span>${link.name}</span>
-                        </h3>
-                        <div class="flex-grow"></div>
-                        <p class="text-gray-400 text-sm mt-2 truncate card-url">${link.url.replace('https://dev0gig.github.io/', 'https://.../')}</p>
-                    </div>
+                    <span class="material-icons card-icon text-gray-300">${link.icon}</span>
+                    <h3 class="text-lg font-semibold text-white text-center">${link.name}</h3>
                 `;
                 grid.appendChild(card);
             });
