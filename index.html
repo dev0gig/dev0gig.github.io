@@ -157,18 +157,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const links = [
-                { name: 'Widgets', url: 'https://dev0gig.github.io/web-widgets/', icon: 'widgets', imageUrl: 'assets/web-widgets.png' },
-                { name: 'RSS Reader', url: 'https://dev0gig.github.io/web-rssreader/', icon: 'rss_feed', imageUrl: 'assets/web-rssreader.png' },
-                { name: 'Read Later', url: 'https://dev0gig.github.io/web-readlater/', icon: 'bookmark', imageUrl: 'assets/web-readlater.png' },
-                { name: 'MemoMea', url: 'https://dev0gig.github.io/web-memomea/', icon: 'edit_note', imageUrl: 'assets/web-memomea.png' },
-                { name: 'HabitMea', url: 'https://dev0gig.github.io/web-habitmea/', icon: 'checklist', imageUrl: 'assets/web-habitmea.png' },
-                { name: 'AuriMea', url: 'https://dev0gig.github.io/web-aurimea/', icon: 'savings', imageUrl: 'assets/web-aurimea.png' },
-                { name: 'ActaMea', url: 'https://dev0gig.github.io/web-actamea/', icon: 'article', imageUrl: 'assets/web-actamea.png' },
-                { name: 'Jap Mentor', url: 'https://dev0gig.github.io/web-jap_mentor/', icon: 'school', imageUrl: 'assets/web-jap_mentor.png' },
-                { name: 'Fitness Data', url: 'https://dev0gig.github.io/web-fitness_data/', icon: 'fitness_center', imageUrl: 'assets/web-fitness_data.png' },
-                { name: 'Fernwärme Data', url: 'https://dev0gig.github.io/web-fw_data/', icon: 'whatshot', imageUrl: 'assets/web-fw_data.png' },
-                { name: 'Discere', url: 'https://dev0gig.github.io/web-discere/', icon: 'menu_book', imageUrl: 'assets/web-discere.png' },
-                { name: 'Work Tools', url: 'https://dev0gig.github.io/web-mywebsite/unicorn/work-tools.html', icon: 'work', imageUrl: 'assets/web-unicorn.jpg' }
+                { name: 'Widgets', url: 'https://dev0gig.github.io/web-widgets/', icon: 'widgets' },
+                { name: 'RSS Reader', url: 'https://dev0gig.github.io/web-rssreader/', icon: 'rss_feed' },
+                { name: 'Read Later', url: 'https://dev0gig.github.io/web-readlater/', icon: 'bookmark' },
+                { name: 'MemoMea', url: 'https://dev0gig.github.io/web-memomea/', icon: 'edit_note' },
+                { name: 'HabitMea', url: 'https://dev0gig.github.io/web-habitmea/', icon: 'checklist' },
+                { name: 'AuriMea', url: 'https://dev0gig.github.io/web-aurimea/', icon: 'savings' },
+                { name: 'ActaMea', url: 'https://dev0gig.github.io/web-actamea/', icon: 'article' },
+                { name: 'LiberMea', url: 'https://dev0gig.github.io/web-libermea/', icon: 'auto_stories' },
+                { name: 'Jap Mentor', url: 'https://dev0gig.github.io/web-jap_mentor/', icon: 'school' },
+                { name: 'Fitness Data', url: 'https://dev0gig.github.io/web-fitness_data/', icon: 'fitness_center' },
+                { name: 'Fernwärme Data', url: 'https://dev0gig.github.io/web-fw_data/', icon: 'whatshot' },
+                { name: 'Discere', url: 'https://dev0gig.github.io/web-discere/', icon: 'menu_book' },
+                { name: 'Work Tools', url: 'https://dev0gig.github.io/web-mywebsite/unicorn/work-tools.html', icon: 'work' }
             ];
 
             const grid = document.getElementById('links-grid');
@@ -179,21 +180,14 @@
                 card.target = '_self'; // Im selben Tab öffnen
                 card.className = 'link-card block';
 
-                const imagePlaceholder = `
-                    <div class="w-full h-32 bg-neutral-700 flex items-center justify-center card-image">
-                        <span class="material-icons text-4xl text-neutral-500">image</span>
-                    </div>`;
-                const imageElement = `<img src="${link.imageUrl}" alt="${link.name}" class="w-full h-32 object-cover card-image">`;
-
                 card.innerHTML = `
-                    ${link.imageUrl ? imageElement : imagePlaceholder}
                     <div class="p-4 flex flex-col flex-grow">
                         <h3 class="text-xl font-semibold text-white flex items-center justify-center gap-2">
                             <span class="material-icons">${link.icon}</span>
                             <span>${link.name}</span>
                         </h3>
                         <div class="flex-grow"></div>
-                        <p class="text-gray-400 text-sm mt-2 truncate card-url">${link.url}</p>
+                        <p class="text-gray-400 text-sm mt-2 truncate card-url">${link.url.replace('https://dev0gig.github.io/', 'https://.../')}</p>
                     </div>
                 `;
                 grid.appendChild(card);
