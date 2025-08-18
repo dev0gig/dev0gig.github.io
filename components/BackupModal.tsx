@@ -1,0 +1,126 @@
+
+
+
+
+
+
+import React, { useEffect, useRef } from 'react';
+
+type ExportScope = 'apps' | 'memo' | 'read' | 'coll';
+
+interface BackupModalProps {
+  mode: 'export' | 'import';
+  scope: ExportScope | null;
+  onClose: () => void;
+  onExport: (scope: ExportScope) => void;
+  onImport: (file: File) => void;
+}
+
+const scopeDetailsMap: Record<ExportScope, { label: string; icon: string }> = {
+    apps: { label: 'Apps', icon: 'apps' },
+    memo: { label: 'MemoMea', icon: 'edit_note' },
+    read: { label: 'ReadLateR', icon: 'bookmark' },
+    coll: { label: 'CollMea', icon: 'collections_bookmark' },
+};
+
+
+const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExport, onImport }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onImport(file);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const details = scope ? scopeDetailsMap[scope] : null;
+  const modalTitle = mode === 'export' ? `${details?.label} exportieren` : `${details?.label} importieren`;
+
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="backup-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn"
+      onClick={onClose}
+    >
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
+        .animate-scaleIn { animation: scaleIn 0.2s ease-out forwards; }
+      `}</style>
+      <div
+        className="bg-zinc-800/80 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-sm m-4 p-6 animate-scaleIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 id="backup-modal-title" className="text-xl font-bold text-zinc-100">
+            {modalTitle}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-zinc-400 active:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+            aria-label="Modal schließen"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        {mode === 'export' && details && scope && (
+          <div className="space-y-4">
+            <p className="text-sm text-zinc-400">Ihre {details.label}-Daten werden als JSON-Datei exportiert.</p>
+              <button
+                onClick={() => onExport(scope)}
+                className="w-full flex items-center justify-center text-left p-4 bg-violet-600 active:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+              >
+                <span className="material-symbols-outlined mr-3">{details.icon}</span>
+                <span>{`Backup für ${details.label} erstellen`}</span>
+              </button>
+          </div>
+        )}
+
+        {mode === 'import' && (
+            <div>
+                <p className="text-sm text-zinc-400 mb-4">Wählen Sie eine zuvor exportierte {details?.label}-Backup-Datei (JSON) aus. <strong className="text-amber-400">Achtung:</strong> Das Importieren überschreibt vorhandene Daten für diesen Bereich.</p>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="application/json"
+                    className="hidden"
+                    aria-hidden="true"
+                />
+                <button
+                    onClick={handleImportClick}
+                    className="w-full flex items-center justify-center text-left p-4 bg-violet-600 active:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                >
+                    <span className="material-symbols-outlined mr-3">file_upload</span>
+                    <span>Backup-Datei auswählen...</span>
+                </button>
+            </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default BackupModal;
