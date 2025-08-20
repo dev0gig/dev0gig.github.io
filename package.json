@@ -2,7 +2,7 @@
   "name": "axismea",
   "private": true,
   "version": "0.0.0",
-  "hoomepage": "https://dev0gig.github.io/",
+  "homepage": "https://dev0gig.github.io/",
   "type": "module",
   "scripts": {
     "dev": "vite",
