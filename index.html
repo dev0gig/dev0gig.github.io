@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AxisMea</title>
+    <link rel="icon" type="image/png" href="/assets/icon-DwqfZQ1u.png">
+    <link rel="manifest" href="/assets/manifest-BkdPHobv.json">
+    <meta name="theme-color" content="#18181b" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AxisMea">
+    <link rel="apple-touch-icon" href="/assets/icon-DwqfZQ1u.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+      html, body, #root {
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        font-family: 'Ubuntu', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 300,
+        'GRAD' 0,
+        'opsz' 24
+      }
+      /* Custom Scrollbar for Webkit-based browsers (Chrome, Safari, etc.) */
+      ::-webkit-scrollbar {
+        width: 8px; /* Width of the entire scrollbar */
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(24, 24, 27, 0.5); /* Color of the tracking area */
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: #52525b; /* Color of the scroll thumb */
+        border-radius: 10px; /* Roundness of the scroll thumb */
+        border: 2px solid transparent; /* Creates padding around scroll thumb */
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: #71717a;
+      }
+
+      /* Custom Scrollbar for Firefox */
+      html {
+        scrollbar-width: thin;
+        scrollbar-color: #52525b rgba(24, 24, 27, 0.5);
+      }
+    </style>
+  <script type="module" crossorigin src="/assets/index-DBcjKic4.js"></script>
+</head>
+<body class="bg-zinc-900">
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
+</body>
+</html>
