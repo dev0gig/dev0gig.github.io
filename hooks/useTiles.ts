@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { Tile, MyProject, View, ViewLinkTile, DateTimeTile } from '../types';
 import { externalProjects as externalProjectsData } from '../data/externalProjects';
@@ -15,7 +16,6 @@ export const useTiles = () => {
   useEffect(() => {
     const generateInitialTiles = () => {
         let colorIndex = 0;
-        const weatherTile: Tile = { id: 'weather-widget', type: 'WEATHER', size: '1x1', color: 'bg-sky-700', order: -2 };
         const dateTimeTile: DateTimeTile = { id: 'datetime-widget', type: 'DATETIME', size: '2x2', color: 'bg-zinc-700', order: -1 };
         const myProjectTiles: Tile[] = [
             { id: 'myproject-memomea', type: 'MY_PROJECT', projectId: MyProject.MemoMea, size: '2x2', color: 'bg-green-600', order: 0 },
@@ -31,7 +31,7 @@ export const useTiles = () => {
         const baseOrder = myProjectTiles.length + externalProjectTiles.length;
         const allAppsTile: ViewLinkTile = { id: 'viewlink-all-apps', type: 'VIEW_LINK', viewId: View.Apps, label: 'Alle Apps', icon: 'apps', size: '1x1', color: 'bg-zinc-700', order: baseOrder };
         
-        const initialTiles = [weatherTile, dateTimeTile, ...myProjectTiles, ...externalProjectTiles, allAppsTile]
+        const initialTiles = [dateTimeTile, ...myProjectTiles, ...externalProjectTiles, allAppsTile]
             .sort((a, b) => a.order - b.order)
             .map((t, i) => ({ ...t, order: i }));
         
@@ -48,10 +48,6 @@ export const useTiles = () => {
             
             if (!savedTiles.find(t => t.id === 'viewlink-all-apps')) {
                 savedTiles.push({ id: 'viewlink-all-apps', type: 'VIEW_LINK', viewId: View.Apps, label: 'Alle Apps', icon: 'apps', size: '1x1', color: 'bg-zinc-700', order: 9997 });
-                tilesChanged = true;
-            }
-            if (!savedTiles.find(t => t.type === 'WEATHER')) {
-                savedTiles.unshift({ id: 'weather-widget', type: 'WEATHER', size: '1x1', color: 'bg-sky-700', order: -2 });
                 tilesChanged = true;
             }
             if (!savedTiles.find(t => t.type === 'DATETIME')) {

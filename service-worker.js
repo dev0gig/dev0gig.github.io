@@ -2,64 +2,63 @@
 const CACHE_NAME = 'axismea-cache-v7';
 
 const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/metadata.json',
-  '/index.tsx',
-  '/App.tsx',
-  '/types.ts',
+  './',
+  './index.html',
+  './manifest.json',
+  './metadata.json',
+  './index.tsx',
+  './App.tsx',
+  './types.ts',
   
   // Icons
-  '/assets/icons/icon.png',
+  './assets/icons/icon.png',
   
   // Components
-  '/components/AnalysisSidebar.tsx',
-  '/components/AppFormModal.tsx',
-  '/components/AppsView.tsx',
-  '/components/AuriMeaView.tsx',
-  '/components/BackupModal.tsx',
-  '/components/BookmarkFormModal.tsx',
-  '/components/BookmarkItemCard.tsx',
-  '/components/BottomNavigation.tsx',
-  '/components/CollMeaView.tsx',
-  '/components/CollectionFormModal.tsx',
-  '/components/CompletedTasksModal.tsx',
-  '/components/ContextMenu.tsx',
-  '/components/ExternalProjectsView.tsx',
-  '/components/ExternalProjectIframeView.tsx',
-  '/components/JournalEntryCard.tsx',
-  '/components/MemoMeaExportModal.tsx',
-  '/components/MemoMeaView.tsx',
-  '/components/MyProjectsOverview.tsx',
-  '/components/PieChart.tsx',
-  '/components/PlaceholderView.tsx',
-  '/components/ReadLateRView.tsx',
-  '/components/SplitViewContainer.tsx',
-  '/components/TransactionFormModal.tsx',
-  '/components/MetroView.tsx',
-  '/components/MetroTile.tsx',
-  '/components/NotificationModal.tsx',
-  '/components/WeatherWidget.tsx',
-  '/components/DateTimeWidget.tsx',
-  '/components/SidebarInfoWidget.tsx',
+  './components/AnalysisSidebar.tsx',
+  './components/AppFormModal.tsx',
+  './components/AppsView.tsx',
+  './components/AuriMeaView.tsx',
+  './components/BackupModal.tsx',
+  './components/BookmarkFormModal.tsx',
+  './components/BookmarkItemCard.tsx',
+  './components/BottomNavigation.tsx',
+  './components/CollMeaView.tsx',
+  './components/CollectionFormModal.tsx',
+  './components/CompletedTasksModal.tsx',
+  './components/ContextMenu.tsx',
+  './components/ExternalProjectsView.tsx',
+  './components/ExternalProjectIframeView.tsx',
+  './components/JournalEntryCard.tsx',
+  './components/MemoMeaExportModal.tsx',
+  './components/MemoMeaView.tsx',
+  './components/MyProjectsOverview.tsx',
+  './components/PieChart.tsx',
+  './components/PlaceholderView.tsx',
+  './components/ReadLateRView.tsx',
+  './components/SplitViewContainer.tsx',
+  './components/TransactionFormModal.tsx',
+  './components/MetroView.tsx',
+  './components/MetroTile.tsx',
+  './components/NotificationModal.tsx',
+  './components/DateTimeWidget.tsx',
+  './components/SidebarInfoWidget.tsx',
   
   // Hooks
-  '/hooks/useApps.ts',
-  '/hooks/useBookmarks.ts',
-  '/hooks/useCollections.ts',
-  '/hooks/useHistoryStack.ts',
-  '/hooks/useJournal.ts',
-  '/hooks/useMediaQuery.ts',
-  '/hooks/useNavigation.ts',
-  '/hooks/useTiles.ts',
-  '/hooks/useUIState.ts',
+  './hooks/useApps.ts',
+  './hooks/useBookmarks.ts',
+  './hooks/useCollections.ts',
+  './hooks/useHistoryStack.ts',
+  './hooks/useJournal.ts',
+  './hooks/useMediaQuery.ts',
+  './hooks/useNavigation.ts',
+  './hooks/useTiles.ts',
+  './hooks/useUIState.ts',
 
   // Data
-  '/data/apps.ts',
-  '/data/categories.ts',
-  '/data/externalProjects.ts',
-  '/data/transactions.ts',
+  './data/apps.ts',
+  './data/categories.ts',
+  './data/externalProjects.ts',
+  './data/transactions.ts',
   
   // External assets
   'https://cdn.tailwindcss.com',
@@ -94,14 +93,6 @@ self.addEventListener('activate', event => {
 
 // Robust Stale-While-Revalidate strategy
 self.addEventListener('fetch', event => {
-  const requestUrl = new URL(event.request.url);
-
-  // Don't cache requests to geolocation or weather APIs
-  if (requestUrl.hostname === 'api.bigdatacloud.net' || requestUrl.hostname === 'api.open-meteo.com') {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-  
   if (event.request.method !== 'GET') {
       return;
   }

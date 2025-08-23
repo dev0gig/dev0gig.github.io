@@ -4,7 +4,6 @@
 
 import React from 'react';
 import { Tile, MyProject, ViewLinkTile } from '../types';
-import WeatherWidget from './WeatherWidget';
 import DateTimeWidget from './DateTimeWidget';
 
 interface MetroTileProps {
@@ -16,20 +15,8 @@ const MetroTile: React.FC<MetroTileProps> = ({
     tile, 
     projectDefinitions, 
 }) => {
-  const isClickable = tile.type !== 'WEATHER' && tile.type !== 'DATETIME';
+  const isClickable = tile.type !== 'DATETIME';
   const cursorClass = isClickable ? 'cursor-pointer' : 'cursor-default';
-
-  if (tile.type === 'WEATHER') {
-    return (
-        <div
-            className={`relative w-full h-full p-3 rounded-lg text-white select-none transition-all duration-300 ease-in-out active:scale-[0.97] overflow-hidden ${tile.color} cursor-default`}
-            role="region"
-            aria-label="Wetter Widget"
-        >
-            <WeatherWidget />
-        </div>
-    );
-  }
 
   if (tile.type === 'DATETIME') {
     return (

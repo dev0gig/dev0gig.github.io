@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 
 // Helper function to get the ISO week number
 const getWeekNumber = (d: Date): number => {
@@ -11,12 +12,29 @@ const getWeekNumber = (d: Date): number => {
 
 
 const SidebarInfoWidget: React.FC = () => {
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timerId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000 * 60); // Update every minute is enough since we don't show seconds
+
+        return () => {
+            clearInterval(timerId);
+        };
+    }, []);
+
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
 
     const monthName = today.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     const dayHeaders = ['KW', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    
+    const formattedTime = currentTime.toLocaleTimeString('de-DE', {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
 
     const getCalendarGrid = () => {
         const firstDayOfMonth = new Date(year, month, 1);
@@ -72,6 +90,9 @@ const SidebarInfoWidget: React.FC = () => {
                 }
             `}</style>
              <div className="flex flex-col h-full text-white">
+                <div className="text-center pb-3 mb-3 border-b border-zinc-700/60">
+                    <p className="text-3xl font-bold">{formattedTime}</p>
+                </div>
                 <h2 className="text-center font-bold text-sm mb-2 flex-shrink-0">{monthName}</h2>
                 <div className="grid grid-cols-8 gap-y-1 text-center text-xs flex-grow">
                     {dayHeaders.map(header => (

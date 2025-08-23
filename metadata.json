@@ -1,8 +1,6 @@
 {
   "name": "AxisMea",
   "description": "A mobile-first application with a sleek dark mode interface and a bottom navigation for easy access to different sections like apps, projects, and settings.",
-  "requestFramePermissions": [
-    "geolocation"
-  ],
+  "requestFramePermissions": [],
   "prompt": ""
 }

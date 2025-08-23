@@ -2,26 +2,22 @@
   "name": "axismea",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://dev0gig.github.io/",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "chart.js": "^4.4.3",
     "react": "^19.1.1",
-    "react-chartjs-2": "^5.2.0",
     "react-dom": "^19.1.1",
     "react-markdown": "^9.0.1",
-    "remark-gfm": "^4.0.0"
+    "remark-gfm": "^4.0.0",
+    "chart.js": "^4.4.3",
+    "react-chartjs-2": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
-    "gh-pages": "^6.3.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

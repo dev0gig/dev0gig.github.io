@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { View, MyProject, ExternalProjectItem, Tile } from '../types';
 
@@ -49,7 +50,7 @@ export const useNavigation = () => {
   };
 
   const handleTileClick = (tile: Tile, callback?: () => void) => {
-    if (tile.type === 'WEATHER' || tile.type === 'DATETIME') return;
+    if (tile.type === 'DATETIME') return;
     if (tile.type === 'APP_LINK') {
       window.open(tile.app.targetUrl, '_blank', 'noopener,noreferrer');
       return;

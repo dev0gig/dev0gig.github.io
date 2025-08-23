@@ -69,6 +69,13 @@ export interface ExternalProjectItem {
   description: string;
 }
 
+// Weather Widget Types
+export interface WeatherData {
+  temperature: number;
+  location: string;
+  icon: string;
+}
+
 // AuriMea Types
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -132,18 +139,8 @@ export interface ViewLinkTile extends BaseTile {
     icon: string;
 }
 
-export interface WeatherTile extends BaseTile {
-    type: 'WEATHER';
-}
-
 export interface DateTimeTile extends BaseTile {
     type: 'DATETIME';
 }
 
-export type Tile = MyProjectTile | ExternalProjectTile | AppLinkTile | ViewLinkTile | WeatherTile | DateTimeTile;
-
-export interface WeatherData {
-    temperature: number;
-    location: string;
-    icon: string;
-}
+export type Tile = MyProjectTile | ExternalProjectTile | AppLinkTile | ViewLinkTile | DateTimeTile;
