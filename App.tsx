@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import JSZip from 'jszip';
 import { View, MyProject, AppItem, Tile, Collection, JournalEntry } from './types';
 
 // Components
@@ -136,7 +137,6 @@ const App: React.FC = () => {
     let fileName = `axismea_backup_${scope}.json`;
 
     if (scope === 'memomd') {
-        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         const filenames = new Map<string, number>();
 
@@ -219,7 +219,6 @@ const App: React.FC = () => {
                 const content = e.target?.result;
                 if (!(content instanceof ArrayBuffer)) throw new Error("File could not be read as ArrayBuffer");
                 
-                const JSZip = (await import('jszip')).default;
                 const zip = await JSZip.loadAsync(content);
                 const newEntries: JournalEntry[] = [];
                 const filePromises: Promise<void>[] = [];
