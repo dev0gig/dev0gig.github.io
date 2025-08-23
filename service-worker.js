@@ -11,7 +11,7 @@ const PRECACHE_URLS = [
   './types.ts',
   
   // Icons
-  './assets/icons/icon.png',
+'./assets/icons/icon.png',
   
   // Components
   './components/AnalysisSidebar.tsx',

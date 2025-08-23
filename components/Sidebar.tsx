@@ -70,9 +70,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onMyProjectSelect 
 }) => {
   return (
-    <aside className="bg-zinc-900/50 border-r border-zinc-800 flex flex-col p-4 flex-shrink-0 w-72">
-        <div className="flex items-center mb-8 flex-shrink-0 px-2">
-            <h1 className="text-2xl font-bold text-white tracking-tight">AxisMea</h1>
+    <aside className="bg-zinc-900/50 border-r border-zinc-800 flex flex-col p-3 flex-shrink-0 w-72">
+        <div className="flex items-center mb-1 flex-shrink-0 px-2">
         </div>
         
         <SidebarInfoWidget />

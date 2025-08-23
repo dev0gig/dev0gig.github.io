@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AxisMea</title>
-    <link rel="icon" type="image/png" href="./assets/icons/icon.png">
+    <link rel="icon" type="image/png" href="/assets/icons/icon.png">
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#18181b" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AxisMea">
-    <link rel="apple-touch-icon" href="./assets/icons/icon.png">
+    <link rel="apple-touch-icon" href="/assets/icons/icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,23 +55,10 @@
         scrollbar-color: #52525b rgba(24, 24, 27, 0.5);
       }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.1.1",
-    "react/": "https://esm.sh/react@^19.1.1/",
-    "react-dom": "https://esm.sh/react-dom@^19.1.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
-    "react-markdown": "https://esm.sh/react-markdown@^9.0.1",
-    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.0",
-    "chart.js": "https://esm.sh/chart.js@^4.4.3",
-    "react-chartjs-2": "https://esm.sh/react-chartjs-2@^5.2.0"
-  }
-}
-</script>
 </head>
 <body class="bg-zinc-900">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

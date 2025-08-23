@@ -37,7 +37,7 @@ const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onTo
         icon: showArchived ? 'unarchive' : 'archive',
         onClick: () => { setIsMenuOpen(false); onToggleShowArchived(); }
     },
-    { label: 'Importieren', icon: 'input', onClick: => { setIsMenuOpen(false); onOpenBackupModal('import', 'read'); } },
+    { label: 'Importieren', icon: 'input', onClick: () => { setIsMenuOpen(false); onOpenBackupModal('import', 'read'); } },
     { label: 'Exportieren', icon: 'upload_file', onClick: () => { setIsMenuOpen(false); onOpenBackupModal('export', 'read'); } }
   ];
 
