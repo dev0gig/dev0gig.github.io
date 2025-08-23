@@ -1,12 +1,8 @@
 
 
-
-
-
-
 import React, { useEffect, useRef } from 'react';
 
-type ExportScope = 'apps' | 'memo' | 'read' | 'coll';
+type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd';
 
 interface BackupModalProps {
   mode: 'export' | 'import';
@@ -17,12 +13,14 @@ interface BackupModalProps {
 }
 
 const scopeDetailsMap: Record<ExportScope, { label: string; icon: string }> = {
+    all: { label: 'Alle Daten', icon: 'database' },
     apps: { label: 'Apps', icon: 'apps' },
-    memo: { label: 'MemoMea', icon: 'edit_note' },
+    memo: { label: 'MemoMea (JSON)', icon: 'edit_note' },
+    memomd: { label: 'MemoMea (Markdown)', icon: 'markdown' },
     read: { label: 'ReadLateR', icon: 'bookmark' },
     coll: { label: 'CollMea', icon: 'collections_bookmark' },
+    auri: { label: 'AuriMea', icon: 'monitoring' },
 };
-
 
 const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExport, onImport }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +49,25 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
   };
   
   const details = scope ? scopeDetailsMap[scope] : null;
-  const modalTitle = mode === 'export' ? `${details?.label} exportieren` : `${details?.label} importieren`;
+  const modalTitle = mode === 'export' 
+    ? (scope ? `${details?.label} exportieren` : 'Backup exportieren') 
+    : 'Backup importieren';
+  
+  const renderExportSelection = () => (
+    <div className="space-y-3">
+        <p className="text-sm text-zinc-400">Wählen Sie aus, welche Daten Sie als Datei exportieren möchten.</p>
+        {(Object.keys(scopeDetailsMap) as ExportScope[]).map(key => (
+             <button
+                key={key}
+                onClick={() => onExport(key)}
+                className="w-full flex items-center text-left p-4 bg-zinc-700/50 active:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+              >
+                <span className="material-symbols-outlined mr-4 text-zinc-300">{scopeDetailsMap[key].icon}</span>
+                <span className="font-medium">{scopeDetailsMap[key].label}</span>
+              </button>
+        ))}
+    </div>
+  );
 
 
   return (
@@ -85,9 +101,11 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
           </button>
         </div>
         
+        {mode === 'export' && !scope && renderExportSelection()}
+        
         {mode === 'export' && details && scope && (
           <div className="space-y-4">
-            <p className="text-sm text-zinc-400">Ihre {details.label}-Daten werden als JSON-Datei exportiert.</p>
+            <p className="text-sm text-zinc-400">Ihre {details.label}-Daten werden als Datei exportiert.</p>
               <button
                 onClick={() => onExport(scope)}
                 className="w-full flex items-center justify-center text-left p-4 bg-violet-600 active:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
@@ -100,12 +118,12 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
 
         {mode === 'import' && (
             <div>
-                <p className="text-sm text-zinc-400 mb-4">Wählen Sie eine zuvor exportierte {details?.label}-Backup-Datei (JSON) aus. <strong className="text-amber-400">Achtung:</strong> Das Importieren überschreibt vorhandene Daten für diesen Bereich.</p>
+                <p className="text-sm text-zinc-400 mb-4">Wählen Sie eine zuvor exportierte Backup-Datei (JSON oder ZIP für MemoMea) aus. <strong className="text-amber-400">Achtung:</strong> Das Importieren überschreibt vorhandene Daten für die entsprechenden Bereiche.</p>
                 <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    accept="application/json"
+                    accept="application/json,application/zip"
                     className="hidden"
                     aria-hidden="true"
                 />

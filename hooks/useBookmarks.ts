@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { BookmarkItem } from '../types';
+import { initialBookmarks } from '../data/bookmarks';
 
 export const useBookmarks = () => {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(() => {
@@ -15,7 +15,7 @@ export const useBookmarks = () => {
         }
       }
     } catch (error) { console.error("Error parsing bookmarks from localStorage", error); }
-    return [];
+    return [...initialBookmarks].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
   
   const [readLaterShowArchived, setReadLaterShowArchived] = useState(false);

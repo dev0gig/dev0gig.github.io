@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { View, MyProject, AppItem, ExternalProjectItem, Tile, Collection } from './types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, MyProject, AppItem, Tile, Collection, JournalEntry } from './types';
 
 // Components
 import ContextMenu from './components/ContextMenu';
@@ -14,13 +14,11 @@ import CollMeaView from './components/CollMeaView';
 import CollectionFormModal from './components/CollectionFormModal';
 import DesktopLayout from './components/DesktopLayout';
 import MobileLayout from './components/MobileLayout';
-import ExternalProjectsView from './components/ExternalProjectsView';
-import ExternalProjectIframeView from './components/ExternalProjectIframeView';
-import SplitViewContainer from './components/SplitViewContainer';
 import NotificationModal from './components/NotificationModal';
-
-// Data
-import { externalProjects as externalProjectsData } from './data/externalProjects';
+import SettingsModal from './components/SettingsModal';
+import DeleteDataModal from './components/DeleteDataModal';
+import AuriMeaApp from './components/AuriMea';
+import PlaceholderView from './components/PlaceholderView';
 
 // Hooks
 import { useMediaQuery } from './hooks/useMediaQuery';
@@ -32,25 +30,23 @@ import { useTiles } from './hooks/useTiles';
 import { useUIState } from './hooks/useUIState';
 import { useNavigation } from './hooks/useNavigation';
 import { useHistoryStack } from './hooks/useHistoryStack';
+import { useAuriMeaData } from './hooks/useAuriMeaData';
 
 
 const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }> = {
   [MyProject.MemoMea]: { label: 'MemoMea', icon: 'edit_note' },
   [MyProject.ReadLateR]: { label: 'ReadLateR', icon: 'bookmark' },
   [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
-};
-
-const extractTags = (content: string): string[] => {
-  const regex = /#([a-zA-Z0-9_äöüÄÖÜß]+)/g;
-  const matches = content.match(regex);
-  if (!matches) {
-    return [];
-  }
-  return [...new Set(matches.map(tag => tag.substring(1)))];
+  [MyProject.AuriMea]: { label: 'AuriMea', icon: 'monitoring' },
+  [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
+  [MyProject.Flashcards]: { label: 'Flashcards', icon: 'style' },
 };
 
 const App: React.FC = () => {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // --- Custom Hooks for State Management ---
   const data = {
@@ -59,6 +55,7 @@ const App: React.FC = () => {
       bookmarks: useBookmarks(),
       collections: useCollections(),
       tiles: useTiles(),
+      auriMea: useAuriMeaData(),
   };
   const ui = useUIState();
   const nav = useNavigation();
@@ -67,284 +64,450 @@ const App: React.FC = () => {
   const isOverlayVisible =
     ui.notification.isOpen ||
     ui.isAppContextMenuOpen ||
-    ui.externalProjectContextMenu.isOpen ||
     ui.appFormModal.isOpen ||
     ui.isBookmarkModalOpen ||
     ui.collectionFormModal.isOpen ||
     ui.backupModalState.isOpen ||
+    isSettingsModalOpen ||
+    isDeleteModalOpen ||
     !!nav.activeMobileContent ||
-    (isDesktop && (!!nav.activeCollectionId || !!nav.activeMyProject || !!nav.activeExternalProjects.left || !!nav.activeExternalProjects.right));
+    (isDesktop && (!!nav.activeCollectionId || !!nav.activeMyProject));
   
   const closeTopOverlay = () => {
       if (ui.notification.isOpen) ui.closeNotification();
-      else if (ui.isAppContextMenuOpen || ui.externalProjectContextMenu.isOpen) ui.closeAllPopups();
+      else if (ui.isAppContextMenuOpen) ui.closeAllPopups();
       else if (ui.appFormModal.isOpen) ui.setAppFormModal({ isOpen: false, mode: 'add' });
       else if (ui.isBookmarkModalOpen) ui.setIsBookmarkModalOpen(false);
       else if (ui.collectionFormModal.isOpen) ui.setCollectionFormModal({ isOpen: false, mode: 'add' });
       else if (ui.backupModalState.isOpen) ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
-      else if (!isDesktop && nav.activeMobileContent) nav.handleCloseMobileContent();
+      else if (isSettingsModalOpen) setIsSettingsModalOpen(false);
+      else if (isDeleteModalOpen) setIsDeleteModalOpen(false);
+      else if (nav.activeMobileContent) nav.handleCloseMobileContent();
       else if (isDesktop) {
-          if (nav.activeExternalProjects.right) nav.handleCloseExternalProject('right');
-          else if (nav.activeExternalProjects.left) nav.handleCloseExternalProject('left');
-          else if (nav.activeCollectionId) nav.setActiveCollectionId(null);
-          else if (nav.activeMyProject) nav.handleMyProjectSelect(null);
+          if (nav.activeCollectionId) {
+              nav.setActiveCollectionId(null);
+          } else if (nav.activeMyProject) {
+              nav.handleMyProjectSelect(null);
+          }
       }
   };
+
   useHistoryStack({ isOverlayVisible, closeTopOverlay });
 
-  // --- Search State ---
+  // --- Search and Tag State ---
   const [searchQuery, setSearchQuery] = useState('');
-  const [journalSearchQuery, setJournalSearchQuery] = useState('');
-  const [readLaterSearchQuery, setReadLaterSearchQuery] = useState('');
-  const [collmeaSearchQuery, setCollmeaSearchQuery] = useState('');
-  const [suggestedJournalTags, setSuggestedJournalTags] = useState<string[]>([]);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   
-  // --- Navigation & Action Handler ---
-  const handleNavigate = (view: View) => {
-    ui.closeAllPopups();
-    if (view === View.ExternalProjects) nav.setActiveMobileContent(null);
+  // Reset search when view changes
+  useEffect(() => {
+    setSearchQuery('');
+    setSuggestedTags([]);
+  }, [nav.activeView, nav.activeMyProject, nav.activeCollectionId, data.bookmarks.readLaterShowArchived]);
 
-    if (view === View.New) {
-        switch (nav.activeView) {
-            case View.Apps:
-              ui.setAppFormModal({ isOpen: true, mode: 'add' });
-              break;
-            case View.MyProjects:
-              switch(nav.activeMyProject) {
-                  case MyProject.MemoMea: data.journal.handleAddNewJournalEntry(); break;
-                  case MyProject.ReadLateR: ui.setIsBookmarkModalOpen(true); break;
-                  case MyProject.CollMea: 
-                    if (nav.activeCollectionId && !isDesktop) data.collections.handleAddNewCollectionItem(nav.activeCollectionId);
-                    else ui.setCollectionFormModal({ isOpen: true, mode: 'add' });
-                    break;
-                  default: ui.showNotification('Kein Projekt ausgewählt', 'Bitte wählen Sie zuerst ein Projekt aus.', 'info'); break;
-              }
-              break;
-            default: ui.showNotification('Nicht verfügbar', 'Diese Funktion ist in der aktuellen Ansicht nicht verfügbar.', 'info'); break;
-          }
-        return;
-    }
+  // --- Data Handlers ---
+  const handleDeleteAppData = (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri') => {
+    const confirmationMessage: Record<typeof scope, string> = {
+        all: "Möchten Sie wirklich ALLE Anwendungsdaten (Apps, MemoMea, ReadLateR, CollMea, AuriMea) unwiderruflich löschen?",
+        apps: "Möchten Sie wirklich ALLE Apps löschen?",
+        memo: "Möchten Sie wirklich ALLE MemoMea-Einträge löschen?",
+        read: "Möchten Sie wirklich ALLE ReadLateR-Lesezeichen löschen?",
+        coll: "Möchten Sie wirklich ALLE CollMea-Sammlungen löschen?",
+        auri: "Möchten Sie wirklich ALLE AuriMea-Daten (Konten, Transaktionen etc.) löschen?",
+    };
     
-    if (nav.activeView !== view) {
-        setSearchQuery(''); setJournalSearchQuery(''); setReadLaterSearchQuery(''); setCollmeaSearchQuery('');
-        nav.handleMyProjectSelect(null);
-        nav.setActiveView(view);
-    }
+    ui.showConfirmation(
+      "Bestätigen Sie die Löschung",
+      confirmationMessage[scope],
+      () => {
+        if (scope === 'all' || scope === 'apps') data.apps.setApps([]);
+        if (scope === 'all' || scope === 'memo') data.journal.setJournalEntries([]);
+        if (scope === 'all' || scope === 'read') data.bookmarks.setBookmarks([]);
+        if (scope === 'all' || scope === 'coll') data.collections.setCollections([]);
+        if (scope === 'all' || scope === 'auri') data.auriMea.resetAuriMeaData();
+        
+        setIsDeleteModalOpen(false);
+        ui.showNotification("Erfolg", "Die ausgewählten Daten wurden gelöscht.", 'success');
+      }
+    );
   };
 
-  // --- Backup Handlers ---
-  const handleExport = (scope: 'apps' | 'memo' | 'read' | 'coll') => {
-    const dataToExport: any = {};
-    if (scope === 'apps') dataToExport.apps = data.apps.apps;
-    if (scope === 'memo') dataToExport.journalEntries = data.journal.journalEntries;
-    if (scope === 'read') dataToExport.bookmarks = data.bookmarks.bookmarks;
-    if (scope === 'coll') dataToExport.collections = data.collections.collections;
+  const handleExportData = async (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd') => {
+    let dataToExport: any;
+    let fileName = `axismea_backup_${scope}.json`;
 
-    const scopeToNameMap = {
-      apps: 'apps',
-      memo: 'memomea',
-      read: 'readlater',
-      coll: 'collmea',
-    };
-    const projectName = scopeToNameMap[scope];
+    if (scope === 'memomd') {
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+        const filenames = new Map<string, number>();
+
+        data.journal.journalEntries.forEach(entry => {
+            const date = new Date(entry.createdAt);
+            const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            
+            const count = filenames.get(dateString) || 0;
+            const finalFilename = count > 0 ? `${dateString}-${count + 1}.md` : `${dateString}.md`;
+            
+            filenames.set(dateString, count + 1);
+
+            zip.file(finalFilename, entry.content);
+        });
+
+        const blob = await zip.generateAsync({ type: "blob" });
+        const zipFileName = `axismea_backup_memomea_markdown_${new Date().toISOString().split('T')[0]}.zip`;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = zipFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
+        return;
+    }
+
+    switch(scope) {
+        case 'all':
+            dataToExport = {
+                apps: data.apps.apps,
+                journalEntries: data.journal.journalEntries,
+                bookmarks: data.bookmarks.bookmarks,
+                collections: data.collections.collections,
+                auriMea: {
+                    accounts: data.auriMea.accounts,
+                    transactions: data.auriMea.transactions,
+                    categories: data.auriMea.categories,
+                    templates: data.auriMea.templates,
+                }
+            };
+            fileName = `axismea_backup_all_${new Date().toISOString().split('T')[0]}.json`;
+            break;
+        case 'apps': dataToExport = data.apps.apps; break;
+        case 'memo': dataToExport = data.journal.journalEntries; break;
+        case 'read': dataToExport = data.bookmarks.bookmarks; break;
+        case 'coll': dataToExport = data.collections.collections; break;
+        case 'auri':
+            dataToExport = {
+                accounts: data.auriMea.accounts,
+                transactions: data.auriMea.transactions,
+                categories: data.auriMea.categories,
+                templates: data.auriMea.templates,
+            };
+            fileName = `axismea_backup_auri_${new Date().toISOString().split('T')[0]}.json`;
+            break;
+    }
     
-    const jsonString = JSON.stringify({ backupType: scope, createdAt: new Date().toISOString(), data: dataToExport }, null, 2);
+    const jsonString = JSON.stringify(dataToExport, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `axismea-backup-${projectName}-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = fileName;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    ui.closeAllPopups();
+    ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
   };
+  
+  const handleImportData = (file: File) => {
+    const reader = new FileReader();
 
-  const handleImport = async (file: File) => {
-    try {
-        const json = await file.text();
-        if (!json) { ui.showNotification('Importfehler', 'Die Backup-Datei ist leer.', 'error'); return; }
-        const backupData = JSON.parse(json);
+    if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
+        reader.onload = async (e) => {
+            try {
+                const content = e.target?.result;
+                if (!(content instanceof ArrayBuffer)) throw new Error("File could not be read as ArrayBuffer");
+                
+                const JSZip = (await import('jszip')).default;
+                const zip = await JSZip.loadAsync(content);
+                const newEntries: JournalEntry[] = [];
+                const filePromises: Promise<void>[] = [];
 
-        if (typeof backupData !== 'object' || backupData === null || !backupData.data) {
-            ui.showNotification('Importfehler', 'Ungültiges Backup-Dateiformat.', 'error'); return;
+                zip.forEach((relativePath, zipEntry) => {
+                    if (!zipEntry.dir && relativePath.endsWith('.md')) {
+                        const promise = zipEntry.async("string").then(fileContent => {
+                            const dateMatch = relativePath.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                            if (dateMatch) {
+                                const [, year, month, day] = dateMatch;
+                                const createdAt = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12, 0, 0)).toISOString();
+                                
+                                const newEntry: JournalEntry = {
+                                    id: `memo-import-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                                    content: fileContent,
+                                    createdAt: createdAt,
+                                };
+                                newEntries.push(newEntry);
+                            }
+                        });
+                        filePromises.push(promise);
+                    }
+                });
+
+                await Promise.all(filePromises);
+
+                if (newEntries.length > 0) {
+                    data.journal.setJournalEntries(prev => 
+                        [...prev, ...newEntries]
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    );
+                    ui.showNotification('Erfolg', `${newEntries.length} MemoMea-Einträge erfolgreich importiert.`, 'success');
+                } else {
+                    throw new Error("ZIP-Datei enthält keine gültigen .md Dateien.");
+                }
+            } catch (error) {
+                console.error("ZIP Import failed:", error);
+                ui.showNotification('Fehler', 'Die ZIP-Datei ist ungültig oder konnte nicht verarbeitet werden.', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        ui.setBackupModalState({ isOpen: false, mode: 'import', scope: null });
+        return; // Exit to prevent JSON logic from running
+    }
+    
+    // Default JSON import logic
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result;
+        if (typeof text !== 'string') throw new Error("File could not be read");
+        const parsedData = JSON.parse(text);
+
+        let importedSomething = false;
+
+        // Check for AuriMea standalone backup
+        if (parsedData.accounts && parsedData.transactions && parsedData.categories && parsedData.templates && !parsedData.apps) {
+            data.auriMea.importAuriMeaData(parsedData);
+            ui.showNotification('Erfolg', 'AuriMea-Daten erfolgreich importiert.', 'success');
+            importedSomething = true;
+        } 
+        // Check for Main App (including full backup)
+        else if (parsedData.apps && parsedData.journalEntries && parsedData.bookmarks && parsedData.collections) {
+            data.apps.setApps(parsedData.apps);
+            data.journal.setJournalEntries(parsedData.journalEntries);
+            data.bookmarks.setBookmarks(parsedData.bookmarks);
+            data.collections.setCollections(parsedData.collections);
+            
+            // If it's a full backup, also import AuriMea data
+            if(parsedData.auriMea) {
+                data.auriMea.importAuriMeaData(parsedData.auriMea);
+            }
+            
+            ui.showNotification('Erfolg', 'Daten erfolgreich importiert.', 'success');
+            importedSomething = true;
         }
         
-        const importables = Object.keys(backupData.data).join(', ');
-        ui.showConfirmation(
-            "Daten importieren?",
-            `Dies überschreibt vorhandene Daten für: ${importables}. Fortfahren?`,
-            () => {
-                if (backupData.data.apps) data.apps.setApps(backupData.data.apps);
-                if (backupData.data.journalEntries) data.journal.setJournalEntries(backupData.data.journalEntries);
-                if (backupData.data.bookmarks) data.bookmarks.setBookmarks(backupData.data.bookmarks);
-                if (backupData.data.collections) data.collections.setCollections(backupData.data.collections);
-                if (backupData.data.tiles) data.tiles.setTiles(backupData.data.tiles);
-                ui.showNotification('Import erfolgreich!', 'Die Daten wurden wiederhergestellt.', 'success');
-                ui.closeAllPopups();
-            }
-        );
-    } catch (error) {
-        ui.showNotification('Import fehlgeschlagen', 'Die Datei ist möglicherweise beschädigt.', 'error');
-    }
-  };
-  
-  // --- Render Logic ---
-  const isMemoMeaActive = nav.activeView === View.MyProjects && nav.activeMyProject === MyProject.MemoMea;
-  const isReadLateRActive = nav.activeView === View.MyProjects && nav.activeMyProject === MyProject.ReadLateR;
-  const isCollMeaActive = nav.activeView === View.MyProjects && nav.activeMyProject === MyProject.CollMea;
-
-  const renderDesktopContent = () => {
-    switch (nav.activeView) {
-      case View.Apps:
-        return <AppsView apps={data.apps.apps} searchQuery={searchQuery} onContextMenu={ui.handleAppContextMenu} />;
-      case View.MyProjects:
-        switch(nav.activeMyProject) {
-            case MyProject.MemoMea: return <MemoMeaView key={MyProject.MemoMea} entries={data.journal.journalEntries} searchQuery={journalSearchQuery} onUpdate={data.journal.handleUpdateJournalEntry} onDelete={data.journal.handleDeleteJournalEntry} onTagClick={(tag) => setJournalSearchQuery(tag ? `#${tag}` : '')} onSuggestedTagsChange={setSuggestedJournalTags} showConfirmation={ui.showConfirmation} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={data.journal.handleAddNewJournalEntry} />;
-            case MyProject.ReadLateR: return <ReadLateRView key={MyProject.ReadLateR} bookmarks={data.bookmarks.bookmarks} onDelete={data.bookmarks.handleDeleteBookmark} onToggleArchive={data.bookmarks.handleToggleArchiveBookmark} searchQuery={readLaterSearchQuery} showArchived={data.bookmarks.readLaterShowArchived} onToggleShowArchived={() => data.bookmarks.setReadLaterShowArchived(p => !p)} isMobileView={false} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={() => ui.setIsBookmarkModalOpen(true)} />;
-            case MyProject.CollMea: return <CollMeaView key={MyProject.CollMea} collections={data.collections.collections} activeCollectionId={nav.activeCollectionId} onCollectionSelect={nav.setActiveCollectionId} onBackToOverview={() => nav.setActiveCollectionId(null)} onSaveCollection={data.collections.handleSaveCollection} onDeleteCollection={(id) => ui.showConfirmation("Sammlung löschen?", "Sind Sie sicher?", () => data.collections.handleDeleteCollection(id, () => nav.setActiveCollectionId(null)))} onUpdateItem={data.collections.handleUpdateCollectionItem} onDeleteItem={data.collections.handleDeleteCollectionItem} searchQuery={collmeaSearchQuery} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={() => { if (nav.activeCollectionId && !isDesktop) { data.collections.handleAddNewCollectionItem(nav.activeCollectionId); } else { ui.setCollectionFormModal({ isOpen: true, mode: 'add' }); } }} onAddNewItem={data.collections.handleAddNewCollectionItem} />;
-            default: return <MemoMeaView key="default-memo" entries={data.journal.journalEntries} searchQuery={journalSearchQuery} onUpdate={data.journal.handleUpdateJournalEntry} onDelete={data.journal.handleDeleteJournalEntry} onTagClick={(tag) => setJournalSearchQuery(tag ? `#${tag}` : '')} onSuggestedTagsChange={setSuggestedJournalTags} showConfirmation={ui.showConfirmation} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={data.journal.handleAddNewJournalEntry} />;
+        if (!importedSomething) {
+            throw new Error("Invalid backup file structure.");
         }
-      case View.ExternalProjects:
-        if (nav.activeExternalProjects.left || nav.activeExternalProjects.right) {
-            return <SplitViewContainer leftProject={nav.activeExternalProjects.left} rightProject={nav.activeExternalProjects.right} onClose={nav.handleCloseExternalProject} />;
-        }
-        return <ExternalProjectsView projects={externalProjectsData} onProjectSelect={(project) => nav.handleExternalProjectSelect(project, 'full', ui.closeAllPopups)} />;
-      default: return <MemoMeaView key="fallback-memo" entries={data.journal.journalEntries} searchQuery={journalSearchQuery} onUpdate={data.journal.handleUpdateJournalEntry} onDelete={data.journal.handleDeleteJournalEntry} onTagClick={(tag) => setJournalSearchQuery(tag ? `#${tag}` : '')} onSuggestedTagsChange={setSuggestedJournalTags} showConfirmation={ui.showConfirmation} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={data.journal.handleAddNewJournalEntry} />;
-    }
-  };
 
-  const renderMobileContent = (tile: Tile) => {
-    const mobileProps = { isMobileView: true, onBack: nav.handleCloseMobileContent };
-    switch (tile.type) {
-      case 'MY_PROJECT':
-        switch(tile.projectId) {
-            case MyProject.MemoMea: return <MemoMeaView {...mobileProps} entries={data.journal.journalEntries} searchQuery={journalSearchQuery} onUpdate={data.journal.handleUpdateJournalEntry} onDelete={data.journal.handleDeleteJournalEntry} onTagClick={(tag) => setJournalSearchQuery(tag ? `#${tag}` : '')} onSuggestedTagsChange={setSuggestedJournalTags} showConfirmation={ui.showConfirmation} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={data.journal.handleAddNewJournalEntry} onSearchChange={(e) => setJournalSearchQuery(e.target.value)} onClearSearch={() => setJournalSearchQuery('')} suggestedTags={suggestedJournalTags} />;
-            case MyProject.ReadLateR: return <ReadLateRView {...mobileProps} bookmarks={data.bookmarks.bookmarks} onDelete={data.bookmarks.handleDeleteBookmark} onToggleArchive={data.bookmarks.handleToggleArchiveBookmark} searchQuery={readLaterSearchQuery} showArchived={data.bookmarks.readLaterShowArchived} onToggleShowArchived={() => data.bookmarks.setReadLaterShowArchived(p => !p)} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={() => ui.setIsBookmarkModalOpen(true)} onSearchChange={(e) => setReadLaterSearchQuery(e.target.value)} onClearSearch={() => setReadLaterSearchQuery('')} />;
-            case MyProject.CollMea: return <CollMeaView {...mobileProps} collections={data.collections.collections} activeCollectionId={nav.activeCollectionId} onCollectionSelect={nav.setActiveCollectionId} onBackToOverview={() => nav.setActiveCollectionId(null)} onSaveCollection={data.collections.handleSaveCollection} onDeleteCollection={(id) => ui.showConfirmation("Sammlung löschen?", "Sind Sie sicher?", () => data.collections.handleDeleteCollection(id, () => nav.setActiveCollectionId(null)))} onUpdateItem={data.collections.handleUpdateCollectionItem} onDeleteItem={data.collections.handleDeleteCollectionItem} searchQuery={collmeaSearchQuery} onOpenBackupModal={(mode, scope) => ui.setBackupModalState({isOpen: true, mode, scope})} onAddNew={() => { if (nav.activeCollectionId) { data.collections.handleAddNewCollectionItem(nav.activeCollectionId); } else { ui.setCollectionFormModal({ isOpen: true, mode: 'add' }); } }} onSearchChange={(e) => setCollmeaSearchQuery(e.target.value)} onClearSearch={() => setCollmeaSearchQuery('')} />;
-        }
-        break;
-      case 'EXTERNAL_PROJECT': return <ExternalProjectIframeView project={tile.project} />;
-      case 'VIEW_LINK': if (tile.viewId === View.Apps) return <AppsView {...mobileProps} apps={data.apps.apps} searchQuery="" onContextMenu={ui.handleAppContextMenu} onAddNew={() => ui.setAppFormModal({ isOpen: true, mode: 'add' })} onOpenBackupModal={(mode) => ui.setBackupModalState({isOpen: true, mode, scope: 'apps'})} />; break;
-    }
-    return null;
-  }
-  
-  const showSearchBar = (nav.activeView === View.Apps || isMemoMeaActive || isReadLateRActive || isCollMeaActive);
-  const searchPlaceholder = isMemoMeaActive ? "Suche in MemoMea..." : isReadLateRActive ? "Suche in Lesezeichen..." : isCollMeaActive ? "Suche in Sammlungen..." : "Suche nach Apps...";
-  const searchValue = isMemoMeaActive ? journalSearchQuery : isReadLateRActive ? readLaterSearchQuery : isCollMeaActive ? collmeaSearchQuery : searchQuery;
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (isMemoMeaActive) setJournalSearchQuery(value);
-    else if (isReadLateRActive) setReadLaterSearchQuery(value);
-    else if (isCollMeaActive) setCollmeaSearchQuery(value);
-    else setSearchQuery(value);
-  };
-  const handleClearSearch = () => {
-    if (isMemoMeaActive) setJournalSearchQuery(''); else if (isReadLateRActive) setReadLaterSearchQuery(''); else if (isCollMeaActive) setCollmeaSearchQuery(''); else setSearchQuery('');
-  };
-  
-  // --- Dynamic Desktop Header Generation ---
-  let headerTitle: string | null = null, headerSubtitle: string | null = null, headerActions: React.ReactNode[] = [];
-  if (isDesktop) {
-      const btnClass = "flex items-center font-bold py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 whitespace-nowrap";
-      const secBtn = `${btnClass} bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 focus:ring-violet-500`;
-      const primBtn = `${btnClass} bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500`;
-      const icon = (name: string) => <span className="material-symbols-outlined mr-2 text-base">{name}</span>;
-
-      if (nav.activeView === View.Apps) {
-          headerTitle = "Apps";
-          headerSubtitle = `${data.apps.apps.length} App(s)`;
-          headerActions = [
-              <button key="import" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'import', scope: 'apps'})} className={secBtn}>{icon('input')}<span>Importieren</span></button>,
-              <button key="export" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'export', scope: 'apps'})} className={secBtn}>{icon('upload_file')}<span>Exportieren</span></button>,
-              <button key="add" onClick={() => ui.setAppFormModal({ isOpen: true, mode: 'add' })} className={primBtn}>{icon('add_circle')}<span>Neu</span></button>
-          ];
-      } else if (isMemoMeaActive) {
-          headerTitle = "MemoMea";
-          headerSubtitle = `${data.journal.journalEntries.length} Einträge • ${[...new Set(data.journal.journalEntries.flatMap(e => extractTags(e.content)))].length} Tags`;
-          headerActions = [
-              <button key="import" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'import', scope: 'memo'})} className={secBtn}>{icon('input')}<span>Importieren</span></button>,
-              <button key="export" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'export', scope: 'memo'})} className={secBtn}>{icon('upload_file')}<span>Exportieren</span></button>,
-              <button key="add" onClick={data.journal.handleAddNewJournalEntry} className={primBtn}>{icon('add_circle')}<span>Neu</span></button>
-          ];
-      } else if (isReadLateRActive) {
-          headerTitle = "ReadLateR";
-          const activeCount = data.bookmarks.bookmarks.filter(b => !b.isArchived).length;
-          headerSubtitle = data.bookmarks.readLaterShowArchived ? `${data.bookmarks.bookmarks.length - activeCount} archiviert` : `${activeCount} aktiv`;
-          headerActions = [
-              <button key="toggle-archive" onClick={() => data.bookmarks.setReadLaterShowArchived(p => !p)} className={secBtn}>{icon(data.bookmarks.readLaterShowArchived ? 'unarchive' : 'archive')}<span>{data.bookmarks.readLaterShowArchived ? "Aktive" : "Archiv"}</span></button>,
-              <button key="import" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'import', scope: 'read'})} className={secBtn}>{icon('input')}<span>Importieren</span></button>,
-              <button key="export" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'export', scope: 'read'})} className={secBtn}>{icon('upload_file')}<span>Exportieren</span></button>,
-              <button key="add" onClick={() => ui.setIsBookmarkModalOpen(true)} className={primBtn}>{icon('add_circle')}<span>Neu</span></button>
-          ];
-      } else if (isCollMeaActive) {
-          if (isDesktop) {
-              headerTitle = "CollMea";
-              headerSubtitle = `${data.collections.collections.length} Sammlung(en)`;
-              headerActions = [
-                  <button key="import" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'import', scope: 'coll'})} className={secBtn}>{icon('input')}<span>Importieren</span></button>,
-                  <button key="export" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'export', scope: 'coll'})} className={secBtn}>{icon('upload_file')}<span>Exportieren</span></button>,
-                  <button key="add" onClick={() => ui.setCollectionFormModal({ isOpen: true, mode: 'add' })} className={primBtn}>{icon('add_circle')}<span>Neu</span></button>
-              ];
-          } else if (nav.activeCollectionId) {
-              const activeCollection = data.collections.collections.find(c => c.id === nav.activeCollectionId);
-              headerTitle = activeCollection?.name || "Sammlung";
-              headerSubtitle = `${activeCollection?.items.length || 0} Element(e)`;
-              headerActions = [
-                  <button key="back" onClick={() => nav.setActiveCollectionId(null)} className={secBtn}>{icon('arrow_back')}<span>Übersicht</span></button>,
-                  <button key="add" onClick={() => data.collections.handleAddNewCollectionItem(nav.activeCollectionId!)} className={primBtn}>{icon('add_circle')}<span>Neu</span></button>
-              ];
-          } else {
-              headerTitle = "CollMea";
-              headerSubtitle = `${data.collections.collections.length} Sammlung(en)`;
-              headerActions = [
-                  <button key="import" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'import', scope: 'coll'})} className={secBtn}>{icon('input')}<span>Importieren</span></button>,
-                  <button key="export" onClick={() => ui.setBackupModalState({isOpen: true, mode: 'export', scope: 'coll'})} className={secBtn}>{icon('upload_file')}<span>Exportieren</span></button>,
-                  <button key="add" onClick={() => ui.setCollectionFormModal({ isOpen: true, mode: 'add' })} className={primBtn}>{icon('add_circle')}<span>Neu</span></button>
-              ];
-          }
+      } catch (error) {
+        console.error("Import failed:", error);
+        ui.showNotification('Fehler', 'Die Importdatei ist ungültig oder beschädigt.', 'error');
       }
-  }
-
-  const desktopLayoutProps = {
-    activeView: nav.activeView, onNavigate: handleNavigate,
-    showSearchBar, searchPlaceholder, searchValue, onSearchChange: handleSearchChange, onClearSearch: handleClearSearch,
-    suggestedTags: isMemoMeaActive ? suggestedJournalTags : [], onTagClick: (tag: string) => setJournalSearchQuery(tag ? `#${tag}` : ''),
-    externalProjects: externalProjectsData, onExternalProjectSelect: (project: ExternalProjectItem) => nav.handleExternalProjectSelect(project, 'full', ui.closeAllPopups),
-    onExternalProjectContextMenu: ui.handleExternalProjectContextMenu, activeExternalProjects: nav.activeExternalProjects,
-    activeMyProject: nav.activeMyProject, onMyProjectSelect: nav.handleMyProjectSelect,
-    headerTitle, headerSubtitle, headerActions
+    };
+    reader.readAsText(file);
+    ui.setBackupModalState({ isOpen: false, mode: 'import', scope: null });
   };
 
+  // --- New Item Handler ---
+  const handleAddNew = () => {
+    if (isDesktop) {
+        if (nav.activeMyProject === MyProject.MemoMea) data.journal.handleAddNewJournalEntry();
+        else if (nav.activeMyProject === MyProject.ReadLateR) ui.setIsBookmarkModalOpen(true);
+        else if (nav.activeMyProject === MyProject.CollMea) ui.setCollectionFormModal({ isOpen: true, mode: 'add' });
+        else if (nav.activeView === View.Apps) ui.setAppFormModal({ isOpen: true, mode: 'add' });
+    } else { // Mobile
+      if (nav.activeView === View.MyProjects && nav.activeMobileContent?.type === 'MY_PROJECT') {
+          const projectId = (nav.activeMobileContent as any).projectId;
+          if (projectId === MyProject.MemoMea) data.journal.handleAddNewJournalEntry();
+          else if (projectId === MyProject.ReadLateR) ui.setIsBookmarkModalOpen(true);
+          else if (projectId === MyProject.CollMea) {
+              if (nav.activeCollectionId) {
+                  data.collections.handleAddNewCollectionItem(nav.activeCollectionId);
+              } else {
+                  ui.setCollectionFormModal({ isOpen: true, mode: 'add' });
+              }
+          }
+      } else if (nav.activeView === View.Apps && nav.activeMobileContent?.type === 'VIEW_LINK') {
+          ui.setAppFormModal({ isOpen: true, mode: 'add' });
+      }
+    }
+  };
+  
+  const handleExitAuriMeaSetup = () => {
+    if (isDesktop) {
+        nav.handleMyProjectSelect(null);
+    } else {
+        nav.handleCloseMobileContent();
+    }
+  };
 
+  // --- Render Logic ---
+  const renderContent = () => {
+    const activeProject = isDesktop ? nav.activeMyProject : (nav.activeMobileContent?.type === 'MY_PROJECT' ? (nav.activeMobileContent as any).projectId : null);
+    const activeAppView = isDesktop ? nav.activeView === View.Apps : nav.activeMobileContent?.type === 'VIEW_LINK';
+
+    if (activeProject === MyProject.MemoMea) {
+        return <MemoMeaView 
+            entries={data.journal.journalEntries}
+            entryCount={data.journal.journalEntries.length}
+            searchQuery={searchQuery}
+            onUpdate={data.journal.handleUpdateJournalEntry}
+            onDelete={data.journal.handleDeleteJournalEntry}
+            onTagClick={(tag) => setSearchQuery(`#${tag}`)}
+            onSuggestedTagsChange={setSuggestedTags}
+            showConfirmation={ui.showConfirmation}
+            onAddNew={data.journal.handleAddNewJournalEntry}
+            isMobileView={!isDesktop}
+            onBack={nav.handleCloseMobileContent}
+            onSearchChange={(e) => setSearchQuery(e.target.value)}
+            onClearSearch={() => setSearchQuery('')}
+            suggestedTags={suggestedTags}
+        />;
+    }
+    if (activeProject === MyProject.ReadLateR) {
+        return <ReadLateRView 
+            bookmarks={data.bookmarks.bookmarks}
+            onDelete={data.bookmarks.handleDeleteBookmark}
+            onToggleArchive={data.bookmarks.handleToggleArchiveBookmark}
+            searchQuery={searchQuery}
+            showArchived={data.bookmarks.readLaterShowArchived}
+            onToggleShowArchived={() => data.bookmarks.setReadLaterShowArchived(prev => !prev)}
+            onAddNew={() => ui.setIsBookmarkModalOpen(true)}
+            isMobileView={!isDesktop}
+            onBack={nav.handleCloseMobileContent}
+            onSearchChange={(e) => setSearchQuery(e.target.value)}
+            onClearSearch={() => setSearchQuery('')}
+        />;
+    }
+    if (activeProject === MyProject.CollMea) {
+        return <CollMeaView 
+            collections={data.collections.collections}
+            searchQuery={searchQuery}
+            activeCollectionId={nav.activeCollectionId}
+            onCollectionSelect={(id) => nav.setActiveCollectionId(id)}
+            onBackToOverview={() => nav.setActiveCollectionId(null)}
+            onSaveCollection={data.collections.handleSaveCollection}
+            onDeleteCollection={(id) => ui.showConfirmation("Sammlung löschen?", "Möchten Sie diese Sammlung und alle ihre Elemente wirklich löschen?", () => data.collections.handleDeleteCollection(id, () => nav.setActiveCollectionId(null)))}
+            onUpdateItem={data.collections.handleUpdateCollectionItem}
+            onDeleteItem={data.collections.handleDeleteCollectionItem}
+            onAddNew={handleAddNew}
+            onAddNewItem={data.collections.handleAddNewCollectionItem}
+            isMobileView={!isDesktop}
+            onBack={nav.handleCloseMobileContent}
+            onSearchChange={(e) => setSearchQuery(e.target.value)}
+            onClearSearch={() => setSearchQuery('')}
+        />;
+    }
+    if (activeProject === MyProject.AuriMea) {
+        return <AuriMeaApp onExitSetup={handleExitAuriMeaSetup} />;
+    }
+    if (activeProject === MyProject.FWDaten) {
+        return <PlaceholderView title="FW-Daten" icon="ssid_chart" />;
+    }
+    if (activeProject === MyProject.Flashcards) {
+        return <PlaceholderView title="Flashcards" icon="style" />;
+    }
+    if (activeAppView) {
+        return <AppsView 
+            apps={data.apps.apps} 
+            searchQuery={searchQuery}
+            onContextMenu={ui.handleAppContextMenu}
+            isMobileView={!isDesktop}
+            onBack={nav.handleCloseMobileContent}
+            onAddNew={handleAddNew}
+        />;
+    }
+
+    return null;
+  };
+
+  const desktopHeaderProps = useMemo(() => {
+    if (nav.activeMyProject) {
+      if (nav.activeMyProject === MyProject.MemoMea) {
+        const count = data.journal.journalEntries.length;
+        return { title: 'MemoMea', subtitle: `${count} ${count === 1 ? 'Eintrag' : 'Einträge'}` };
+      }
+      return { title: MY_PROJECT_DEFINITIONS[nav.activeMyProject].label, subtitle: null };
+    }
+    if (nav.activeView === View.Apps) {
+      return { title: 'Apps', subtitle: null };
+    }
+    return { title: 'Tools', subtitle: 'Wählen Sie ein Projekt aus' };
+  }, [nav.activeMyProject, nav.activeView, data.journal.journalEntries.length]);
+  
   return (
     <>
       {isDesktop ? (
-          <DesktopLayout {...desktopLayoutProps}>
-              {renderDesktopContent()}
+          <DesktopLayout
+              activeView={nav.activeView}
+              onNavigate={(view) => { nav.setActiveMyProject(null); nav.setActiveView(view); }}
+              activeMyProject={nav.activeMyProject}
+              onMyProjectSelect={nav.handleMyProjectSelect}
+              showSearchBar={(() => {
+                  if (nav.activeView === View.Apps) return true;
+                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject);
+                  return false;
+              })()}
+              searchPlaceholder={(() => {
+                  if (nav.activeMyProject === MyProject.MemoMea) return 'Einträge durchsuchen... (z.B. #tag)';
+                  if (nav.activeMyProject === MyProject.ReadLateR) return 'Lesezeichen durchsuchen...';
+                  if (nav.activeMyProject === MyProject.CollMea) return 'Sammlungen und Elemente durchsuchen...';
+                  if (nav.activeView === View.Apps) return "Apps durchsuchen...";
+                  return '';
+              })()}
+              searchValue={searchQuery}
+              onSearchChange={(e) => setSearchQuery(e.target.value)}
+              onClearSearch={() => setSearchQuery('')}
+              suggestedTags={suggestedTags}
+              onTagClick={(tag) => setSearchQuery(`#${tag}`)}
+              headerTitle={desktopHeaderProps.title}
+              headerSubtitle={desktopHeaderProps.subtitle}
+              headerActions={(() => {
+                  const actions = [];
+                  if (nav.activeMyProject === MyProject.ReadLateR) {
+                      actions.push(<button key="toggle-archive" onClick={() => data.bookmarks.setReadLaterShowArchived(p => !p)} className="flex items-center font-medium py-2 px-4 rounded-lg transition-colors bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"><span className="material-symbols-outlined mr-2 text-lg">{data.bookmarks.readLaterShowArchived ? 'unarchive' : 'archive'}</span><span>{data.bookmarks.readLaterShowArchived ? "Aktive anzeigen" : "Archiv anzeigen"}</span></button>);
+                  }
+                  if (nav.activeMyProject && [MyProject.MemoMea, MyProject.ReadLateR, MyProject.CollMea].includes(nav.activeMyProject) || nav.activeView === View.Apps) {
+                      actions.push(<button key="add-new" onClick={handleAddNew} className="flex items-center font-bold py-2 px-4 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"><span className="material-symbols-outlined mr-2 text-lg">add_circle</span><span>Neu</span></button>);
+                  }
+                  return actions;
+              })()}
+              onOpenSettings={() => setIsSettingsModalOpen(true)}
+              isSubAppActive={nav.activeMyProject === MyProject.AuriMea}
+          >
+              {renderContent()}
           </DesktopLayout>
       ) : (
           <MobileLayout
-            tiles={data.tiles.tiles}
-            onTileClick={(tile) => nav.handleTileClick(tile, ui.closeAllPopups)}
-            onReorderTiles={data.tiles.handleReorderTiles}
-            activeMobileContent={nav.activeMobileContent}
-            projectDefinitions={MY_PROJECT_DEFINITIONS}
+              tiles={data.tiles.tiles}
+              onTileClick={(tile) => nav.handleTileClick(tile, () => nav.setActiveView(tile.type === 'VIEW_LINK' ? tile.viewId : View.MyProjects))}
+              activeMobileContent={nav.activeMobileContent}
+              projectDefinitions={MY_PROJECT_DEFINITIONS}
+              onOpenSettings={() => setIsSettingsModalOpen(true)}
           >
-             {nav.activeMobileContent && renderMobileContent(nav.activeMobileContent)}
+              {renderContent()}
           </MobileLayout>
       )}
 
-      {ui.backupModalState.isOpen && <BackupModal mode={ui.backupModalState.mode} scope={ui.backupModalState.scope} onClose={ui.closeAllPopups} onExport={handleExport} onImport={handleImport} />}
-      {ui.appFormModal.isOpen && <AppFormModal mode={ui.appFormModal.mode} app={ui.appFormModal.app} onClose={ui.closeAllPopups} onSave={(appData, id) => { data.apps.handleSaveApp(appData, id); ui.closeAllPopups(); }} />}
-      {ui.isBookmarkModalOpen && <BookmarkFormModal isOpen={ui.isBookmarkModalOpen} onClose={ui.closeAllPopups} onSave={(url) => { data.bookmarks.handleAddNewBookmark(url); ui.closeAllPopups(); }} />}
-      {ui.collectionFormModal.isOpen && <CollectionFormModal mode={ui.collectionFormModal.mode} collection={ui.collectionFormModal.collection} onClose={ui.closeAllPopups} onSave={(collectionData, id) => { data.collections.handleSaveCollection(collectionData, id); ui.closeAllPopups(); }} />}
-      {ui.notification.isOpen && <NotificationModal {...ui.notification} onClose={ui.closeNotification} />}
+      {/* --- Global Modals & Overlays --- */}
+      <NotificationModal isOpen={ui.notification.isOpen} onClose={ui.closeNotification} title={ui.notification.title} message={ui.notification.message} type={ui.notification.type} onConfirm={ui.notification.onConfirm} />
+      {ui.appFormModal.isOpen && <AppFormModal mode={ui.appFormModal.mode} app={ui.appFormModal.app} onClose={() => ui.setAppFormModal({ isOpen: false, mode: 'add' })} onSave={(appData, id) => { data.apps.handleSaveApp(appData, id); ui.closeAllPopups(); }} />}
+      {ui.isBookmarkModalOpen && <BookmarkFormModal isOpen={ui.isBookmarkModalOpen} onClose={() => ui.setIsBookmarkModalOpen(false)} onSave={(url) => { data.bookmarks.handleAddNewBookmark(url); ui.setIsBookmarkModalOpen(false); }} />}
+      {ui.collectionFormModal.isOpen && <CollectionFormModal mode={ui.collectionFormModal.mode} collection={ui.collectionFormModal.collection} onClose={() => ui.setCollectionFormModal({ isOpen: false, mode: 'add' })} onSave={(collectionData, id) => { data.collections.handleSaveCollection(collectionData, id); ui.closeAllPopups(); }} />}
+      {isSettingsModalOpen && <SettingsModal onClose={() => setIsSettingsModalOpen(false)} onExportClick={() => { setIsSettingsModalOpen(false); ui.setBackupModalState({ isOpen: true, mode: 'export', scope: null }); }} onImportClick={() => { setIsSettingsModalOpen(false); ui.setBackupModalState({ isOpen: true, mode: 'import', scope: null }); }} onDeleteAllClick={() => { setIsSettingsModalOpen(false); setIsDeleteModalOpen(true); }} isDesktop={isDesktop} />}
+      {ui.backupModalState.isOpen && <BackupModal mode={ui.backupModalState.mode} scope={ui.backupModalState.scope} onClose={() => ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null })} onExport={handleExportData} onImport={handleImportData} />}
+      <DeleteDataModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onDelete={handleDeleteAppData} />
       {ui.isAppContextMenuOpen && ui.selectedAppForMenu && (
-         <ContextMenu position={ui.appContextMenuPosition} onClose={ui.closeAllPopups} isViewportAware={true} animationClass="animate-fadeIn" items={[ { label: ui.selectedAppForMenu.isFavorite ? 'Favorit entfernen' : 'Als Favorit markieren', icon: ui.selectedAppForMenu.isFavorite ? 'star_half' : 'star', onClick: () => data.apps.handleToggleFavorite(ui.selectedAppForMenu!.id, ui.closeAllPopups) }, { label: 'Bearbeiten', icon: 'edit', onClick: () => ui.handleOpenEditModal(ui.selectedAppForMenu) }, { label: 'Löschen', icon: 'delete', onClick: () => ui.showConfirmation('App löschen?', `Möchten Sie "${ui.selectedAppForMenu!.ariaLabel}" wirklich löschen?`, () => data.apps.handleDeleteApp(ui.selectedAppForMenu!.id, ui.closeAllPopups)), className: 'text-red-400' } ]} />
-      )}
-      {ui.externalProjectContextMenu.isOpen && ui.externalProjectContextMenu.project && (
-        <ContextMenu position={ui.externalProjectContextMenu.position} onClose={ui.closeAllPopups} isViewportAware={true} animationClass="animate-fadeIn" items={[ { label: 'Open Fullscreen', icon: 'fullscreen', onClick: () => nav.handleExternalProjectSelect(ui.externalProjectContextMenu.project!, 'full', ui.closeAllPopups) }, { label: 'Open in Left View', icon: 'align_horizontal_left', onClick: () => nav.handleExternalProjectSelect(ui.externalProjectContextMenu.project!, 'left', ui.closeAllPopups) }, { label: 'Open in Right View', icon: 'align_horizontal_right', onClick: () => nav.handleExternalProjectSelect(ui.externalProjectContextMenu.project!, 'right', ui.closeAllPopups) } ]} />
+          <ContextMenu
+              position={ui.appContextMenuPosition}
+              onClose={ui.closeAllPopups}
+              items={[
+                  { label: 'Bearbeiten', icon: 'edit', onClick: () => ui.handleOpenEditModal(ui.selectedAppForMenu) },
+                  { label: ui.selectedAppForMenu.isFavorite ? 'Lösen' : 'Anheften', icon: 'push_pin', onClick: () => data.apps.handleToggleFavorite(ui.selectedAppForMenu!.id, ui.closeAllPopups) },
+                  { label: 'Löschen', icon: 'delete', onClick: () => ui.showConfirmation("App löschen?", "Möchten Sie diese App wirklich löschen?", () => data.apps.handleDeleteApp(ui.selectedAppForMenu!.id, ui.closeAllPopups)), className: 'bg-red-900/40 active:bg-red-900/60 text-red-300' },
+              ]}
+          />
       )}
     </>
   );

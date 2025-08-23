@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { JournalEntry } from '../types';
+import { initialJournalEntries } from '../data/journal';
 
 export const useJournal = () => {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(() => {
@@ -8,10 +9,14 @@ export const useJournal = () => {
       const savedEntries = localStorage.getItem('axismea-journal');
       if (savedEntries) {
         const parsed = JSON.parse(savedEntries) as JournalEntry[];
-        return parsed.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        // Only return saved entries if they exist, otherwise fallback to initial data
+        if (parsed && parsed.length > 0) {
+            return parsed.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }
       }
     } catch (error) { console.error("Error parsing journal from localStorage", error); }
-    return [];
+    // Fallback to initial entries if localStorage is empty or fails
+    return [...initialJournalEntries].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
 
   useEffect(() => { localStorage.setItem('axismea-journal', JSON.stringify(journalEntries)); }, [journalEntries]);

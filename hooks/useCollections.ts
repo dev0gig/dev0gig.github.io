@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Collection, GenericListItem } from '../types';
+import { initialCollections } from '../data/collections';
 
 export const useCollections = () => {
   const [collections, setCollections] = useState<Collection[]>(() => {
@@ -11,7 +12,7 @@ export const useCollections = () => {
         return parsed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       }
     } catch(error) { console.error("Error parsing collections from localStorage", error); }
-    return [];
+    return [...initialCollections].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
 
   useEffect(() => { localStorage.setItem('axismea-collections', JSON.stringify(collections)); }, [collections]);

@@ -1,10 +1,7 @@
 
-
-
-
 import React, { useEffect } from 'react';
 
-type DeleteScope = 'all' | 'apps' | 'memo' | 'read' | 'coll';
+type DeleteScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri';
 
 interface DeleteDataModalProps {
   isOpen: boolean;
@@ -18,6 +15,7 @@ const deleteOptions: { scope: DeleteScope; label: string; icon: string }[] = [
     { scope: 'memo', label: 'Nur MemoMea löschen', icon: 'edit_note' },
     { scope: 'read', label: 'Nur ReadLateR löschen', icon: 'bookmark' },
     { scope: 'coll', label: 'Nur CollMea löschen', icon: 'collections_bookmark' },
+    { scope: 'auri', label: 'Nur AuriMea löschen', icon: 'monitoring' },
 ];
 
 const DeleteDataModal: React.FC<DeleteDataModalProps> = ({ isOpen, onClose, onDelete }) => {

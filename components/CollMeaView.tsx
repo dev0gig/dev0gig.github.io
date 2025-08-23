@@ -92,7 +92,6 @@ interface CollMeaViewProps {
   onDeleteCollection: (id: string) => void;
   onUpdateItem: (collectionId: string, item: GenericListItem) => void;
   onDeleteItem: (collectionId: string, itemId: string) => void;
-  onOpenBackupModal: (mode: 'export' | 'import', scope: 'coll') => void;
   onAddNew: () => void;
   onAddNewItem?: (collectionId: string) => void;
   isMobileView?: boolean;
@@ -112,7 +111,6 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
   onDeleteCollection,
   onUpdateItem,
   onDeleteItem,
-  onOpenBackupModal,
   onAddNew,
   onAddNewItem,
   isMobileView = false,
@@ -382,8 +380,6 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                     animationClass="animate-fadeIn"
                     items={[
                         { label: 'Neue Sammlung', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-                        { label: 'Importieren', icon: 'input', onClick: () => { setIsMenuOpen(false); onOpenBackupModal('import', 'coll'); } },
-                        { label: 'Exportieren', icon: 'upload_file', onClick: () => { setIsMenuOpen(false); onOpenBackupModal('export', 'coll'); } },
                     ]}
                 />
             )}

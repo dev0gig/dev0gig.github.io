@@ -1,5 +1,6 @@
 
 
+
 export enum View {
   Apps,
   MyProjects,
@@ -11,6 +12,9 @@ export enum MyProject {
   MemoMea = 'MemoMea',
   ReadLateR = 'ReadLateR',
   CollMea = 'CollMea',
+  AuriMea = 'AuriMea',
+  FWDaten = 'FWDaten',
+  Flashcards = 'Flashcards',
 }
 
 export interface AppItem {
@@ -44,6 +48,13 @@ export interface BookmarkItem {
   isArchived: boolean;
 }
 
+export interface ExternalProjectItem {
+  name: string;
+  icon: string;
+  description: string;
+  url: string;
+}
+
 // CollMea Types
 export interface GenericListItem {
   id: string;
@@ -61,50 +72,11 @@ export interface Collection {
   items: GenericListItem[];
 }
 
-// External Projects Types
-export interface ExternalProjectItem {
-  name: string;
-  url: string;
-  icon: string;
-  description: string;
-}
-
 // Weather Widget Types
 export interface WeatherData {
   temperature: number;
   location: string;
   icon: string;
-}
-
-// AuriMea Types
-export type TransactionType = 'income' | 'expense' | 'transfer';
-
-export interface Account {
-  id: string;
-  name: string;
-  color: string; // e.g. 'bg-violet-500'
-  ringColor: string; // e.g. 'focus:ring-violet-500'
-  borderColor: string; // e.g. 'border-violet-500/50'
-  accentColor: string; // e.g. 'text-violet-400'
-}
-
-export interface Transaction {
-  id: string;
-  accountId: string;
-  type: TransactionType;
-  description: string;
-  amount: number;
-  category: string;
-  createdAt: string; // ISO String
-  transferId?: string;
-}
-
-export interface TransactionTemplate {
-  id: string;
-  type: 'income' | 'expense';
-  description: string;
-  amount: number;
-  category: string;
 }
 
 // Metro Tile Types for Mobile View
@@ -120,11 +92,6 @@ export interface BaseTile {
 export interface MyProjectTile extends BaseTile {
     type: 'MY_PROJECT';
     projectId: MyProject;
-}
-
-export interface ExternalProjectTile extends BaseTile {
-    type: 'EXTERNAL_PROJECT';
-    project: ExternalProjectItem;
 }
 
 export interface AppLinkTile extends BaseTile {
@@ -143,4 +110,9 @@ export interface DateTimeTile extends BaseTile {
     type: 'DATETIME';
 }
 
-export type Tile = MyProjectTile | ExternalProjectTile | AppLinkTile | ViewLinkTile | DateTimeTile;
+export interface ExternalProjectTile extends BaseTile {
+    type: 'EXTERNAL_PROJECT';
+    project: ExternalProjectItem;
+}
+
+export type Tile = MyProjectTile | AppLinkTile | ViewLinkTile | DateTimeTile | ExternalProjectTile;

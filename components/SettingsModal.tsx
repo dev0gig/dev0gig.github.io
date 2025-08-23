@@ -1,6 +1,5 @@
 
 
-
 import React from 'react';
 
 interface SettingsModalProps {
@@ -8,12 +7,10 @@ interface SettingsModalProps {
   onExportClick: () => void;
   onImportClick: () => void;
   onDeleteAllClick: () => void;
-  isEditMode: boolean;
-  onToggleEditMode: () => void;
   isDesktop: boolean;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, onExportClick, onImportClick, onDeleteAllClick, isEditMode, onToggleEditMode, isDesktop }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, onExportClick, onImportClick, onDeleteAllClick, isDesktop }) => {
   // useEffect to handle Escape key press
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,19 +56,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, onExportClick, o
         </div>
         
         <div className="space-y-3">
-            {!isDesktop && (
-              <>
-                <button 
-                    onClick={onToggleEditMode}
-                    className={`w-full flex items-center text-left p-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 ${isEditMode ? 'bg-violet-600 active:bg-violet-700 text-white focus:ring-violet-500' : 'bg-zinc-700/50 active:bg-zinc-700/80 text-zinc-200 focus:ring-violet-500'}`}
-                >
-                    <span className="material-symbols-outlined mr-4">{isEditMode ? 'done' : 'grid_view'}</span>
-                    <span className="font-medium">{isEditMode ? 'Bearbeitung beenden' : 'Layout bearbeiten'}</span>
-                </button>
-                <hr className="border-zinc-700/60" />
-              </>
-            )}
-
             <div className="p-3 bg-amber-900/40 border border-amber-500/30 rounded-lg text-sm text-amber-300 flex items-start space-x-3">
               <span className="material-symbols-outlined mt-0.5 text-amber-400" style={{ fontSize: '20px' }}>info</span>
               <p>

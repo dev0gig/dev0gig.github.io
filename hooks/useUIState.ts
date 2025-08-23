@@ -1,6 +1,7 @@
 
+
 import React, { useState } from 'react';
-import { AppItem, Collection, ExternalProjectItem } from '../types';
+import { AppItem, Collection } from '../types';
 
 interface NotificationState {
   isOpen: boolean;
@@ -15,19 +16,13 @@ export const useUIState = () => {
     const [appFormModal, setAppFormModal] = useState<{ isOpen: boolean; mode: 'add' | 'edit'; app?: AppItem; }>({ isOpen: false, mode: 'add' });
     const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
     const [collectionFormModal, setCollectionFormModal] = useState<{ isOpen: boolean, mode: 'add' | 'edit', collection?: Collection }>({ isOpen: false, mode: 'add' });
-    const [backupModalState, setBackupModalState] = useState<{ isOpen: boolean; mode: 'export' | 'import'; scope: 'apps' | 'memo' | 'read' | 'coll' | null }>({ isOpen: false, mode: 'export', scope: null });
+    const [backupModalState, setBackupModalState] = useState<{ isOpen: boolean; mode: 'export' | 'import'; scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | null }>({ isOpen: false, mode: 'export', scope: null });
 
     // Context Menu States
     const [isAppContextMenuOpen, setIsAppContextMenuOpen] = useState(false);
     const [appContextMenuPosition, setAppContextMenuPosition] = useState({ top: 0, left: 0 });
     const [selectedAppForMenu, setSelectedAppForMenu] = useState<AppItem | null>(null);
     
-    const [externalProjectContextMenu, setExternalProjectContextMenu] = useState<{
-        isOpen: boolean;
-        position: { top: number; left: number };
-        project: ExternalProjectItem | null;
-    }>({ isOpen: false, position: { top: 0, left: 0 }, project: null });
-
     // Notification Modal State
     const [notification, setNotification] = useState<NotificationState>({
         isOpen: false,
@@ -56,7 +51,6 @@ export const useUIState = () => {
         setBackupModalState({ isOpen: false, mode: 'export', scope: null });
         setIsAppContextMenuOpen(false);
         setSelectedAppForMenu(null);
-        setExternalProjectContextMenu({ isOpen: false, position: { top: 0, left: 0 }, project: null });
         closeNotification();
     };
     
@@ -75,16 +69,6 @@ export const useUIState = () => {
         setAppFormModal({ isOpen: true, mode: 'edit', app });
     };
 
-    const handleExternalProjectContextMenu = (event: React.MouseEvent, project: ExternalProjectItem) => {
-        event.preventDefault();
-        closeAllPopups();
-        setExternalProjectContextMenu({
-            isOpen: true,
-            position: { top: event.clientY, left: event.clientX },
-            project: project,
-        });
-    };
-
     return {
         appFormModal, setAppFormModal,
         isBookmarkModalOpen, setIsBookmarkModalOpen,
@@ -93,7 +77,6 @@ export const useUIState = () => {
         isAppContextMenuOpen,
         appContextMenuPosition,
         selectedAppForMenu,
-        externalProjectContextMenu,
         notification,
         closeNotification,
         showNotification,
@@ -101,6 +84,5 @@ export const useUIState = () => {
         closeAllPopups,
         handleAppContextMenu,
         handleOpenEditModal,
-        handleExternalProjectContextMenu,
     };
 };

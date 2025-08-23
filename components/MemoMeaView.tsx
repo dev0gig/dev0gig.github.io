@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { JournalEntry } from '../types';
 import JournalEntryCard from './JournalEntryCard';
@@ -6,13 +7,13 @@ import ContextMenu from './ContextMenu';
 
 interface MemoMeaViewProps {
   entries: JournalEntry[];
+  entryCount: number;
   searchQuery: string;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
   onTagClick: (tag: string) => void;
   onSuggestedTagsChange: (tags: string[]) => void;
   showConfirmation: (title: string, message: string | React.ReactNode, onConfirm: () => void) => void;
-  onOpenBackupModal: (mode: 'export' | 'import', scope: 'memo') => void;
   onAddNew: () => void;
   isMobileView?: boolean;
   onBack?: () => void;
@@ -36,7 +37,7 @@ const escapeRegExp = (string: string) => {
 };
 
 
-const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, searchQuery, onUpdate, onDelete, onTagClick, onSuggestedTagsChange, showConfirmation, onOpenBackupModal, onAddNew, isMobileView = false, onBack, onSearchChange, onClearSearch, suggestedTags = [] }) => {
+const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQuery, onUpdate, onDelete, onTagClick, onSuggestedTagsChange, showConfirmation, onAddNew, isMobileView = false, onBack, onSearchChange, onClearSearch, suggestedTags = [] }) => {
   const [visibleEntriesCount, setVisibleEntriesCount] = useState(10);
   const entriesPerLoad = 10;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -209,7 +210,10 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, searchQuery, onUpdat
                 )}
                 <div className="flex items-center space-x-2 flex-grow">
                     <span className="material-symbols-outlined text-3xl">edit_note</span>
-                    <h1 className="text-2xl font-bold tracking-tight">MemoMea</h1>
+                    <div className="flex items-baseline space-x-3">
+                      <h1 className="text-2xl font-bold tracking-tight">MemoMea</h1>
+                      <span className="text-xs font-medium text-zinc-500">{entryCount} {entryCount === 1 ? 'Eintrag' : 'Einträge'}</span>
+                    </div>
                 </div>
                 <div className="flex items-center space-x-2">
                     <button
@@ -279,8 +283,6 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, searchQuery, onUpdat
             animationClass="animate-fadeIn"
             items={[
                 { label: 'Neuer Eintrag', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-                { label: 'Importieren', icon: 'input', onClick: () => { setIsMenuOpen(false); onOpenBackupModal('import', 'memo'); } },
-                { label: 'Exportieren', icon: 'upload_file', onClick: () => { setIsMenuOpen(false); onOpenBackupModal('export', 'memo'); } },
             ]}
         />
       )}

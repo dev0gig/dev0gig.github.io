@@ -7,18 +7,18 @@ interface MobileLayoutProps {
   children: React.ReactNode;
   tiles: Tile[];
   onTileClick: (tile: Tile) => void;
-  onReorderTiles: (newTiles: Tile[]) => void;
   activeMobileContent: Tile | null;
   projectDefinitions: Record<MyProject, { label: string; icon: string }>;
+  onOpenSettings: () => void;
 }
 
 const MobileLayout: React.FC<MobileLayoutProps> = ({ 
     children,
     tiles,
     onTileClick,
-    onReorderTiles,
     activeMobileContent,
     projectDefinitions,
+    onOpenSettings,
 }) => {
   return (
     <div className="bg-zinc-900 text-zinc-100 h-full antialiased flex flex-col">
@@ -32,8 +32,8 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         <MetroView
           tiles={tiles}
           onTileClick={onTileClick}
-          onReorderTiles={onReorderTiles}
           projectDefinitions={projectDefinitions}
+          onOpenSettings={onOpenSettings}
         />
       )}
     </div>

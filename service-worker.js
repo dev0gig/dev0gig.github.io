@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'axismea-cache-v7';
+const CACHE_NAME = 'axismea-cache-v9';
 
 const PRECACHE_URLS = [
   './',
@@ -11,7 +11,7 @@ const PRECACHE_URLS = [
   './types.ts',
   
   // Icons
-'./assets/icons/icon.png',
+  './assets/icons/icon.png',
   
   // Components
   './components/AnalysisSidebar.tsx',
@@ -26,8 +26,6 @@ const PRECACHE_URLS = [
   './components/CollectionFormModal.tsx',
   './components/CompletedTasksModal.tsx',
   './components/ContextMenu.tsx',
-  './components/ExternalProjectsView.tsx',
-  './components/ExternalProjectIframeView.tsx',
   './components/JournalEntryCard.tsx',
   './components/MemoMeaExportModal.tsx',
   './components/MemoMeaView.tsx',
@@ -35,12 +33,9 @@ const PRECACHE_URLS = [
   './components/PieChart.tsx',
   './components/PlaceholderView.tsx',
   './components/ReadLateRView.tsx',
-  './components/SplitViewContainer.tsx',
   './components/TransactionFormModal.tsx',
   './components/MetroView.tsx',
-  './components/MetroTile.tsx',
   './components/NotificationModal.tsx',
-  './components/DateTimeWidget.tsx',
   './components/SidebarInfoWidget.tsx',
   
   // Hooks
@@ -56,8 +51,9 @@ const PRECACHE_URLS = [
 
   // Data
   './data/apps.ts',
+  './data/bookmarks.ts',
+  './data/collections.ts',
   './data/categories.ts',
-  './data/externalProjects.ts',
   './data/transactions.ts',
   
   // External assets

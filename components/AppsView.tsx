@@ -10,7 +10,6 @@ interface AppsViewProps {
   isMobileView?: boolean;
   onBack?: () => void;
   onAddNew?: () => void;
-  onOpenBackupModal?: (mode: 'import' | 'export') => void;
 }
 
 const AppIcon: React.FC<{ app: AppItem; onContextMenu: (event: React.MouseEvent, app: AppItem) => void }> = ({ app, onContextMenu }) => (
@@ -32,7 +31,7 @@ const AppIcon: React.FC<{ app: AppItem; onContextMenu: (event: React.MouseEvent,
 );
 
 
-const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, isMobileView = false, onBack, onAddNew, onOpenBackupModal }) => {
+const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, isMobileView = false, onBack, onAddNew }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
@@ -130,8 +129,6 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
             animationClass="animate-fadeIn"
             items={[
                 { label: 'Neue App', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-                { label: 'Importieren', icon: 'input', onClick: () => { setIsMenuOpen(false); onOpenBackupModal && onOpenBackupModal('import'); } },
-                { label: 'Exportieren', icon: 'upload_file', onClick: () => { setIsMenuOpen(false); onOpenBackupModal && onOpenBackupModal('export'); } },
             ]}
         />
       )}
