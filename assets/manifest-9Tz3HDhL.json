@@ -1,0 +1,24 @@
+{
+  "name": "AxisMea",
+  "short_name": "AxisMea",
+  "description": "A mobile-first application with a sleek dark mode interface and a bottom navigation for easy access to different sections like apps, projects, and settings.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#18181b",
+  "theme_color": "#18181b",
+  "icons": [
+    {
+      "src": "./assets/icons/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
