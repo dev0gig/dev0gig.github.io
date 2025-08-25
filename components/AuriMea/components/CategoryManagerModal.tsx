@@ -57,7 +57,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOpen, onC
             <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-md m-4 p-6 animate-scaleIn h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
                     <h2 className="text-xl font-bold">Kategorien verwalten</h2>
-                    <button onClick={onClose} className="p-1 -m-1"><Icon name="close" /></button>
+                    <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
                 </div>
                 
                 <div className="grid grid-cols-2 bg-zinc-800 rounded-lg p-1 gap-1 mb-4 flex-shrink-0">
@@ -79,16 +79,16 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOpen, onC
                                         onKeyDown={handleEditKeyDown}
                                         className="flex-grow bg-zinc-700 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
                                     />
-                                    <button onClick={handleSaveEdit} className="p-2 rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-green-400"><Icon name="check" className="!text-lg" /></button>
-                                    <button onClick={handleCancelEdit} className="p-2 rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="close" className="!text-lg" /></button>
+                                    <button onClick={handleSaveEdit} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-green-400"><Icon name="check" className="!text-lg" /></button>
+                                    <button onClick={handleCancelEdit} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="close" className="!text-lg" /></button>
                                 </>
                             ) : (
                                 <>
                                     <span className="flex-grow font-medium truncate">{cat}</span>
                                     {cat !== 'Sonstiges' && (
                                         <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => handleStartEdit(cat)} className="p-2 rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="edit" className="!text-lg" /></button>
-                                            <button onClick={() => deleteCategory(activeTab, cat)} className="p-2 rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-red-400"><Icon name="delete" className="!text-lg" /></button>
+                                            <button onClick={() => handleStartEdit(cat)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="edit" className="!text-lg" /></button>
+                                            <button onClick={() => deleteCategory(activeTab, cat)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-red-400"><Icon name="delete" className="!text-lg" /></button>
                                         </div>
                                     )}
                                 </>

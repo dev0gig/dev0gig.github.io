@@ -1,7 +1,8 @@
 
+
 import React, { useEffect } from 'react';
 
-type DeleteScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri';
+type DeleteScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'fwdaten';
 
 interface DeleteDataModalProps {
   isOpen: boolean;
@@ -15,7 +16,8 @@ const deleteOptions: { scope: DeleteScope; label: string; icon: string }[] = [
     { scope: 'memo', label: 'Nur MemoMea löschen', icon: 'edit_note' },
     { scope: 'read', label: 'Nur ReadLateR löschen', icon: 'bookmark' },
     { scope: 'coll', label: 'Nur CollMea löschen', icon: 'collections_bookmark' },
-    { scope: 'auri', label: 'Nur AuriMea löschen', icon: 'monitoring' },
+    { scope: 'auri', label: 'Nur AuriMea löschen', icon: 'payments' },
+    { scope: 'fwdaten', label: 'Nur FW-Daten löschen', icon: 'ssid_chart' },
 ];
 
 const DeleteDataModal: React.FC<DeleteDataModalProps> = ({ isOpen, onClose, onDelete }) => {
@@ -59,7 +61,7 @@ const DeleteDataModal: React.FC<DeleteDataModalProps> = ({ isOpen, onClose, onDe
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 active:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+            className="text-zinc-400 active:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             aria-label="Modal schließen"
           >
             <span className="material-symbols-outlined">close</span>

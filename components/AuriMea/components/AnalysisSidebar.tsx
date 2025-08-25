@@ -95,7 +95,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({ isOpen, onClose }) =>
             </div>
             <button
               onClick={onClose}
-              className="text-zinc-400 hover:text-white transition-colors rounded-full p-2 -m-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+              className="text-zinc-400 hover:text-white transition-colors rounded-full w-8 h-8 flex items-center justify-center -m-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
               aria-label="Analyse schließen"
             >
               <span className="material-symbols-outlined">close</span>

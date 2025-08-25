@@ -32,7 +32,7 @@ const AccountManagerModal: React.FC<AccountManagerModalProps> = ({ isOpen, onClo
                 <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-md m-4 p-6 animate-scaleIn h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4 flex-shrink-0">
                         <h2 className="text-xl font-bold">Konten verwalten</h2>
-                        <button onClick={onClose} className="p-1 -m-1"><Icon name="close" /></button>
+                        <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
                     </div>
 
                     <div className="flex-grow overflow-y-auto -mr-3 pr-3 space-y-2 py-1">
@@ -43,8 +43,8 @@ const AccountManagerModal: React.FC<AccountManagerModalProps> = ({ isOpen, onClo
                                 </div>
                                 <span className="flex-grow font-medium truncate">{account.name}</span>
                                 <div className="flex items-center space-x-1 opacity-50 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleEdit(account)} className="p-2 rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="edit" className="!text-lg" /></button>
-                                    <button onClick={() => deleteAccount(account.id)} className="p-2 rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-red-400"><Icon name="delete" className="!text-lg" /></button>
+                                    <button onClick={() => handleEdit(account)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="edit" className="!text-lg" /></button>
+                                    <button onClick={() => deleteAccount(account.id)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-red-400"><Icon name="delete" className="!text-lg" /></button>
                                 </div>
                             </div>
                         ))}

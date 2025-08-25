@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef } from 'react';
 import { useApp } from '../AuriMeaApp';
 import Icon from './Icon';
@@ -19,7 +20,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onManage
             <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-sm m-4 p-6 animate-scaleIn" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold">AuriMea Einstellungen</h2>
-                    <button onClick={onClose} className="p-1 -m-1"><Icon name="close" /></button>
+                    <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
                 </div>
                 <div className="space-y-3">
                     <button onClick={onManageAccountsClick} className="w-full flex items-center p-3 bg-zinc-700/50 rounded-lg text-zinc-200 hover:bg-zinc-700"><Icon name="account_balance_wallet" className="mr-3" /> Konten verwalten</button>

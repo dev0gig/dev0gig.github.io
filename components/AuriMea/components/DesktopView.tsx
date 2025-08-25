@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useApp } from '../AuriMeaApp';
 import MainView from './MainView';
@@ -21,7 +22,7 @@ const DesktopView: React.FC<DesktopViewProps> = ({ onOpenForm, onOpenSettings })
             <nav className="w-72 flex-shrink-0 bg-zinc-900/50 p-4 flex flex-col border-r border-zinc-800">
                 <div className="flex items-center justify-start mb-6 px-2">
                      <div className="flex items-center space-x-3">
-                        <Icon name="monitoring" className="text-3xl text-violet-400" />
+                        <Icon name="payments" className="text-3xl text-violet-400" />
                         <h1 className="text-2xl font-bold">AuriMea</h1>
                     </div>
                 </div>

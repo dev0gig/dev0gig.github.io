@@ -170,7 +170,7 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
             {isEditing ? (
                  <button
                     onClick={saveChanges}
-                    className="text-green-400 active:text-green-300 transition-all duration-200 p-1.5 rounded-full active:bg-green-500/10"
+                    className="text-green-400 active:text-green-300 transition-all duration-200 w-8 h-8 flex items-center justify-center rounded-full active:bg-green-500/10"
                     aria-label="Eintrag speichern"
                 >
                     <span className="material-symbols-outlined text-lg">check_circle</span>
@@ -179,14 +179,14 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
                 <>
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="text-zinc-400 active:text-violet-400 transition-all duration-200 p-1.5 rounded-full active:bg-violet-500/10"
+                        className="text-zinc-400 active:text-violet-400 transition-all duration-200 w-8 h-8 flex items-center justify-center rounded-full active:bg-violet-500/10"
                         aria-label="Eintrag bearbeiten"
                     >
                         <span className="material-symbols-outlined text-lg">edit</span>
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="text-zinc-400 active:text-red-400 transition-all duration-200 p-1.5 rounded-full active:bg-red-500/10"
+                        className="text-zinc-400 active:text-red-400 transition-all duration-200 w-8 h-8 flex items-center justify-center rounded-full active:bg-red-500/10"
                         aria-label="Eintrag löschen"
                     >
                         <span className="material-symbols-outlined text-lg">delete</span>

@@ -163,7 +163,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
        <div className="bg-zinc-900 w-full max-w-lg rounded-t-2xl shadow-lg flex flex-col h-[90dvh] animate-modalSlideUp" onClick={(e) => e.stopPropagation()}>
           <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-zinc-700/60">
               <h2 className="text-xl font-bold">{isEditMode ? 'Transaktion bearbeiten' : 'Neue Transaktion'}</h2>
-              <button onClick={onClose} className="p-2 -m-2"><Icon name="close" /></button>
+              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center -m-2 rounded-full hover:bg-zinc-700/50"><Icon name="close" /></button>
           </header>
 
           <form onSubmit={handleSubmit} className="flex-grow flex flex-col min-h-0">

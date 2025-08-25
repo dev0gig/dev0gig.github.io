@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { View, MyProject } from '../types';
 import SidebarInfoWidget from './SidebarInfoWidget';
@@ -25,7 +26,7 @@ const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }>
   [MyProject.MemoMea]: { label: 'MemoMea', icon: 'edit_note' },
   [MyProject.ReadLateR]: { label: 'ReadLateR', icon: 'bookmark' },
   [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
-  [MyProject.AuriMea]: { label: 'AuriMea', icon: 'monitoring' },
+  [MyProject.AuriMea]: { label: 'AuriMea', icon: 'payments' },
   [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
   [MyProject.Flashcards]: { label: 'Flashcards', icon: 'style' },
 };
@@ -69,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <h1 className="text-2xl font-bold text-white tracking-tight">AxisMea</h1>
             <button 
                 onClick={onOpenSettings}
-                className="text-zinc-400 hover:text-white transition-colors rounded-full p-2 -m-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                className="text-zinc-400 hover:text-white transition-colors rounded-full w-10 h-10 -m-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
                 aria-label="Einstellungen öffnen"
             >
                 <span className="material-symbols-outlined">settings</span>

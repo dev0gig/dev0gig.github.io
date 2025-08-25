@@ -1,6 +1,6 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
-import JSZip from 'jszip';
 import { View, MyProject, AppItem, Tile, Collection, JournalEntry } from './types';
 
 // Components
@@ -20,6 +20,8 @@ import SettingsModal from './components/SettingsModal';
 import DeleteDataModal from './components/DeleteDataModal';
 import AuriMeaApp from './components/AuriMea';
 import PlaceholderView from './components/PlaceholderView';
+import FlashcardsView from './components/FlashcardsView';
+import FwDatenApp from './components/FWDaten'; // Import the new app
 
 // Hooks
 import { useMediaQuery } from './hooks/useMediaQuery';
@@ -38,7 +40,7 @@ const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }>
   [MyProject.MemoMea]: { label: 'MemoMea', icon: 'edit_note' },
   [MyProject.ReadLateR]: { label: 'ReadLateR', icon: 'bookmark' },
   [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
-  [MyProject.AuriMea]: { label: 'AuriMea', icon: 'monitoring' },
+  [MyProject.AuriMea]: { label: 'AuriMea', icon: 'payments' },
   [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
   [MyProject.Flashcards]: { label: 'Flashcards', icon: 'style' },
 };
@@ -106,14 +108,15 @@ const App: React.FC = () => {
   }, [nav.activeView, nav.activeMyProject, nav.activeCollectionId, data.bookmarks.readLaterShowArchived]);
 
   // --- Data Handlers ---
-  const handleDeleteAppData = (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri') => {
+  const handleDeleteAppData = (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'fwdaten') => {
     const confirmationMessage: Record<typeof scope, string> = {
-        all: "Möchten Sie wirklich ALLE Anwendungsdaten (Apps, MemoMea, ReadLateR, CollMea, AuriMea) unwiderruflich löschen?",
+        all: "Möchten Sie wirklich ALLE Anwendungsdaten (Apps, MemoMea, ReadLateR, CollMea, AuriMea, FW-Daten) unwiderruflich löschen?",
         apps: "Möchten Sie wirklich ALLE Apps löschen?",
         memo: "Möchten Sie wirklich ALLE MemoMea-Einträge löschen?",
         read: "Möchten Sie wirklich ALLE ReadLateR-Lesezeichen löschen?",
         coll: "Möchten Sie wirklich ALLE CollMea-Sammlungen löschen?",
         auri: "Möchten Sie wirklich ALLE AuriMea-Daten (Konten, Transaktionen etc.) löschen?",
+        fwdaten: "Möchten Sie wirklich ALLE FW-Daten (Zähler, Zählerstände) unwiderruflich löschen?",
     };
     
     ui.showConfirmation(
@@ -125,6 +128,12 @@ const App: React.FC = () => {
         if (scope === 'all' || scope === 'read') data.bookmarks.setBookmarks([]);
         if (scope === 'all' || scope === 'coll') data.collections.setCollections([]);
         if (scope === 'all' || scope === 'auri') data.auriMea.resetAuriMeaData();
+        if (scope === 'all' || scope === 'fwdaten') {
+            localStorage.removeItem('fw-data-meters');
+            localStorage.removeItem('fw-data-readings');
+            localStorage.removeItem('fw-data-meter-draft');
+            localStorage.removeItem('fw-data-reading-drafts');
+        }
         
         setIsDeleteModalOpen(false);
         ui.showNotification("Erfolg", "Die ausgewählten Daten wurden gelöscht.", 'success');
@@ -132,11 +141,12 @@ const App: React.FC = () => {
     );
   };
 
-  const handleExportData = async (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd') => {
+  const handleExportData = async (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten') => {
     let dataToExport: any;
     let fileName = `axismea_backup_${scope}.json`;
 
     if (scope === 'memomd') {
+        const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
         const filenames = new Map<string, number>();
 
@@ -178,6 +188,10 @@ const App: React.FC = () => {
                     transactions: data.auriMea.transactions,
                     categories: data.auriMea.categories,
                     templates: data.auriMea.templates,
+                },
+                fwDaten: {
+                    meters: JSON.parse(localStorage.getItem('fw-data-meters') || '[]'),
+                    readings: JSON.parse(localStorage.getItem('fw-data-readings') || '[]'),
                 }
             };
             fileName = `axismea_backup_all_${new Date().toISOString().split('T')[0]}.json`;
@@ -194,6 +208,13 @@ const App: React.FC = () => {
                 templates: data.auriMea.templates,
             };
             fileName = `axismea_backup_auri_${new Date().toISOString().split('T')[0]}.json`;
+            break;
+        case 'fwdaten':
+            dataToExport = {
+                meters: JSON.parse(localStorage.getItem('fw-data-meters') || '[]'),
+                readings: JSON.parse(localStorage.getItem('fw-data-readings') || '[]'),
+            };
+            fileName = `axismea_backup_fwdaten_${new Date().toISOString().split('T')[0]}.json`;
             break;
     }
     
@@ -219,6 +240,7 @@ const App: React.FC = () => {
                 const content = e.target?.result;
                 if (!(content instanceof ArrayBuffer)) throw new Error("File could not be read as ArrayBuffer");
                 
+                const JSZip = (await import('jszip')).default;
                 const zip = await JSZip.loadAsync(content);
                 const newEntries: JournalEntry[] = [];
                 const filePromises: Promise<void>[] = [];
@@ -279,6 +301,13 @@ const App: React.FC = () => {
             ui.showNotification('Erfolg', 'AuriMea-Daten erfolgreich importiert.', 'success');
             importedSomething = true;
         } 
+        // Check for FW-Daten standalone backup
+        else if (parsedData.meters && parsedData.readings && !parsedData.apps) {
+            localStorage.setItem('fw-data-meters', JSON.stringify(parsedData.meters));
+            localStorage.setItem('fw-data-readings', JSON.stringify(parsedData.readings));
+            ui.showNotification('Erfolg', 'FW-Daten erfolgreich importiert.', 'success');
+            importedSomething = true;
+        }
         // Check for Main App (including full backup)
         else if (parsedData.apps && parsedData.journalEntries && parsedData.bookmarks && parsedData.collections) {
             data.apps.setApps(parsedData.apps);
@@ -289,6 +318,11 @@ const App: React.FC = () => {
             // If it's a full backup, also import AuriMea data
             if(parsedData.auriMea) {
                 data.auriMea.importAuriMeaData(parsedData.auriMea);
+            }
+
+            if(parsedData.fwDaten) {
+                localStorage.setItem('fw-data-meters', JSON.stringify(parsedData.fwDaten.meters));
+                localStorage.setItem('fw-data-readings', JSON.stringify(parsedData.fwDaten.readings));
             }
             
             ui.showNotification('Erfolg', 'Daten erfolgreich importiert.', 'success');
@@ -399,13 +433,13 @@ const App: React.FC = () => {
         />;
     }
     if (activeProject === MyProject.AuriMea) {
-        return <AuriMeaApp onExitSetup={handleExitAuriMeaSetup} />;
+        return <AuriMeaApp isMobileView={!isDesktop} onBack={handleExitAuriMeaSetup} />;
     }
     if (activeProject === MyProject.FWDaten) {
-        return <PlaceholderView title="FW-Daten" icon="ssid_chart" />;
+        return <FwDatenApp isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} />;
     }
     if (activeProject === MyProject.Flashcards) {
-        return <PlaceholderView title="Flashcards" icon="style" />;
+        return <FlashcardsView isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} showNotification={ui.showNotification} />;
     }
     if (activeAppView) {
         return <AppsView 
@@ -473,7 +507,7 @@ const App: React.FC = () => {
                   return actions;
               })()}
               onOpenSettings={() => setIsSettingsModalOpen(true)}
-              isSubAppActive={nav.activeMyProject === MyProject.AuriMea}
+              isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject as MyProject)}
           >
               {renderContent()}
           </DesktopLayout>

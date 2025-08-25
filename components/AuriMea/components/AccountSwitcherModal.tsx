@@ -31,7 +31,7 @@ const AccountSwitcherModal: React.FC<AccountSwitcherModalProps> = ({ isOpen, onC
             >
                 <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-zinc-700/60">
                     <h2 className="text-xl font-bold">Konto wechseln</h2>
-                    <button onClick={onClose} className="p-2 -m-2"><Icon name="close" /></button>
+                    <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-8 h-8 flex items-center justify-center -m-2"><Icon name="close" /></button>
                 </header>
                 <div className="flex-grow overflow-y-auto p-2">
                     <ul className="space-y-1">

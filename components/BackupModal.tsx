@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 
-type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd';
+type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten';
 
 interface BackupModalProps {
   mode: 'export' | 'import';
@@ -19,7 +19,8 @@ const scopeDetailsMap: Record<ExportScope, { label: string; icon: string }> = {
     memomd: { label: 'MemoMea (Markdown)', icon: 'markdown' },
     read: { label: 'ReadLateR', icon: 'bookmark' },
     coll: { label: 'CollMea', icon: 'collections_bookmark' },
-    auri: { label: 'AuriMea', icon: 'monitoring' },
+    auri: { label: 'AuriMea', icon: 'payments' },
+    fwdaten: { label: 'FW-Daten', icon: 'ssid_chart' },
 };
 
 const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExport, onImport }) => {
@@ -94,7 +95,7 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 active:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+            className="text-zinc-400 active:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             aria-label="Modal schließen"
           >
             <span className="material-symbols-outlined">close</span>

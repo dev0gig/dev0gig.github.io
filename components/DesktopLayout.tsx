@@ -96,7 +96,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                   {searchValue && (
                     <button
                       onClick={onClearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors rounded-full w-8 h-8 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
                       aria-label="Suche löschen"
                     >
                       <span className="material-symbols-outlined text-xl">

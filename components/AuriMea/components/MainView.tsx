@@ -9,6 +9,7 @@ interface MainViewProps {
   onOpenForm: (transaction: Transaction | null) => void;
   onOpenSettings: () => void;
   onOpenAnalysis?: () => void;
+  onBack?: () => void;
 }
 
 const TransactionRow: React.FC<{ transaction: Transaction; onClick: (t: Transaction) => void }> = ({ transaction, onClick }) => {
@@ -49,7 +50,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onClick: (t: Transact
 };
 
 
-const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenAnalysis }) => {
+const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenAnalysis, onBack }) => {
     const { accounts, transactions, activeAccountId } = useApp();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAccountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
@@ -103,31 +104,38 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenA
 
     return (
         <div className="h-full flex flex-col">
-            <header className="flex items-center justify-between p-4 md:p-0 md:mb-6 flex-shrink-0">
-                <button
-                    className="flex items-center space-x-3 text-left disabled:cursor-default group md:pointer-events-none"
-                    onClick={() => canSwitchAccounts && setAccountSwitcherOpen(true)}
-                    disabled={!canSwitchAccounts}
-                    aria-label="Konto wechseln"
-                >
-                    <div className={`p-3 rounded-lg ${activeAccount.color}`}>
-                        <Icon name={activeAccount.icon} className="text-white !text-3xl" />
-                    </div>
-                    <div>
-                        <div className="flex items-center space-x-1.5">
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{activeAccount.name}</h1>
-                            {canSwitchAccounts && <Icon name="unfold_more" className="text-zinc-500 md:hidden" />}
+            <header className="flex items-center justify-between p-4 md:p-0 md:pb-6 md:border-b md:border-zinc-800 flex-shrink-0">
+                <div className="flex items-center flex-1 min-w-0">
+                    {onBack && (
+                        <button onClick={onBack} className="mr-1 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 md:hidden" aria-label="Zurück">
+                            <span className="material-symbols-outlined">arrow_back</span>
+                        </button>
+                    )}
+                    <button
+                        className="flex items-center space-x-3 text-left disabled:cursor-default group md:pointer-events-none"
+                        onClick={() => canSwitchAccounts && setAccountSwitcherOpen(true)}
+                        disabled={!canSwitchAccounts}
+                        aria-label="Konto wechseln"
+                    >
+                        <div className={`p-3 rounded-lg ${activeAccount.color}`}>
+                            <Icon name={activeAccount.icon} className="text-white !text-3xl" />
                         </div>
-                        <p className={`font-bold text-lg md:text-xl ${balance >= 0 ? 'text-zinc-300' : 'text-red-400'}`}>
-                            {formatCurrency(balance)}
-                        </p>
-                    </div>
-                </button>
+                        <div className="overflow-hidden">
+                            <div className="flex items-center space-x-1.5">
+                                <h1 className="text-2xl md:text-3xl font-bold tracking-tight truncate">{activeAccount.name}</h1>
+                                {canSwitchAccounts && <Icon name="unfold_more" className="text-zinc-500 md:hidden" />}
+                            </div>
+                            <p className={`font-bold text-lg md:text-xl ${balance >= 0 ? 'text-zinc-300' : 'text-red-400'}`}>
+                                {formatCurrency(balance)}
+                            </p>
+                        </div>
+                    </button>
+                </div>
                 
                 <div className="flex items-center space-x-2">
                     {/* Mobile Buttons */}
                     <div className="flex items-center space-x-2 md:hidden">
-                        <button onClick={onOpenSettings} className="text-zinc-400 hover:text-white transition-colors rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500" aria-label="Einstellungen">
+                        <button onClick={onOpenSettings} className="text-zinc-400 hover:text-white transition-colors rounded-full w-10 h-10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500" aria-label="Einstellungen">
                             <Icon name="settings" />
                         </button>
                         <button onClick={() => onOpenForm(null)} className="flex items-center justify-center w-12 h-12 bg-violet-600 rounded-full text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500">
@@ -148,15 +156,15 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenA
                             <span>Neue Transaktion</span>
                         </button>
                         <div className="border-l border-zinc-700/60 h-6" aria-hidden="true"></div>
-                        <button onClick={onOpenSettings} className="text-zinc-400 hover:text-white transition-colors rounded-full p-2.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500" aria-label="Einstellungen">
+                        <button onClick={onOpenSettings} className="text-zinc-400 hover:text-white transition-colors rounded-full w-11 h-11 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500" aria-label="Einstellungen">
                             <Icon name="settings" />
                         </button>
                     </div>
                 </div>
             </header>
 
-            <div className="p-4 md:p-0 flex-shrink-0">
-                 <div className="relative mb-4">
+            <div className="p-4 md:p-0 md:mt-6 flex-shrink-0">
+                 <div className="relative mb-4 md:mb-0">
                     <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
                     <input
                         type="text"
@@ -168,7 +176,7 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenA
                 </div>
             </div>
 
-            <div className="flex-grow overflow-y-auto px-4 md:px-0">
+            <div className="flex-grow overflow-y-auto px-4 md:px-0 md:pt-6">
                 {filteredTransactions.length > 0 ? (
                     <ul className="space-y-2">
                         {Object.entries(transactionGroups).map(([date, txs]) => (

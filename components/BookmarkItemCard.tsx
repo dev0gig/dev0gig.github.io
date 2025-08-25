@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { BookmarkItem } from '../types';
 
@@ -51,7 +52,7 @@ const BookmarkItemCard: React.FC<BookmarkItemCardProps> = ({ bookmark, onDelete,
       <div className="absolute top-2 right-2 flex flex-col space-y-1 z-10">
         <button
           onClick={handleToggleArchive}
-          className="text-zinc-300 bg-black/40 rounded-full p-1.5 transition-all duration-200 hover:bg-violet-500/50 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="text-zinc-300 bg-black/40 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 hover:bg-violet-500/50 hover:text-white focus:outline-none focus:ring-2 focus:ring-violet-400"
           aria-label={bookmark.isArchived ? 'Dearchivieren' : 'Archivieren'}
           title={bookmark.isArchived ? 'Dearchivieren' : 'Archivieren'}
         >
@@ -61,7 +62,7 @@ const BookmarkItemCard: React.FC<BookmarkItemCardProps> = ({ bookmark, onDelete,
         </button>
         <button
           onClick={handleDelete}
-          className="text-zinc-300 bg-black/40 rounded-full p-1.5 transition-all duration-200 hover:bg-red-500/50 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+          className="text-zinc-300 bg-black/40 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 hover:bg-red-500/50 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
           aria-label="Lesezeichen löschen"
           title="Lesezeichen löschen"
         >

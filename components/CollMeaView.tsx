@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Collection, GenericListItem } from '../types';
 import ContextMenu from './ContextMenu';
@@ -71,7 +72,7 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
             </div>
             <button
                 onClick={onDelete}
-                className="text-zinc-500 active:text-red-400 transition-all duration-200 opacity-50 focus-within:opacity-100 group-focus-within:opacity-100 p-1 rounded-full active:bg-red-500/10"
+                className="text-zinc-500 active:text-red-400 transition-all duration-200 opacity-50 focus-within:opacity-100 group-focus-within:opacity-100 w-7 h-7 flex items-center justify-center rounded-full active:bg-red-500/10"
                 aria-label="Element löschen"
             >
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete</span>
@@ -207,7 +208,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                                 </div>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDeleteCollection(collection.id); }}
-                                    className="text-zinc-500 active:text-red-400 transition-all duration-200 opacity-50 group-focus-within:opacity-100 p-1.5 rounded-full active:bg-red-500/10 -mt-1 -mr-1 flex-shrink-0"
+                                    className="text-zinc-500 active:text-red-400 transition-all duration-200 opacity-50 group-focus-within:opacity-100 w-8 h-8 flex items-center justify-center rounded-full active:bg-red-500/10 -mt-1 -mr-1 flex-shrink-0"
                                     aria-label="Sammlung löschen"
                                 >
                                     <span className="material-symbols-outlined">delete</span>

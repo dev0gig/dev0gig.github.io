@@ -72,6 +72,14 @@ export interface Collection {
   items: GenericListItem[];
 }
 
+// Flashcards Types
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+export type FlashcardDeck = Flashcard[];
+
+
 // Weather Widget Types
 export interface WeatherData {
   temperature: number;

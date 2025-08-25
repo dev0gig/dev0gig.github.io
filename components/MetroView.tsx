@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Tile, MyProject, ViewLinkTile, AppLinkTile, MyProjectTile } from '../types';
 
@@ -51,7 +52,7 @@ const MetroView: React.FC<MetroViewProps> = ({ tiles, onTileClick, projectDefini
                 <h1 className="text-3xl font-bold text-zinc-100">AxisMea</h1>
                 <button 
                     onClick={onOpenSettings}
-                    className="text-zinc-400 active:text-white transition-colors rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                    className="text-zinc-400 active:text-white transition-colors rounded-full w-10 h-10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
                     aria-label="Einstellungen öffnen"
                 >
                     <span className="material-symbols-outlined">settings</span>

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo, useCallback, createContext, useContext } from 'react';
 import MainView from './components/MainView';
 import DesktopView from './components/DesktopView';
@@ -9,7 +10,6 @@ import AccountFormModal from './components/AccountFormModal';
 import Icon from './components/Icon';
 import { INITIAL_ACCOUNTS } from './constants';
 import type { Account, Transaction, TransactionTemplate, TransactionType, Categories } from './types';
-import { useMediaQuery } from './hooks/useMediaQuery';
 import AccountManagerModal from './components/AccountManagerModal';
 import CategoryManagerModal from './components/CategoryManagerModal';
 import { useAuriMeaData } from '../../hooks/useAuriMeaData';
@@ -57,11 +57,12 @@ export const useApp = () => {
 };
 
 interface AuriMeaAppProps {
-    onExitSetup?: () => void;
+    isMobileView: boolean;
+    onBack?: () => void;
 }
 
 // Main App Component
-export default function AuriMeaApp({ onExitSetup }: AuriMeaAppProps) {
+export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
     const {
         accounts, setAccounts,
         transactions, setTransactions,
@@ -79,7 +80,7 @@ export default function AuriMeaApp({ onExitSetup }: AuriMeaAppProps) {
     const [isAccountManagerOpen, setAccountManagerOpen] = useState(false);
     const [isCategoryManagerOpen, setCategoryManagerOpen] = useState(false);
     const [isAccountModalOpenForSetup, setAccountModalOpenForSetup] = useState(false);
-    const isDesktop = useMediaQuery('(min-width: 1024px)');
+    const isDesktop = !isMobileView;
 
     // Notification Handlers
     const hideNotification = useCallback(() => {
@@ -288,32 +289,41 @@ export default function AuriMeaApp({ onExitSetup }: AuriMeaAppProps) {
     if (isInitialSetup) {
         return (
             <AppContext.Provider value={contextValue}>
-                 <div className="h-full w-full bg-zinc-900 flex flex-col items-center justify-center text-zinc-400 p-8 text-center animate-fadeIn">
-                    <style>{`
-                        @keyframes fadeIn {
-                          from { opacity: 0; transform: translateY(10px); }
-                          to { opacity: 1; transform: translateY(0); }
-                        }
-                        .animate-fadeIn {
-                          animation: fadeIn 0.5s ease-out forwards;
-                        }
-                    `}</style>
-                    <button 
-                        onClick={() => setAccountModalOpenForSetup(true)}
-                        className="flex items-center font-bold py-3 px-6 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 text-lg"
-                    >
-                        <Icon name="add_circle" className="mr-3"/>
-                        <span>Erstes Konto erstellen</span>
-                    </button>
+                 <div className="h-full w-full bg-zinc-900 flex flex-col">
+                    {!isDesktop && onBack && (
+                         <header className="flex items-center p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0">
+                            <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                                <span className="material-symbols-outlined">arrow_back</span>
+                            </button>
+                        </header>
+                    )}
+                     <div className="flex-grow flex flex-col items-center justify-center text-zinc-400 p-8 text-center animate-fadeIn">
+                        <style>{`
+                            @keyframes fadeIn {
+                              from { opacity: 0; transform: translateY(10px); }
+                              to { opacity: 1; transform: translateY(0); }
+                            }
+                            .animate-fadeIn {
+                              animation: fadeIn 0.5s ease-out forwards;
+                            }
+                        `}</style>
+                        <button 
+                            onClick={() => setAccountModalOpenForSetup(true)}
+                            className="flex items-center font-bold py-3 px-6 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 text-lg"
+                        >
+                            <Icon name="add_circle" className="mr-3"/>
+                            <span>Erstes Konto erstellen</span>
+                        </button>
+                    </div>
+                    {isAccountModalOpenForSetup && (
+                        <AccountFormModal
+                            isOpen={true}
+                            onClose={() => setAccountModalOpenForSetup(false)}
+                            accountToEdit={null}
+                            isSetupMode={true}
+                        />
+                    )}
                 </div>
-                {isAccountModalOpenForSetup && (
-                    <AccountFormModal
-                        isOpen={true}
-                        onClose={() => setAccountModalOpenForSetup(false)}
-                        accountToEdit={null}
-                        isSetupMode={true}
-                    />
-                )}
             </AppContext.Provider>
         );
     }
@@ -330,6 +340,7 @@ export default function AuriMeaApp({ onExitSetup }: AuriMeaAppProps) {
                     <MainView 
                         onOpenForm={handleOpenForm}
                         onOpenSettings={() => setSettingsOpen(true)}
+                        onBack={onBack}
                     />
                 )}
 
