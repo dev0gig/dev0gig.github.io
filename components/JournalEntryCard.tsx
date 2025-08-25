@@ -15,6 +15,7 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
   const [content, setContent] = useState(entry.content);
   const [isEditing, setIsEditing] = useState(() => entry.content === ''); // Start in edit mode if new
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [cursorState, setCursorState] = useState<{ start: number, end: number } | null>(null);
 
   useEffect(() => {
     // Sync local state if prop changes from parent (e.g., from global to-do list toggle)
@@ -26,21 +27,33 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
   useEffect(() => {
     if (isEditing && textareaRef.current) {
       textareaRef.current.focus();
-      const len = textareaRef.current.value.length;
-      textareaRef.current.selectionStart = len;
-      textareaRef.current.selectionEnd = len;
+      // Only move cursor to the end if we're not specifically setting it (e.g., for tabbing)
+      if (!cursorState) {
+          const len = textareaRef.current.value.length;
+          textareaRef.current.selectionStart = len;
+          textareaRef.current.selectionEnd = len;
+      }
     }
   }, [isEditing]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
+      // Auto-resize height
       textarea.style.height = 'inherit';
       const scrollHeight = textarea.scrollHeight;
       const minHeight = 48; // Corresponds to Tailwind's h-12
       textarea.style.height = `${Math.max(scrollHeight, minHeight)}px`;
+
+      // Restore cursor/selection position if specified
+      if (cursorState) {
+        textarea.selectionStart = cursorState.start;
+        textarea.selectionEnd = cursorState.end;
+        setCursorState(null); // Reset after applying
+      }
     }
-  }, [content, isEditing]);
+  }, [content, isEditing, cursorState]);
+
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
@@ -66,6 +79,59 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
         e.preventDefault();
         setContent(entry.content); // revert changes
         setIsEditing(false);
+        return;
+    }
+
+    if (e.key === 'Tab') {
+        e.preventDefault();
+
+        const target = e.currentTarget;
+        const { value, selectionStart, selectionEnd } = target;
+        const indent = '  ';
+
+        // Find the block of lines to operate on
+        const startOfLines = value.lastIndexOf('\n', selectionStart - 1) + 1;
+        
+        let endOfLines = value.indexOf('\n', selectionEnd -1);
+        // If selection ends right on a newline, we only want to affect lines up to that point
+        if (selectionEnd > startOfLines && value[selectionEnd-1] === '\n') {
+          endOfLines = selectionEnd - 1;
+        } else if (endOfLines === -1) {
+          endOfLines = value.length;
+        }
+        
+        const linesToModify = value.substring(startOfLines, endOfLines);
+        const lines = linesToModify.split('\n');
+
+        let charsChangedInSelectionStartLine = 0;
+        let totalCharsChanged = 0;
+
+        const newLines = lines.map((line, index) => {
+            if (e.shiftKey) { // Outdent
+                if (line.startsWith(indent)) {
+                    if (index === 0) charsChangedInSelectionStartLine = -indent.length;
+                    totalCharsChanged -= indent.length;
+                    return line.substring(indent.length);
+                }
+            } else { // Indent
+                if (line.length > 0) { // Don't indent empty lines
+                    if (index === 0) charsChangedInSelectionStartLine = indent.length;
+                    totalCharsChanged += indent.length;
+                    return indent + line;
+                }
+            }
+            return line;
+        });
+
+        const newLinesBlock = newLines.join('\n');
+        const newContent = value.substring(0, startOfLines) + newLinesBlock + value.substring(endOfLines);
+
+        setContent(newContent);
+        
+        const newSelectionStart = Math.max(startOfLines, selectionStart + charsChangedInSelectionStartLine);
+        const newSelectionEnd = selectionEnd + totalCharsChanged;
+
+        setCursorState({ start: newSelectionStart, end: newSelectionEnd });
     }
   };
 
@@ -154,6 +220,8 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
          .markdown-content p { margin-bottom: 0.75em; }
          .markdown-content a { color: #a78bfa; text-decoration: none; }
          .markdown-content a:hover { text-decoration: underline; }
+         .markdown-content ul { list-style-type: disc; }
+         .markdown-content ol { list-style-type: decimal; }
          .markdown-content ul, .markdown-content ol { padding-left: 1.5rem; margin-bottom: 0.75em; }
          .markdown-content li { margin-bottom: 0.25em; }
          .markdown-content blockquote { border-left: 4px solid #52525b; padding-left: 1rem; margin-left: 0; margin-right: 0; font-style: italic; color: #a1a1aa; }
@@ -162,7 +230,7 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({ entry, onUpdate, on
          .markdown-content pre code { background-color: transparent; padding: 0; margin: 0; font-size: 100%; }
          .markdown-content hr { border: none; border-top: 1px solid #52525b; margin: 1.5em 0; }
          .markdown-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-         .markdown-content .task-list-item { margin-left: 0; }
+         .markdown-content .task-list-item { list-style-type: none; }
       `}</style>
       <div className="flex justify-between items-start mb-2">
         <p className="text-xs text-zinc-400 font-medium tracking-wide">{formattedDate} Uhr</p>

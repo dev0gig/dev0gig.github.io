@@ -156,7 +156,7 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
         <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500">
             <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">style</span>
             <h2 className="text-2xl font-bold text-zinc-400">Kein Deck geladen</h2>
-            <p className="mt-1 text-zinc-500 max-w-sm">Importieren Sie ein JSON-Deck, um mit dem Üben zu beginnen.</p>
+            <p className="mt-1 text-zinc-500 max-w-sm">Importieren Sie ein JSON-Deck, um mit dem Üben zu beginnen. Das Format ist `[{"front": "...", "back": "..."}]`.</p>
             <button
                 onClick={() => fileInputRef.current?.click()}
                 className="mt-6 flex items-center font-bold py-2.5 px-5 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
