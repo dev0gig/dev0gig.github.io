@@ -23,6 +23,7 @@ interface DesktopLayoutProps {
   headerSubtitle?: string | null;
   headerActions?: React.ReactNode[];
   onOpenSettings: () => void;
+  onOpenCalendar: () => void;
   isSubAppActive?: boolean;
 }
 
@@ -43,6 +44,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     headerSubtitle,
     headerActions,
     onOpenSettings,
+    onOpenCalendar,
     isSubAppActive = false,
 }) => {
   const [googleSearchQuery, setGoogleSearchQuery] = useState('');
@@ -65,6 +67,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         activeMyProject={activeMyProject}
         onMyProjectSelect={onMyProjectSelect}
         onOpenSettings={onOpenSettings}
+        onOpenCalendar={onOpenCalendar}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         

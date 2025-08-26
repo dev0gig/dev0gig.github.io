@@ -78,17 +78,26 @@ const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onTo
                  </>
             ) : (
                 <>
-                    <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">
-                        {showArchived ? 'archive' : 'bookmarks'}
-                    </span>
-                    <h2 className="text-2xl font-bold text-zinc-400">
-                        {showArchived ? 'Archiv ist leer' : 'Keine Lesezeichen'}
-                    </h2>
-                    <p className="mt-1 text-zinc-500">
-                        {showArchived 
-                            ? 'Archivierte Lesezeichen werden hier angezeigt.' 
-                            : 'Drücke "Neu", um dein erstes Lesezeichen zu speichern.'}
-                    </p>
+                    {showArchived ? (
+                        <>
+                            <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">archive</span>
+                            <h2 className="text-2xl font-bold text-zinc-400">Archiv ist leer</h2>
+                            <p className="mt-1 text-zinc-500">Archivierte Lesezeichen werden hier angezeigt.</p>
+                        </>
+                    ) : (
+                         <>
+                            <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">bookmarks</span>
+                            <h2 className="text-2xl font-bold text-zinc-400">Keine Lesezeichen</h2>
+                            <p className="mt-1 text-zinc-500 mb-6">Füge dein erstes Lesezeichen hinzu, um es später zu lesen.</p>
+                            <button
+                                onClick={onAddNew}
+                                className="flex items-center font-bold py-2.5 px-5 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                            >
+                                <span className="material-symbols-outlined mr-2">add_circle</span>
+                                <span>Erstes Lesezeichen erstellen</span>
+                            </button>
+                        </>
+                    )}
                 </>
             )}
         </div>

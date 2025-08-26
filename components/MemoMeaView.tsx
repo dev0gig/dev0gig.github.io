@@ -125,7 +125,14 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
             <>
               <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">note_add</span>
               <h2 className="text-2xl font-bold text-zinc-400">Keine Einträge</h2>
-              <p className="mt-1 text-zinc-500">Drücke "Neu", um deinen ersten Eintrag zu erstellen.</p>
+              <p className="mt-1 text-zinc-500 mb-6">Erstelle deinen ersten Eintrag, um loszulegen.</p>
+              <button
+                onClick={onAddNew}
+                className="flex items-center font-bold py-2.5 px-5 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+              >
+                <span className="material-symbols-outlined mr-2">add_circle</span>
+                <span>Ersten Eintrag erstellen</span>
+              </button>
             </>
           ) : (
             <>

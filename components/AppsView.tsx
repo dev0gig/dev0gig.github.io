@@ -52,6 +52,7 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
   const otherApps = filteredApps.filter(app => !app.isFavorite);
 
   const noResults = filteredApps.length === 0;
+  const noAppsAtAll = apps.length === 0;
 
   return (
     <div className={`animate-fadeIn h-full flex flex-col ${isMobileView ? '' : 'p-4 sm:p-6'}`}>
@@ -93,32 +94,48 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
       )}
       
       <div className={`flex-grow overflow-y-auto ${isMobileView ? 'p-4 sm:p-6 pt-0 sm:pt-2' : ''}`}>
-        {favorites.length > 0 && (
-          <section className="mb-8">
-              <h2 className="text-lg font-semibold text-zinc-100 mb-4">Angeheftet</h2>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
-                  {favorites.map(app => <AppIcon key={app.id} app={app} onContextMenu={onContextMenu} />)}
-              </div>
-          </section>
-        )}
-
-        {otherApps.length > 0 && (
-          <section>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-zinc-100">Alle Apps</h2>
-              </div>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
-                {otherApps.map(app => <AppIcon key={app.id} app={app} onContextMenu={onContextMenu} />)}
-              </div>
-          </section>
-        )}
-
-        {noResults && (
-          <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500 pt-16">
-              <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">search_off</span>
-              <h2 className="text-2xl font-bold text-zinc-400">Keine Apps gefunden</h2>
-              <p className="mt-1 text-zinc-500">Für "{searchQuery}" gibt es keine Treffer.</p>
+        {noAppsAtAll ? (
+          <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500">
+            <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">apps</span>
+            <h2 className="text-2xl font-bold text-zinc-400">Keine Apps hinzugefügt</h2>
+            <p className="mt-1 text-zinc-500 mb-6">Füge deine erste App hinzu, um loszulegen.</p>
+            {onAddNew && (
+              <button
+                onClick={onAddNew}
+                className="flex items-center font-bold py-2.5 px-5 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+              >
+                <span className="material-symbols-outlined mr-2">add_circle</span>
+                <span>Erste App hinzufügen</span>
+              </button>
+            )}
           </div>
+        ) : noResults ? (
+          <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500 pt-16">
+            <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">search_off</span>
+            <h2 className="text-2xl font-bold text-zinc-400">Keine Apps gefunden</h2>
+            <p className="mt-1 text-zinc-500">Für "{searchQuery}" gibt es keine Treffer.</p>
+          </div>
+        ) : (
+          <>
+            {favorites.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-lg font-semibold text-zinc-100 mb-4">Angeheftet</h2>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
+                  {favorites.map(app => <AppIcon key={app.id} app={app} onContextMenu={onContextMenu} />)}
+                </div>
+              </section>
+            )}
+            {otherApps.length > 0 && (
+              <section>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold text-zinc-100">Alle Apps</h2>
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
+                  {otherApps.map(app => <AppIcon key={app.id} app={app} onContextMenu={onContextMenu} />)}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
       {isMenuOpen && onAddNew && (

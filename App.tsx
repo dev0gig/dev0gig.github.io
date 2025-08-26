@@ -8,6 +8,7 @@ import DesktopLayout from './components/DesktopLayout';
 import MobileLayout from './components/MobileLayout';
 import MainContent from './components/MainContent';
 import GlobalModals from './components/GlobalModals';
+import CalendarWeatherModal from './components/CalendarWeatherModal';
 
 // Hooks
 import { useMediaQuery } from './hooks/useMediaQuery';
@@ -37,6 +38,7 @@ const App: React.FC = () => {
   
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCalendarWeatherModalOpen, setIsCalendarWeatherModalOpen] = useState(false);
 
   // --- Custom Hooks for State Management ---
   const data = {
@@ -61,6 +63,7 @@ const App: React.FC = () => {
     ui.backupModalState.isOpen ||
     isSettingsModalOpen ||
     isDeleteModalOpen ||
+    isCalendarWeatherModalOpen ||
     !!nav.activeMobileContent ||
     (isDesktop && (!!nav.activeCollectionId || !!nav.activeMyProject));
   
@@ -73,6 +76,7 @@ const App: React.FC = () => {
       else if (ui.backupModalState.isOpen) ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
       else if (isSettingsModalOpen) setIsSettingsModalOpen(false);
       else if (isDeleteModalOpen) setIsDeleteModalOpen(false);
+      else if (isCalendarWeatherModalOpen) setIsCalendarWeatherModalOpen(false);
       else if (nav.activeMobileContent) nav.handleCloseMobileContent();
       else if (isDesktop) {
           if (nav.activeCollectionId) {
@@ -193,6 +197,7 @@ const App: React.FC = () => {
                   return actions;
               })()}
               onOpenSettings={() => setIsSettingsModalOpen(true)}
+              onOpenCalendar={() => setIsCalendarWeatherModalOpen(true)}
               isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject as MyProject)}
           >
               <MainContent {...mainContentProps} />
@@ -215,13 +220,20 @@ const App: React.FC = () => {
           data={data}
           isSettingsModalOpen={isSettingsModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
-          isDeleteModalOpen={isDeleteModalOpen}
+      isDeleteModalOpen={isDeleteModalOpen}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           handleExportData={handleExportData}
           handleImportData={handleImportData}
           handleDeleteAppData={handleDeleteAppData}
           isDesktop={isDesktop}
         />
+
+        {isCalendarWeatherModalOpen && (
+            <CalendarWeatherModal
+                isOpen={isCalendarWeatherModalOpen}
+                onClose={() => setIsCalendarWeatherModalOpen(false)}
+            />
+        )}
     </>
   );
 };
