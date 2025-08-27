@@ -1,10 +1,8 @@
 
 
-import React, { useState, useEffect } from 'react';
 
-interface SidebarInfoWidgetProps {
-    onOpenCalendar: () => void;
-}
+
+import React, { useState, useEffect } from 'react';
 
 // Helper function to get the ISO week number
 const getWeekNumber = (d: Date): number => {
@@ -16,7 +14,7 @@ const getWeekNumber = (d: Date): number => {
 };
 
 
-const SidebarInfoWidget: React.FC<SidebarInfoWidgetProps> = ({ onOpenCalendar }) => {
+const SidebarInfoWidget: React.FC = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -84,10 +82,8 @@ const SidebarInfoWidget: React.FC<SidebarInfoWidgetProps> = ({ onOpenCalendar })
     const calendarWeeks = getCalendarGrid();
 
     return (
-        <button
-            onClick={onOpenCalendar}
-            aria-label="Kalender und Wetter öffnen"
-            className="w-full bg-zinc-800/50 p-3 rounded-xl mb-6 text-zinc-100 transition-all duration-300 ease-in-out animate-fadeIn hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+        <div
+            className="w-full bg-zinc-800/50 p-3 rounded-xl mb-6 text-zinc-100 animate-fadeIn"
         >
             <style>{`
                 @keyframes fadeIn {
@@ -126,7 +122,7 @@ const SidebarInfoWidget: React.FC<SidebarInfoWidgetProps> = ({ onOpenCalendar })
                     ))}
                 </div>
             </div>
-        </button>
+        </div>
     );
 };
 

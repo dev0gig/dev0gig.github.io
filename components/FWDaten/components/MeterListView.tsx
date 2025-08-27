@@ -31,7 +31,7 @@ const MeterListView: React.FC<MeterListViewProps> = ({ onSelectMeter, selectedMe
                 </div>
             </div>
 
-            <div className="flex-grow overflow-y-auto -mr-2 pr-2 space-y-2">
+            <div className="flex-grow overflow-y-auto -mr-2 pr-2 space-y-3">
                 {meters.length === 0 ? (
                      <div className="text-center text-zinc-500 pt-10">
                         <Icon name="info" className="text-3xl mb-2" />

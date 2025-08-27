@@ -2,6 +2,7 @@
 
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, MyProject, Tile, Collection, JournalEntry } from './types';
 
@@ -10,7 +11,6 @@ import DesktopLayout from './components/DesktopLayout';
 import MobileLayout from './components/MobileLayout';
 import MainContent from './components/MainContent';
 import GlobalModals from './components/GlobalModals';
-import CalendarWeatherModal from './components/CalendarWeatherModal';
 
 // Hooks
 import { useMediaQuery } from './hooks/useMediaQuery';
@@ -40,7 +40,6 @@ const App: React.FC = () => {
   
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isCalendarWeatherModalOpen, setIsCalendarWeatherModalOpen] = useState(false);
 
   // --- Custom Hooks for State Management ---
   const data = {
@@ -65,7 +64,6 @@ const App: React.FC = () => {
     ui.backupModalState.isOpen ||
     isSettingsModalOpen ||
     isDeleteModalOpen ||
-    isCalendarWeatherModalOpen ||
     !!nav.activeMobileContent ||
     (isDesktop && (!!nav.activeCollectionId || !!nav.activeMyProject));
   
@@ -78,7 +76,6 @@ const App: React.FC = () => {
       else if (ui.backupModalState.isOpen) ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
       else if (isSettingsModalOpen) setIsSettingsModalOpen(false);
       else if (isDeleteModalOpen) setIsDeleteModalOpen(false);
-      else if (isCalendarWeatherModalOpen) setIsCalendarWeatherModalOpen(false);
       else if (nav.activeMobileContent) nav.handleCloseMobileContent();
       else if (isDesktop) {
           if (nav.activeCollectionId) {
@@ -171,7 +168,7 @@ const App: React.FC = () => {
               onMyProjectSelect={nav.handleMyProjectSelect}
               showSearchBar={(() => {
                   if (nav.activeView === View.Apps) return true;
-                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject);
+                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards, MyProject.CollMea].includes(nav.activeMyProject);
                   return false;
               })()}
               searchPlaceholder={(() => {
@@ -199,8 +196,7 @@ const App: React.FC = () => {
                   return actions;
               })()}
               onOpenSettings={() => setIsSettingsModalOpen(true)}
-              onOpenCalendar={() => setIsCalendarWeatherModalOpen(true)}
-              isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject as MyProject)}
+              isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards, MyProject.CollMea].includes(nav.activeMyProject as MyProject)}
           >
               <MainContent {...mainContentProps} />
           </DesktopLayout>
@@ -229,13 +225,6 @@ const App: React.FC = () => {
           handleDeleteAppData={handleDeleteAppData}
           isDesktop={isDesktop}
         />
-
-        {isCalendarWeatherModalOpen && (
-            <CalendarWeatherModal
-                isOpen={isCalendarWeatherModalOpen}
-                onClose={() => setIsCalendarWeatherModalOpen(false)}
-            />
-        )}
     </>
   );
 };

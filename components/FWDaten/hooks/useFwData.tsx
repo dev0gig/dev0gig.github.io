@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import useLocalStorage from './useLocalStorage';
 import { Meter, Reading } from '../types';
+import { initialMeters } from '../../../data/fwDatenMeters';
+import { initialReadings } from '../../../data/fwDatenReadings';
 
 interface FwDataContextType {
     meters: Meter[];
@@ -27,8 +29,8 @@ interface FwDataContextType {
 const FwDataContext = createContext<FwDataContextType | null>(null);
 
 export const FwDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [meters, setMeters] = useLocalStorage<Meter[]>('fw-data-meters', []);
-    const [readings, setReadings] = useLocalStorage<Reading[]>('fw-data-readings', []);
+    const [meters, setMeters] = useLocalStorage<Meter[]>('fw-data-meters', initialMeters);
+    const [readings, setReadings] = useLocalStorage<Reading[]>('fw-data-readings', initialReadings);
     const [meterDraft, setMeterDraft] = useLocalStorage<Partial<Meter>>('fw-data-meter-draft', {});
     const [readingDrafts, setReadingDrafts] = useLocalStorage<Record<string, Partial<Reading>>>('fw-data-reading-drafts', {});
 

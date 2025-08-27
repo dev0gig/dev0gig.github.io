@@ -28,15 +28,16 @@ const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meterId, onBack, onEd
     const secondLastReading = readings.length > 1 ? readings[readings.length - 2] : null;
     
     let consumptionSinceLast = 0;
-    let daysSinceLast = 0;
-    let avgPerDay = 0;
-
     if (lastReading && secondLastReading) {
         consumptionSinceLast = lastReading.value - secondLastReading.value;
-        const timeDiff = new Date(lastReading.date).getTime() - new Date(secondLastReading.date).getTime();
-        daysSinceLast = Math.max(1, Math.round(timeDiff / (1000 * 3600 * 24)));
-        avgPerDay = consumptionSinceLast / daysSinceLast;
     }
+
+    let daysSinceLastReading = 0;
+    if (lastReading) {
+        const timeDiff = new Date().getTime() - new Date(lastReading.date).getTime();
+        daysSinceLastReading = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24)));
+    }
+
 
     const handleDeleteMeter = () => {
         showModal({
@@ -78,10 +79,9 @@ const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meterId, onBack, onEd
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <StatCard title="Verbrauch (letzte Periode)" value={consumptionSinceLast.toLocaleString('de-DE')} icon="local_fire_department" />
-                    <StatCard title="Tage (letzte Periode)" value={daysSinceLast.toLocaleString('de-DE')} icon="calendar_today" />
-                    <StatCard title="Ø Verbrauch / Tag" value={avgPerDay.toFixed(2).replace('.', ',')} icon="moving" />
+                    <StatCard title="Tage seit letzter Ablesung" value={daysSinceLastReading.toLocaleString('de-DE')} icon="update" />
                 </div>
 
                 {/* Chart */}

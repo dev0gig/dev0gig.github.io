@@ -1,6 +1,8 @@
 
 
 
+
+
 import React from 'react';
 import { View, MyProject } from '../types';
 import SidebarInfoWidget from './SidebarInfoWidget';
@@ -11,7 +13,6 @@ interface SidebarProps {
   activeMyProject: MyProject | null;
   onMyProjectSelect: (project: MyProject) => void;
   onOpenSettings: () => void;
-  onOpenCalendar: () => void;
 }
 
 interface NavItem {
@@ -65,7 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     activeMyProject, 
     onMyProjectSelect,
     onOpenSettings,
-    onOpenCalendar
 }) => {
   return (
     <aside className="bg-zinc-900/50 border-r border-zinc-800 flex flex-col p-4 flex-shrink-0 w-72">
@@ -80,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
         </div>
         
-        <SidebarInfoWidget onOpenCalendar={onOpenCalendar} />
+        <SidebarInfoWidget />
 
         <div className="flex-grow overflow-y-auto overflow-x-hidden -mr-2 pr-2">
             <h3 className="px-2 mb-3 mt-2 font-bold text-zinc-100">My Favorites</h3>

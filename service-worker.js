@@ -1,6 +1,7 @@
 
 
 
+
 const CACHE_NAME = 'axismea-cache-v9';
 
 const PRECACHE_URLS = [
@@ -24,14 +25,10 @@ const PRECACHE_URLS = [
   './components/BookmarkFormModal.tsx',
   './components/BookmarkItemCard.tsx',
   './components/BottomNavigation.tsx',
-  './components/CalendarWeatherModal.tsx',
   './components/CollMeaView.tsx',
   './components/CollectionFormModal.tsx',
   './components/CompletedTasksModal.tsx',
   './components/ContextMenu.tsx',
-  './components/DetailedCalendar.tsx',
-  './components/DetailedWeather.tsx',
-  './components/HolidayDetailModal.tsx',
   './components/JournalEntryCard.tsx',
   './components/MemoMeaExportModal.tsx',
   './components/MemoMeaView.tsx',
@@ -61,10 +58,8 @@ const PRECACHE_URLS = [
   './data/collections.ts',
   './data/categories.ts',
   './data/transactions.ts',
-  
-  // Utils
-  './utils/holidays.ts',
-  './utils/weather.ts',
+  './data/fwDatenMeters.ts',
+  './data/fwDatenReadings.ts',
   
   // External assets
   'https://cdn.tailwindcss.com',
