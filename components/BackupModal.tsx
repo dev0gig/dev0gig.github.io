@@ -1,5 +1,6 @@
 
 
+
 import React, { useEffect, useRef } from 'react';
 
 type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten';
@@ -61,7 +62,7 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
              <button
                 key={key}
                 onClick={() => onExport(key)}
-                className="w-full flex items-center text-left p-4 bg-zinc-700/50 active:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                className="w-full flex items-center text-left p-4 bg-zinc-700/50 hover:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
               >
                 <span className="material-symbols-outlined mr-4 text-zinc-300">{scopeDetailsMap[key].icon}</span>
                 <span className="font-medium">{scopeDetailsMap[key].label}</span>
@@ -95,7 +96,7 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 active:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+            className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             aria-label="Modal schließen"
           >
             <span className="material-symbols-outlined">close</span>
@@ -109,7 +110,7 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
             <p className="text-sm text-zinc-400">Ihre {details.label}-Daten werden als Datei exportiert.</p>
               <button
                 onClick={() => onExport(scope)}
-                className="w-full flex items-center justify-center text-left p-4 bg-violet-600 active:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                className="w-full flex items-center justify-center text-left p-4 bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
               >
                 <span className="material-symbols-outlined mr-3">{details.icon}</span>
                 <span>{`Backup für ${details.label} erstellen`}</span>
@@ -130,7 +131,7 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
                 />
                 <button
                     onClick={handleImportClick}
-                    className="w-full flex items-center justify-center text-left p-4 bg-violet-600 active:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                    className="w-full flex items-center justify-center text-left p-4 bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
                 >
                     <span className="material-symbols-outlined mr-3">file_upload</span>
                     <span>Backup-Datei auswählen...</span>

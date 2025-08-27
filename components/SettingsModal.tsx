@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 
 interface SettingsModalProps {
@@ -48,7 +49,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, onExportClick, o
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 active:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+            className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             aria-label="Einstellungen schließen"
           >
             <span className="material-symbols-outlined">close</span>
@@ -64,21 +65,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, onExportClick, o
             </div>
             <button 
                 onClick={onExportClick}
-                className="w-full flex items-center text-left p-4 bg-zinc-700/50 active:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                className="w-full flex items-center text-left p-4 bg-zinc-700/50 hover:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             >
                 <span className="material-symbols-outlined mr-4 text-zinc-300">upload_file</span>
                 <span className="font-medium">Backup exportieren</span>
             </button>
             <button 
                 onClick={onImportClick}
-                className="w-full flex items-center text-left p-4 bg-zinc-700/50 active:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+                className="w-full flex items-center text-left p-4 bg-zinc-700/50 hover:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             >
                 <span className="material-symbols-outlined mr-4 text-zinc-300">input</span>
                 <span className="font-medium">Backup importieren</span>
             </button>
             <button 
                 onClick={onDeleteAllClick}
-                className="w-full flex items-center text-left p-4 bg-red-900/40 active:bg-red-900/60 rounded-lg transition-colors duration-200 text-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-900 focus:ring-red-500"
+                className="w-full flex items-center text-left p-4 bg-red-900/40 hover:bg-red-900/60 rounded-lg transition-colors duration-200 text-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-900 focus:ring-red-500"
             >
                 <span className="material-symbols-outlined mr-4 text-red-400">delete_forever</span>
                 <span className="font-medium">Alles löschen</span>

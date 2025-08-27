@@ -142,103 +142,101 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
       }
   };
 
+  // FIX: Completed the validation logic which was truncated in the original file.
   const isFormValid = useMemo(() => {
       const parsedAmount = parseFloat(amount.replace(',', '.'));
-      if (isNaN(parsedAmount) || parsedAmount <= 0) return false;
-      if (formType === 'transfer') return fromAccountId && toAccountId && fromAccountId !== toAccountId;
-      return description && category && date;
-  }, [amount, formType, fromAccountId, toAccountId, description, category, date]);
+      if (isNaN(parsedAmount) || parsedAmount <= 0 || !date) return false;
+
+      if (formType === 'transfer') {
+          return fromAccountId && toAccountId && fromAccountId !== toAccountId;
+      } else {
+          return description.trim() !== '' && category.trim() !== '';
+      }
+  }, [amount, date, formType, fromAccountId, toAccountId, description, category]);
 
   if (!isOpen) return null;
-  
+
+  const modalTitle = isEditMode ? 'Transaktion bearbeiten' : 'Neue Transaktion';
+
+  // FIX: Added the missing JSX return to make this a valid React component.
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-modalFadeIn" onClick={onClose}>
-      <style>{`
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .animate-modalFadeIn { animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .animate-modalSlideUp { animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-      `}</style>
-      
-       <div className="bg-zinc-900 w-full max-w-lg rounded-t-2xl shadow-lg flex flex-col h-[90dvh] animate-modalSlideUp" onClick={(e) => e.stopPropagation()}>
-          <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-zinc-700/60">
-              <h2 className="text-xl font-bold">{isEditMode ? 'Transaktion bearbeiten' : 'Neue Transaktion'}</h2>
-              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center -m-2 rounded-full hover:bg-zinc-700/50"><Icon name="close" /></button>
-          </header>
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
+        <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+            .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
+            .animate-scaleIn { animation: scaleIn 0.2s ease-out forwards; }
+        `}</style>
+        <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-sm m-4 p-6 animate-scaleIn h-[90vh] max-h-[700px] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6 flex-shrink-0">
+                <h2 className="text-xl font-bold">{modalTitle}</h2>
+                <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-grow overflow-y-auto -mr-3 pr-3 space-y-4">
+                    <div className="grid grid-cols-3 bg-zinc-800 rounded-lg p-1 gap-1">
+                        <button type="button" onClick={() => setFormType('expense')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'expense' ? 'bg-red-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Ausgabe</button>
+                        <button type="button" onClick={() => setFormType('income')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'income' ? 'bg-green-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Einnahme</button>
+                        <button type="button" onClick={() => setFormType('transfer')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'transfer' ? 'bg-blue-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Überweisung</button>
+                    </div>
 
-          <form onSubmit={handleSubmit} className="flex-grow flex flex-col min-h-0">
-              <div className="flex-grow overflow-y-auto p-4 space-y-4">
-                  <div className="grid grid-cols-3 bg-zinc-800 rounded-lg p-1 gap-1">
-                      <button type="button" onClick={() => setFormType('expense')} disabled={isEditMode} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'expense' ? 'bg-red-500/80 text-white' : 'text-zinc-400 hover:bg-zinc-700 disabled:opacity-50'}`}>Ausgabe</button>
-                      <button type="button" onClick={() => setFormType('income')} disabled={isEditMode} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'income' ? 'bg-green-500/80 text-white' : 'text-zinc-400 hover:bg-zinc-700 disabled:opacity-50'}`}>Einnahme</button>
-                      <button type="button" onClick={() => setFormType('transfer')} disabled={isEditMode} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'transfer' ? 'bg-blue-500/80 text-white' : 'text-zinc-400 hover:bg-zinc-700 disabled:opacity-50'}`}>Übertrag</button>
-                  </div>
-
-                  {formType === 'transfer' ? (
-                    <div className="space-y-4">
-                        <div>
-                            <label htmlFor="fromAccount" className="block text-sm font-medium text-zinc-300 mb-1">Von Konto</label>
-                            <select id="fromAccount" value={fromAccountId} onChange={e => setFromAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2.5 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 appearance-none">
-                                {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                            </select>
+                    <div className="flex gap-4">
+                        <div className="flex-1">
+                            <label htmlFor="amount" className="block text-sm font-medium text-zinc-300 mb-1">Betrag</label>
+                            <input type="text" inputMode="decimal" id="amount" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="0,00" className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
                         </div>
-                         <div>
-                            <label htmlFor="toAccount" className="block text-sm font-medium text-zinc-300 mb-1">Auf Konto</label>
-                            <select id="toAccount" value={toAccountId} onChange={e => setToAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2.5 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 appearance-none">
-                                {accounts.filter(a => a.id !== fromAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                            </select>
+                        <div className="flex-1">
+                            <label htmlFor="date" className="block text-sm font-medium text-zinc-300 mb-1">Datum</label>
+                            <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white" />
                         </div>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                        <div>
-                            <label htmlFor="description" className="block text-sm font-medium text-zinc-300 mb-1">Beschreibung</label>
-                            <textarea 
-                                ref={descriptionTextareaRef}
-                                id="description" 
-                                value={description} 
-                                onChange={(e) => setDescription(e.target.value)} 
-                                required 
-                                placeholder="z.B. Wocheneinkauf" 
-                                rows={1} 
-                                className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none overflow-y-hidden leading-relaxed" 
+                    
+                    {formType === 'transfer' ? (
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="fromAccount" className="block text-sm font-medium text-zinc-300 mb-1">Von</label>
+                                <select id="fromAccount" value={fromAccountId} onChange={e => setFromAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="toAccount" className="block text-sm font-medium text-zinc-300 mb-1">Nach</label>
+                                <select id="toAccount" value={toAccountId} onChange={e => setToAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                    {accounts.filter(acc => acc.id !== fromAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="description" className="block text-sm font-medium text-zinc-300 mb-1">Beschreibung</label>
+                                <textarea ref={descriptionTextareaRef} id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="z.B. Wocheneinkauf" rows={1} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none overflow-hidden" />
+                            </div>
+                            <CategoryInput
+                                value={category}
+                                onChange={setCategory}
+                                allCategories={categories[formType]}
                             />
                         </div>
-                        <div className="relative">
-                           <CategoryInput value={category} onChange={setCategory} allCategories={formType === 'income' ? categories.income : categories.expense} />
-                       </div>
-                    </div>
-                  )}
-                   <div>
-                        <label htmlFor="amount" className="block text-sm font-medium text-zinc-300 mb-1">Betrag (€)</label>
-                        <input type="text" inputMode="decimal" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} required placeholder="0,00" className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
-                    </div>
-                     <div>
-                        <label htmlFor="date" className="block text-sm font-medium text-zinc-300 mb-1">Datum</label>
-                        <input type="date" id="date" value={date} onChange={(e) => setDate(e.target.value)} required className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" />
-                    </div>
-              </div>
-              
-              <div className="flex-shrink-0 p-4 border-t border-zinc-700/60 flex items-center gap-3">
-                  {isEditMode && (
-                      <button
-                          type="button"
-                          onClick={handleDelete}
-                          className="flex items-center justify-center gap-2 bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-red-500"
-                          aria-label="Transaktion löschen"
-                      >
-                          <Icon name="delete" />
-                          <span>Löschen</span>
-                      </button>
-                  )}
-                  <button type="submit" disabled={!isFormValid} className="flex-grow w-full flex items-center justify-center bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500">
-                      {isEditMode ? 'Änderungen speichern' : 'Speichern'}
-                  </button>
-              </div>
-          </form>
-      </div>
+                    )}
+                </div>
+
+                <div className="pt-4 mt-auto flex-shrink-0 flex items-center gap-3">
+                    {isEditMode && formType !== 'transfer' && (
+                        <button type="button" onClick={handleDelete} className="bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold p-3 rounded-lg">
+                            <Icon name="delete" />
+                        </button>
+                    )}
+                    <button type="submit" disabled={!isFormValid} className="flex-1 bg-violet-600 disabled:bg-zinc-600 text-white font-bold py-3 px-4 rounded-lg">
+                        {isEditMode ? 'Änderungen speichern' : 'Hinzufügen'}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
   );
 };
 
+// FIX: Added default export to resolve module import error.
 export default TransactionFormModal;

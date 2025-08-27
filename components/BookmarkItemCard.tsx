@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { BookmarkItem } from '../types';
 
@@ -32,7 +33,7 @@ const BookmarkItemCard: React.FC<BookmarkItemCardProps> = ({ bookmark, onDelete,
       href={bookmark.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="relative flex flex-col bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 rounded-xl shadow-md group transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 overflow-hidden"
+      className="relative flex flex-col bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 rounded-xl shadow-md group transition-all duration-300 ease-in-out hover:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 overflow-hidden"
     >
       <div className="relative aspect-video w-full bg-zinc-700 flex items-center justify-center overflow-hidden">
         {bookmark.imageUrl ? (

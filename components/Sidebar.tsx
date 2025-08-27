@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { View, MyProject } from '../types';
 import SidebarInfoWidget from './SidebarInfoWidget';

@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState, useEffect, useMemo, useCallback, createContext, useContext } from 'react';
 import MainView from './components/MainView';
 import DesktopView from './components/DesktopView';
@@ -235,7 +237,7 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
     
     const deleteAccount = useCallback((accountId: string) => {
         if (accounts.length <= 1) {
-            showNotification({ title: 'Aktion nicht möglich', message: 'Das letzte verbleibende Konto kann nicht gelöscht werden.', type: 'warning', primaryButtonText: 'OK', onPrimaryButtonClick: hideNotification });
+            showNotification({ title: 'Aktion nicht möglich', message: 'Das letzte verbleiende Konto kann nicht gelöscht werden.', type: 'warning', primaryButtonText: 'OK', onPrimaryButtonClick: hideNotification });
             return;
         }
         
@@ -292,7 +294,7 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
                  <div className="h-full w-full bg-zinc-900 flex flex-col">
                     {!isDesktop && onBack && (
                          <header className="flex items-center p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0">
-                            <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                            <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
                                 <span className="material-symbols-outlined">arrow_back</span>
                             </button>
                         </header>
@@ -307,11 +309,14 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
                               animation: fadeIn 0.5s ease-out forwards;
                             }
                         `}</style>
-                        <button 
+                        <Icon name="payments" className="!text-6xl mb-4 text-zinc-600" />
+                        <h2 className="text-2xl font-bold text-zinc-400">Willkommen bei AuriMea</h2>
+                        <p className="mt-1 text-zinc-500 mb-6 max-w-sm">Erstelle dein erstes Konto, um deine Einnahmen und Ausgaben zu verfolgen und deine Finanzen zu verwalten.</p>
+                        <button
                             onClick={() => setAccountModalOpenForSetup(true)}
-                            className="flex items-center font-bold py-3 px-6 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 text-lg"
+                            className="flex items-center font-bold py-2.5 px-5 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
                         >
-                            <Icon name="add_circle" className="mr-3"/>
+                            <Icon name="add_circle" className="mr-2"/>
                             <span>Erstes Konto erstellen</span>
                         </button>
                     </div>

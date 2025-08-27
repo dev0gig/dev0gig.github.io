@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, MyProject, Tile, Collection, JournalEntry } from './types';
 

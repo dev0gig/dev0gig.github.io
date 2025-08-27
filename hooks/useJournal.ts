@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { JournalEntry } from '../types';
 import { initialJournalEntries } from '../data/journal';

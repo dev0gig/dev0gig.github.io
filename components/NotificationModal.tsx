@@ -14,10 +14,10 @@ interface NotificationModalProps {
 }
 
 const typeDetails: Record<NotificationType, { icon: string; colorClass: string; confirmButtonClass: string; }> = {
-  info: { icon: 'info', colorClass: 'text-sky-400', confirmButtonClass: 'bg-sky-600 active:bg-sky-700 focus:ring-sky-500' },
-  success: { icon: 'check_circle', colorClass: 'text-green-400', confirmButtonClass: 'bg-green-600 active:bg-green-700 focus:ring-green-500' },
-  error: { icon: 'error', colorClass: 'text-red-400', confirmButtonClass: 'bg-red-600 active:bg-red-700 focus:ring-red-500' },
-  confirm: { icon: 'help', colorClass: 'text-amber-400', confirmButtonClass: 'bg-violet-600 active:bg-violet-700 focus:ring-violet-500' },
+  info: { icon: 'info', colorClass: 'text-sky-400', confirmButtonClass: 'bg-sky-600 hover:bg-sky-700 focus:ring-sky-500' },
+  success: { icon: 'check_circle', colorClass: 'text-green-400', confirmButtonClass: 'bg-green-600 hover:bg-green-700 focus:ring-green-500' },
+  error: { icon: 'error', colorClass: 'text-red-400', confirmButtonClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500' },
+  confirm: { icon: 'help', colorClass: 'text-amber-400', confirmButtonClass: 'bg-violet-600 hover:bg-violet-700 focus:ring-violet-500' },
 };
 
 
@@ -90,7 +90,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
             {type === 'confirm' && (
                  <button
                     onClick={onClose}
-                    className="flex-1 bg-zinc-600 active:bg-zinc-700 text-white font-bold py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-zinc-500"
+                    className="flex-1 bg-zinc-600 hover:bg-zinc-700 text-white font-bold py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-zinc-500"
                 >
                     {cancelText}
                 </button>

@@ -111,7 +111,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ position, onClose, items, men
         <div className="space-y-1">
           {items.map((item) => {
             const commonClasses = "w-full flex items-center text-left p-3 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500";
-            const stateClasses = "bg-zinc-700/30 active:bg-zinc-700/60";
+            const stateClasses = "bg-zinc-700/30 hover:bg-zinc-700/60";
             const disabledClasses = 'text-zinc-500 bg-zinc-700/20 cursor-not-allowed';
             const finalClasses = `${commonClasses} ${item.disabled ? disabledClasses : (item.className || stateClasses)}`;
 

@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { Tile, MyProject, ViewLinkTile, AppLinkTile, MyProjectTile } from '../types';
 
@@ -20,7 +21,7 @@ const ListItem: React.FC<{
     return (
         <button
             onClick={onClick}
-            className="w-full flex items-center text-left p-4 bg-zinc-800/70 active:bg-zinc-800 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+            className="w-full flex items-center text-left p-4 bg-zinc-800/70 hover:bg-zinc-800 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
         >
             {isIconUrl ? (
                 <img src={icon} alt="" className="w-8 h-8 object-cover rounded-md mr-4 flex-shrink-0" crossOrigin="anonymous"/>
@@ -52,7 +53,7 @@ const MetroView: React.FC<MetroViewProps> = ({ tiles, onTileClick, projectDefini
                 <h1 className="text-3xl font-bold text-zinc-100">AxisMea</h1>
                 <button 
                     onClick={onOpenSettings}
-                    className="text-zinc-400 active:text-white transition-colors rounded-full w-10 h-10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                    className="text-zinc-400 hover:text-white transition-colors rounded-full w-10 h-10 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
                     aria-label="Einstellungen öffnen"
                 >
                     <span className="material-symbols-outlined">settings</span>

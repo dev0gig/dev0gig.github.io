@@ -1,5 +1,4 @@
 
-
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { JournalEntry } from '../types';
 import JournalEntryCard from './JournalEntryCard';
@@ -40,15 +39,6 @@ const escapeRegExp = (string: string) => {
 const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQuery, onUpdate, onDelete, onTagClick, onSuggestedTagsChange, showConfirmation, onAddNew, isMobileView = false, onBack, onSearchChange, onClearSearch, suggestedTags = [] }) => {
   const [visibleEntriesCount, setVisibleEntriesCount] = useState(10);
   const entriesPerLoad = 10;
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-
-  const handleMenuOpen = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuPosition({ top: rect.bottom + 8, left: rect.right });
-    setIsMenuOpen(true);
-  };
   
   const lowercasedQuery = searchQuery.toLowerCase();
   const isTagSearch = lowercasedQuery.startsWith('#');
@@ -140,7 +130,7 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
                <h2 className="text-2xl font-bold text-zinc-400">Nichts gefunden</h2>
                <p className="mt-1 text-zinc-500">Für "{searchQuery}" gibt es keine Treffer.</p>
                {isTagSearch && (
-                  <button onClick={() => onTagClick('')} className="mt-4 text-violet-400 active:underline font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-md px-2 py-1">
+                  <button onClick={() => onTagClick('')} className="mt-4 text-violet-400 hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-md px-2 py-1">
                       Tag-Filter zurücksetzen
                   </button>
                )}
@@ -182,7 +172,7 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
             <div className="mt-8 mb-4 text-center">
                 <button
                 onClick={() => setVisibleEntriesCount(prevCount => prevCount + entriesPerLoad)}
-                className="bg-zinc-700/50 active:bg-zinc-700/80 text-zinc-200 font-semibold py-2.5 px-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                className="bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-200 font-semibold py-2.5 px-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
                 aria-label={`Lade ${Math.min(entriesPerLoad, filteredEntries.length - visibleEntriesCount)} weitere Einträge`}
                 >
                 Mehr laden ({filteredEntries.length - visibleEntriesCount} verbleibend)
@@ -209,28 +199,27 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
       
       {isMobileView ? (
         <div className="p-4 sm:p-6 pb-0 flex flex-col h-full">
-            <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-wrap gap-y-4">
+            <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-nowrap gap-x-2">
                 {onBack && (
-                    <button onClick={onBack} className="mr-3 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                    <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 flex-shrink-0" aria-label="Zurück">
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
                 )}
-                <div className="flex items-center space-x-2 flex-grow">
+                <div className="flex items-center space-x-2 flex-grow min-w-0">
                     <span className="material-symbols-outlined text-3xl">edit_note</span>
-                    <div className="flex items-baseline space-x-3">
-                      <h1 className="text-2xl font-bold tracking-tight">MemoMea</h1>
-                      <span className="text-xs font-medium text-zinc-500">{entryCount} {entryCount === 1 ? 'Eintrag' : 'Einträge'}</span>
+                    <div className="flex items-baseline space-x-3 min-w-0">
+                      <h1 className="text-2xl font-bold tracking-tight truncate">MemoMea</h1>
+                      <span className="text-xs font-medium text-zinc-500 hidden sm:inline whitespace-nowrap flex-shrink-0">{entryCount} {entryCount === 1 ? 'Eintrag' : 'Einträge'}</span>
                     </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                     <button
-                        onClick={handleMenuOpen}
-                        className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
-                        aria-haspopup="true"
-                        aria-expanded={isMenuOpen}
-                        aria-label="Aktionen für MemoMea"
+                        onClick={onAddNew}
+                        className="flex items-center justify-center font-bold w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"
+                        aria-label="Neu"
                     >
-                        <span className="material-symbols-outlined">more_vert</span>
+                        <span className="material-symbols-outlined text-lg sm:mr-1">add_circle</span>
+                        <span className="hidden sm:inline">Neu</span>
                     </button>
                 </div>
             </header>
@@ -281,18 +270,6 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
             </div>
         </div>
       ) : content}
-
-      {isMenuOpen && (
-        <ContextMenu
-            position={menuPosition}
-            onClose={() => setIsMenuOpen(false)}
-            isViewportAware={true}
-            animationClass="animate-fadeIn"
-            items={[
-                { label: 'Neuer Eintrag', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-            ]}
-        />
-      )}
     </div>
   );
 };

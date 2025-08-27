@@ -18,13 +18,13 @@ const AppIcon: React.FC<{ app: AppItem; onContextMenu: (event: React.MouseEvent,
         target="_blank"
         rel="noopener noreferrer"
         aria-label={app.ariaLabel}
-        className="flex flex-col items-center justify-start p-2.5 rounded-lg transition-colors duration-200 active:bg-zinc-800 focus:outline-none focus-visible:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-violet-500"
+        className="flex flex-col items-center justify-start p-2 rounded-lg transition-colors duration-200 hover:bg-zinc-800 focus:outline-none focus-visible:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-violet-500"
         onContextMenu={(e) => onContextMenu(e, app)}
     >
-        <div className="w-14 h-14 flex items-center justify-center mb-2 rounded-full bg-zinc-700 overflow-hidden">
+        <div className="w-12 h-12 flex items-center justify-center mb-1.5 rounded-full bg-zinc-700 overflow-hidden">
             <img src={app.iconUrl} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
         </div>
-        <span className="text-xs text-center text-zinc-300 w-20 line-clamp-2 break-words">
+        <span className="text-xs text-center text-zinc-300 w-16 line-clamp-2 break-words">
             {app.ariaLabel}
         </span>
     </a>
@@ -32,16 +32,6 @@ const AppIcon: React.FC<{ app: AppItem; onContextMenu: (event: React.MouseEvent,
 
 
 const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, isMobileView = false, onBack, onAddNew }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-
-  const handleMenuOpen = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuPosition({ top: rect.bottom + 8, left: rect.right });
-    setIsMenuOpen(true);
-  };
-
   const lowercasedQuery = searchQuery.toLowerCase();
   
   const filteredApps = apps.filter(app => 
@@ -55,7 +45,7 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
   const noAppsAtAll = apps.length === 0;
 
   return (
-    <div className={`animate-fadeIn h-full flex flex-col ${isMobileView ? '' : 'p-4 sm:p-6'}`}>
+    <div className={`animate-fadeIn h-full flex flex-col ${isMobileView ? '' : ''}`}>
        <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -67,28 +57,25 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
       `}</style>
 
       {isMobileView && (
-          <header className="flex items-center justify-between text-zinc-300 p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0">
+          <header className="flex items-center justify-between text-zinc-300 p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0 gap-x-2 flex-nowrap">
               {onBack && (
-                  <button onClick={onBack} className="mr-3 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                  <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
                       <span className="material-symbols-outlined">arrow_back</span>
                   </button>
               )}
-                <div className="flex items-center space-x-2 flex-grow">
+                <div className="flex items-center space-x-2 flex-grow min-w-0">
                   <span className="material-symbols-outlined text-3xl">apps</span>
-                  <h1 className="text-2xl font-bold tracking-tight">Apps</h1>
+                  <h1 className="text-2xl font-bold tracking-tight truncate">Apps</h1>
               </div>
                 {onAddNew && (
-                  <div className="flex items-center space-x-2">
-                        <button
-                          onClick={handleMenuOpen}
-                          className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
-                          aria-haspopup="true"
-                          aria-expanded={isMenuOpen}
-                          aria-label="Aktionen für Apps"
-                        >
-                          <span className="material-symbols-outlined">more_vert</span>
-                        </button>
-                  </div>
+                   <button
+                    onClick={onAddNew}
+                    className="flex items-center justify-center font-bold w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap flex-shrink-0"
+                    aria-label="Neu"
+                  >
+                    <span className="material-symbols-outlined text-lg sm:mr-1">add_circle</span>
+                    <span className="hidden sm:inline">Neu</span>
+                  </button>
                 )}
           </header>
       )}
@@ -120,7 +107,7 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
             {favorites.length > 0 && (
               <section className="mb-8">
                 <h2 className="text-lg font-semibold text-zinc-100 mb-4">Angeheftet</h2>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))]">
                   {favorites.map(app => <AppIcon key={app.id} app={app} onContextMenu={onContextMenu} />)}
                 </div>
               </section>
@@ -130,7 +117,7 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold text-zinc-100">Alle Apps</h2>
                 </div>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))]">
                   {otherApps.map(app => <AppIcon key={app.id} app={app} onContextMenu={onContextMenu} />)}
                 </div>
               </section>
@@ -138,17 +125,6 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
           </>
         )}
       </div>
-      {isMenuOpen && onAddNew && (
-        <ContextMenu
-            position={menuPosition}
-            onClose={() => setIsMenuOpen(false)}
-            isViewportAware={true}
-            animationClass="animate-fadeIn"
-            items={[
-                { label: 'Neue App', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-            ]}
-        />
-      )}
     </div>
   );
 };

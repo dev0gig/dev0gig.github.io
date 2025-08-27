@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect } from 'react';
 
 interface BookmarkFormModalProps {
@@ -67,7 +68,7 @@ const BookmarkFormModal: React.FC<BookmarkFormModalProps> = ({ isOpen, onClose, 
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 active:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
+            className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
             aria-label="Modal schließen"
           >
             <span className="material-symbols-outlined">close</span>
@@ -91,7 +92,7 @@ const BookmarkFormModal: React.FC<BookmarkFormModalProps> = ({ isOpen, onClose, 
             <button 
               type="submit" 
               disabled={!isUrlValid()} 
-              className="w-full bg-violet-600 active:bg-violet-700 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500 flex items-center justify-center"
+              className="w-full bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500 flex items-center justify-center"
             >
               <span>Hinzufügen</span>
             </button>

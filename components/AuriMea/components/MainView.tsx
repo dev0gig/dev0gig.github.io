@@ -8,7 +8,6 @@ import AccountSwitcherModal from './AccountSwitcherModal';
 interface MainViewProps {
   onOpenForm: (transaction: Transaction | null) => void;
   onOpenSettings: () => void;
-  onOpenAnalysis?: () => void;
   onBack?: () => void;
 }
 
@@ -50,7 +49,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onClick: (t: Transact
 };
 
 
-const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenAnalysis, onBack }) => {
+const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onBack }) => {
     const { accounts, transactions, activeAccountId } = useApp();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAccountSwitcherOpen, setAccountSwitcherOpen] = useState(false);
@@ -107,7 +106,7 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenA
             <header className="flex items-center justify-between p-4 md:p-0 md:pb-6 md:border-b md:border-zinc-800 flex-shrink-0">
                 <div className="flex items-center flex-1 min-w-0">
                     {onBack && (
-                        <button onClick={onBack} className="mr-1 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 md:hidden" aria-label="Zurück">
+                        <button onClick={onBack} className="mr-1 p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 md:hidden" aria-label="Zurück">
                             <span className="material-symbols-outlined">arrow_back</span>
                         </button>
                     )}
@@ -145,12 +144,6 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onOpenA
                     
                     {/* Desktop Buttons */}
                     <div className="hidden md:flex items-center space-x-3">
-                        {onOpenAnalysis && (
-                            <button onClick={onOpenAnalysis} className="flex items-center font-medium py-2.5 px-4 rounded-lg transition-colors bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap">
-                                <Icon name="bar_chart" className="mr-2 text-lg"/>
-                                <span>Analyse</span>
-                            </button>
-                        )}
                         <button onClick={() => onOpenForm(null)} className="flex items-center font-bold py-2.5 px-4 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap">
                             <Icon name="add_circle" className="mr-2 text-lg"/>
                             <span>Neue Transaktion</span>

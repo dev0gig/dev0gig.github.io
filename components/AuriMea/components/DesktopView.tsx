@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../AuriMeaApp';
 import MainView from './MainView';
 import Icon from './Icon';
@@ -12,7 +12,6 @@ interface DesktopViewProps {
 
 const DesktopView: React.FC<DesktopViewProps> = ({ onOpenForm, onOpenSettings }) => {
     const { accounts, activeAccountId, setActiveAccountId } = useApp();
-    const [isAnalysisSidebarOpen, setAnalysisSidebarOpen] = useState(false);
 
     const activeAccount = accounts.find(a => a.id === activeAccountId);
     if (!activeAccount) return null;
@@ -43,19 +42,13 @@ const DesktopView: React.FC<DesktopViewProps> = ({ onOpenForm, onOpenSettings })
                     ))}
                 </div>
             </nav>
-            <main className="flex-1 overflow-y-auto p-6">
+            <main className="flex-1 overflow-y-auto p-4">
                 <MainView 
                     onOpenForm={onOpenForm}
-                    onOpenSettings={onOpenSettings} 
-                    onOpenAnalysis={() => setAnalysisSidebarOpen(true)}
+                    onOpenSettings={onOpenSettings}
                 />
             </main>
-            {isAnalysisSidebarOpen && (
-                 <AnalysisSidebar 
-                    isOpen={isAnalysisSidebarOpen} 
-                    onClose={() => setAnalysisSidebarOpen(false)} 
-                />
-            )}
+            <AnalysisSidebar />
         </div>
     );
 };

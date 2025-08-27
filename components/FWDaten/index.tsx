@@ -71,7 +71,7 @@ const FwDatenApp: React.FC<FwDatenAppProps> = ({ isMobileView, onBack }) => {
     return (
         <FwDataProvider>
             <ModalProvider>
-                <div className="flex flex-col h-full w-full bg-zinc-900 text-zinc-200 p-4 lg:p-6">
+                <div className="flex flex-col h-full w-full bg-zinc-900 text-zinc-200 p-4">
                     <Header onBack={handleInternalBack} />
                     <div className="flex-grow pt-6 overflow-hidden">
                         {renderContent()}

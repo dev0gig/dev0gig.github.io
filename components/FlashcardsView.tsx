@@ -182,27 +182,27 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
                 .flashcard-back { transform: rotateY(180deg); }
             `}</style>
 
-            <header className="flex items-center justify-between text-zinc-300 p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0">
+            <header className="flex items-center justify-between text-zinc-300 p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0 flex-nowrap gap-x-2">
                 {isMobileView && onBack && (
-                    <button onClick={onBack} className="mr-3 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                    <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 flex-shrink-0" aria-label="Zurück">
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
                 )}
-                <div className="flex items-center space-x-2 flex-grow">
+                <div className="flex items-center space-x-2 flex-grow min-w-0">
                     <span className="material-symbols-outlined text-3xl">style</span>
-                    <h1 className="text-2xl font-bold tracking-tight">Flashcards</h1>
+                    <h1 className="text-2xl font-bold tracking-tight truncate">Flashcards</h1>
                 </div>
-                 <div className="flex items-center space-x-2">
-                    <button onClick={handleShowHelp} className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg" aria-label="Anleitung anzeigen"><span className="material-symbols-outlined">help_outline</span></button>
+                 <div className="flex items-center space-x-2 flex-shrink-0">
+                    <button onClick={handleShowHelp} className="w-9 h-9 flex items-center justify-center bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg" aria-label="Anleitung anzeigen"><span className="material-symbols-outlined">help_outline</span></button>
                     <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="hidden" />
-                    <button onClick={() => fileInputRef.current?.click()} className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg" aria-label="Importieren"><span className="material-symbols-outlined">file_upload</span></button>
-                    <button onClick={handleExport} className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg" aria-label="Exportieren"><span className="material-symbols-outlined">file_download</span></button>
-                    <button onClick={() => setIsFrontFirst(prev => !prev)} className={`p-2 rounded-lg transition-colors ${isFrontFirst ? 'bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300' : 'bg-violet-600 text-white'}`} aria-label="Vorder- und Rückseite tauschen"><span className="material-symbols-outlined">swap_horiz</span></button>
+                    <button onClick={() => fileInputRef.current?.click()} className="w-9 h-9 flex items-center justify-center bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg" aria-label="Importieren"><span className="material-symbols-outlined">file_upload</span></button>
+                    <button onClick={handleExport} className="w-9 h-9 flex items-center justify-center bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg" aria-label="Exportieren"><span className="material-symbols-outlined">file_download</span></button>
+                    <button onClick={() => setIsFrontFirst(prev => !prev)} className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${isFrontFirst ? 'bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300' : 'bg-violet-600 text-white'}`} aria-label="Vorder- und Rückseite tauschen"><span className="material-symbols-outlined">swap_horiz</span></button>
                 </div>
             </header>
 
             {deck.length === 0 ? renderEmptyState() : (
-                <div className="flex-grow flex flex-col items-center justify-between p-4 sm:p-6 pt-0 sm:pt-2 gap-4">
+                <div className="flex-grow flex flex-col items-center justify-between p-4 sm:p-4 pt-0 sm:pt-2 gap-4">
                     <div className="w-full text-center">
                         <p className="font-bold text-zinc-100 truncate">{deckName}</p>
                         <p className="text-sm text-zinc-400">Karte {deck.length - shuffledIndices.length} / {deck.length}</p>

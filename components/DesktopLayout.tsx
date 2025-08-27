@@ -2,6 +2,7 @@
 
 
 
+
 import React, { useState } from 'react';
 import { View, MyProject } from '../types';
 import Sidebar from './Sidebar';
@@ -48,7 +49,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     isSubAppActive = false,
 }) => {
   const [googleSearchQuery, setGoogleSearchQuery] = useState('');
-  const mainContentClass = `flex-1 overflow-y-auto ${!isSubAppActive ? 'p-8' : ''}`;
+  const mainContentClass = `flex-1 overflow-y-auto ${!isSubAppActive ? 'p-4' : ''}`;
 
   const handleGoogleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +73,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
       <div className="flex-1 flex flex-col overflow-hidden">
         
         {!isSubAppActive && (
-          <header className="flex-shrink-0 h-20 px-8 flex items-center justify-between border-b border-zinc-800 gap-x-8">
+          <header className="flex-shrink-0 h-20 px-4 flex items-center justify-between border-b border-zinc-800 gap-x-8">
             <div className="flex items-center justify-start flex-1 min-w-0">
               {headerTitle && (
                   <div className="flex items-baseline space-x-3 overflow-hidden">
@@ -141,7 +142,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         )}
         
         {!isSubAppActive && showSearchBar && suggestedTags.length > 0 && (
-          <div className="px-8 pt-4 pb-2 border-b border-zinc-800 flex-shrink-0">
+          <div className="px-4 pt-4 pb-2 border-b border-zinc-800 flex-shrink-0">
             <div className="flex items-center gap-2">
                 <p className="text-sm font-medium text-zinc-400">Tag-Vorschläge:</p>
                 <div className="flex flex-wrap gap-2">

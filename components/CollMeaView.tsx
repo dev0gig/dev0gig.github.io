@@ -1,5 +1,4 @@
 
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Collection, GenericListItem } from '../types';
 import ContextMenu from './ContextMenu';
@@ -44,7 +43,7 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
     };
 
     return (
-         <div className="group flex items-center bg-zinc-800/50 p-3 rounded-lg transition-colors active:bg-zinc-800">
+         <div className="group flex items-center bg-zinc-800/50 p-3 rounded-lg transition-colors hover:bg-zinc-800">
             <input
                 type="checkbox"
                 checked={item.completed}
@@ -72,7 +71,7 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
             </div>
             <button
                 onClick={onDelete}
-                className="text-zinc-500 active:text-red-400 transition-all duration-200 opacity-50 focus-within:opacity-100 group-focus-within:opacity-100 w-7 h-7 flex items-center justify-center rounded-full active:bg-red-500/10"
+                className="text-zinc-500 hover:text-red-400 transition-all duration-200 opacity-50 hover:opacity-100 group-hover:opacity-100 focus-within:opacity-100 group-focus-within:opacity-100 w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-500/10"
                 aria-label="Element löschen"
             >
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete</span>
@@ -120,25 +119,6 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
   onClearSearch
 }) => {
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-  const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
-  const [detailMenuPosition, setDetailMenuPosition] = useState({ top: 0, left: 0 });
-
-  const handleMenuOpen = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuPosition({ top: rect.bottom + 8, left: rect.right });
-    setIsMenuOpen(true);
-  };
-  
-  const handleDetailMenuOpen = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setDetailMenuPosition({ top: rect.bottom + 8, left: rect.right });
-    setIsDetailMenuOpen(true);
-  };
-
   const activeCollection = useMemo(() => {
     return collections.find(c => c.id === activeCollectionId) || null;
   }, [collections, activeCollectionId]);
@@ -163,25 +143,24 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
   const renderOverview = () => (
     <>
         {isMobileView && (
-            <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-wrap gap-y-4">
+            <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-nowrap gap-x-2">
                 {onBack && (
-                    <button onClick={onBack} className="mr-3 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                    <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
                 )}
-                <div className="flex items-center space-x-2 flex-grow">
+                <div className="flex items-center space-x-2 flex-grow min-w-0">
                     <span className="material-symbols-outlined text-3xl">collections_bookmark</span>
-                    <h1 className="text-2xl font-bold tracking-tight">CollMea</h1>
+                    <h1 className="text-2xl font-bold tracking-tight truncate">CollMea</h1>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                     <button
-                        onClick={handleMenuOpen}
-                        className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
-                        aria-haspopup="true"
-                        aria-expanded={isMenuOpen}
-                        aria-label="Aktionen für CollMea"
+                        onClick={onAddNew}
+                        className="flex items-center justify-center font-bold w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"
+                        aria-label="Neu"
                     >
-                        <span className="material-symbols-outlined">more_vert</span>
+                        <span className="material-symbols-outlined text-lg sm:mr-1">add_circle</span>
+                        <span className="hidden sm:inline">Neu</span>
                     </button>
                 </div>
             </header>
@@ -196,7 +175,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                             tabIndex={0}
                             onClick={() => onCollectionSelect(collection.id)}
                             onKeyDown={e => e.key === 'Enter' && onCollectionSelect(collection.id)}
-                            className="group bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 p-4 rounded-xl shadow-md transition-all active:border-zinc-600 active:bg-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                            className="group bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 p-4 rounded-xl shadow-md transition-all hover:border-zinc-600 hover:bg-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
                         >
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center overflow-hidden mr-4">
@@ -208,7 +187,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                                 </div>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDeleteCollection(collection.id); }}
-                                    className="text-zinc-500 active:text-red-400 transition-all duration-200 opacity-50 group-focus-within:opacity-100 w-8 h-8 flex items-center justify-center rounded-full active:bg-red-500/10 -mt-1 -mr-1 flex-shrink-0"
+                                    className="text-zinc-500 hover:text-red-400 transition-all duration-200 opacity-50 hover:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/10 -mt-1 -mr-1 flex-shrink-0"
                                     aria-label="Sammlung löschen"
                                 >
                                     <span className="material-symbols-outlined">delete</span>
@@ -259,20 +238,21 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
     return (
        <>
          {isMobileView && (
-            <header className="flex items-center text-zinc-300 mb-0 flex-shrink-0">
-                <button onClick={onBackToOverview} className="mr-3 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück zur Übersicht">
+            <header className="flex items-center text-zinc-300 mb-0 flex-shrink-0 flex-nowrap gap-x-2">
+                <button onClick={onBackToOverview} className="p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück zur Übersicht">
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
-                <span className="material-symbols-outlined text-3xl mr-3">{activeCollection.icon}</span>
-                <h1 className="text-2xl font-bold tracking-tight truncate flex-grow">{activeCollection.name}</h1>
+                <div className="flex items-center space-x-2 flex-grow min-w-0">
+                    <span className="material-symbols-outlined text-3xl">{activeCollection.icon}</span>
+                    <h1 className="text-2xl font-bold tracking-tight truncate">{activeCollection.name}</h1>
+                </div>
                 <button
-                    onClick={handleDetailMenuOpen}
-                    className="ml-4 p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
-                    aria-haspopup="true"
-                    aria-expanded={isDetailMenuOpen}
-                    aria-label="Aktionen für diese Sammlung"
+                    onClick={onAddNew}
+                    className="flex items-center justify-center font-bold w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap flex-shrink-0"
+                    aria-label="Neu"
                 >
-                    <span className="material-symbols-outlined">more_vert</span>
+                    <span className="material-symbols-outlined text-lg sm:mr-1">add_circle</span>
+                    <span className="hidden sm:inline">Neu</span>
                 </button>
             </header>
          )}
@@ -307,18 +287,6 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                 </div>
             )}
          </div>
-
-        {isDetailMenuOpen && isMobileView && (
-            <ContextMenu
-                position={detailMenuPosition}
-                onClose={() => setIsDetailMenuOpen(false)}
-                isViewportAware={true}
-                animationClass="animate-fadeIn"
-                items={[
-                    { label: 'Neues Element', icon: 'add_circle', onClick: () => { setIsDetailMenuOpen(false); onAddNew(); } },
-                ]}
-            />
-        )}
        </>
     );
   };
@@ -373,24 +341,13 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                 {activeCollectionId ? renderDetailView() : renderOverview()}
             </MobileWrapper>
             
-            {isMenuOpen && !activeCollectionId && isMobileView && (
-                <ContextMenu
-                    position={menuPosition}
-                    onClose={() => setIsMenuOpen(false)}
-                    isViewportAware={true}
-                    animationClass="animate-fadeIn"
-                    items={[
-                        { label: 'Neue Sammlung', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-                    ]}
-                />
-            )}
         </div>
       );
   }
 
   // --- New Desktop View ---
   return (
-    <div className="flex h-full w-full gap-6 overflow-x-auto p-1 pb-4">
+    <div className="flex h-full w-full gap-6 overflow-x-auto p-4">
         <style>{`
             /* Custom Scrollbar for Webkit-based browsers */
             .animate-fadeIn::-webkit-scrollbar {

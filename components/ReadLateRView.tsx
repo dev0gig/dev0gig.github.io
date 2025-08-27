@@ -1,6 +1,4 @@
 
-
-
 import React, { useState } from 'react';
 import { BookmarkItem } from '../types';
 import BookmarkItemCard from './BookmarkItemCard';
@@ -21,25 +19,6 @@ interface ReadLateRViewProps {
 }
 
 const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onToggleArchive, searchQuery, showArchived, onToggleShowArchived, isMobileView = false, onAddNew, onBack, onSearchChange, onClearSearch }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-
-  const handleMenuOpen = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuPosition({ top: rect.bottom + 8, left: rect.right });
-    setIsMenuOpen(true);
-  };
-
-  const menuItems = [
-    { label: 'Neues Lesezeichen', icon: 'add_circle', onClick: () => { setIsMenuOpen(false); onAddNew(); } },
-    {
-        label: showArchived ? "Aktive anzeigen" : "Archiv anzeigen",
-        icon: showArchived ? 'unarchive' : 'archive',
-        onClick: () => { setIsMenuOpen(false); onToggleShowArchived(); }
-    },
-  ];
-
   const lowercasedQuery = searchQuery.toLowerCase();
 
   // Filter by archive status first
@@ -58,7 +37,7 @@ const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onTo
   const content = (
     <>
       {filteredBookmarks.length > 0 ? (
-        <div className={isMobileView ? "space-y-4 pb-4" : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pb-4"}>
+        <div className={isMobileView ? "space-y-4 pb-4" : "grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-4"}>
             {filteredBookmarks.map(bookmark => (
                 <BookmarkItemCard 
                     key={bookmark.id}
@@ -119,25 +98,32 @@ const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onTo
       
       {isMobileView ? (
         <div className="p-4 sm:p-6 pb-0 flex flex-col h-full">
-            <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-wrap gap-y-4">
+            <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-nowrap gap-x-2">
                 {onBack && (
-                    <button onClick={onBack} className="mr-3 p-2 -ml-2 rounded-full active:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
+                    <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Zurück">
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
                 )}
-                <div className="flex items-center space-x-2 flex-grow">
+                <div className="flex items-center space-x-2 flex-grow min-w-0">
                     <span className="material-symbols-outlined text-3xl">bookmark</span>
-                    <h1 className="text-2xl font-bold tracking-tight">ReadLateR</h1>
+                    <h1 className="text-2xl font-bold tracking-tight truncate">ReadLateR</h1>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                     <button
-                    onClick={handleMenuOpen}
-                    className="p-2 bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
-                    aria-haspopup="true"
-                    aria-expanded={isMenuOpen}
-                    aria-label="Aktionen für ReadLateR"
+                        onClick={onToggleShowArchived}
+                        className="flex items-center justify-center font-medium w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"
+                        aria-label={showArchived ? "Aktive anzeigen" : "Archiv anzeigen"}
                     >
-                    <span className="material-symbols-outlined">more_vert</span>
+                        <span className="material-symbols-outlined text-lg sm:mr-1">{showArchived ? 'unarchive' : 'archive'}</span>
+                        <span className="hidden sm:inline">{showArchived ? "Aktive" : "Archiv"}</span>
+                    </button>
+                    <button
+                        onClick={onAddNew}
+                        className="flex items-center justify-center font-bold w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"
+                        aria-label="Neu"
+                    >
+                        <span className="material-symbols-outlined text-lg sm:mr-1">add_circle</span>
+                        <span className="hidden sm:inline">Neu</span>
                     </button>
                 </div>
             </header>
@@ -171,16 +157,6 @@ const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onTo
 
         </div>
       ) : <div className="h-full overflow-y-auto">{content}</div>}
-
-      {isMenuOpen && isMobileView && (
-        <ContextMenu
-            position={menuPosition}
-            onClose={() => setIsMenuOpen(false)}
-            isViewportAware={true}
-            animationClass="animate-fadeIn"
-            items={menuItems}
-        />
-      )}
     </div>
   );
 };
