@@ -30,10 +30,10 @@ const DesktopView: React.FC<DesktopViewProps> = ({ onOpenForm, onOpenSettings })
                         <button
                             key={account.id}
                             onClick={() => setActiveAccountId(account.id)}
-                            className={`w-full flex items-center text-left p-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 ${
+                            className={`w-full flex items-center text-left p-3 rounded-lg transition-colors duration-200 border-2 focus:outline-none ${
                                 activeAccountId === account.id
-                                    ? 'bg-violet-500/20 text-white font-semibold'
-                                    : 'text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-100'
+                                    ? 'bg-violet-500/20 text-white font-semibold border-violet-500'
+                                    : 'text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-100 border-transparent'
                             }`}
                         >
                            <Icon name={account.icon} className="mr-4 text-2xl" />

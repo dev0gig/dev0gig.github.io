@@ -47,8 +47,8 @@ const MeterListView: React.FC<MeterListViewProps> = ({ onSelectMeter, selectedMe
                             <div key={meter.id} className="relative group">
                                 <button
                                     onClick={() => onSelectMeter(meter.id)}
-                                    className={`w-full text-left p-3 rounded-lg transition-colors ${
-                                        isActive ? 'bg-violet-500/20 ring-2 ring-violet-500' : 'bg-zinc-700/50 hover:bg-zinc-700'
+                                    className={`w-full text-left p-3 rounded-lg transition-colors border-2 ${
+                                        isActive ? 'bg-violet-500/20 border-violet-500' : 'bg-zinc-700/50 hover:bg-zinc-700 border-transparent'
                                     }`}
                                 >
                                     <div className="flex justify-between items-start">
