@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useApp } from '../AuriMeaApp';
 import Icon from './Icon';
@@ -7,9 +8,10 @@ import AccountFormModal from './AccountFormModal';
 interface AccountManagerModalProps {
     isOpen: boolean;
     onClose: () => void;
+    isMobileView: boolean;
 }
 
-const AccountManagerModal: React.FC<AccountManagerModalProps> = ({ isOpen, onClose }) => {
+const AccountManagerModal: React.FC<AccountManagerModalProps> = ({ isOpen, onClose, isMobileView }) => {
     const { accounts, deleteAccount } = useApp();
     const [isFormOpen, setFormOpen] = useState(false);
     const [accountToEdit, setAccountToEdit] = useState<Account | null>(null);
@@ -42,7 +44,7 @@ const AccountManagerModal: React.FC<AccountManagerModalProps> = ({ isOpen, onClo
                                     <Icon name={account.icon} className="text-white !text-lg" />
                                 </div>
                                 <span className="flex-grow font-medium truncate">{account.name}</span>
-                                <div className="flex items-center space-x-1 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <div className={`flex items-center space-x-1 transition-opacity ${isMobileView ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'}`}>
                                     <button onClick={() => handleEdit(account)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="edit" className="!text-lg" /></button>
                                     <button onClick={() => deleteAccount(account.id)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-red-400"><Icon name="delete" className="!text-lg" /></button>
                                 </div>

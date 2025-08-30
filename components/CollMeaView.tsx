@@ -8,9 +8,10 @@ interface GenericListItemRowProps {
     item: GenericListItem;
     onUpdate: (item: GenericListItem) => void;
     onDelete: () => void;
+    isMobileView: boolean;
 }
 
-const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate, onDelete }) => {
+const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate, onDelete, isMobileView }) => {
     const [isEditing, setIsEditing] = useState(() => item.title === '');
     const [title, setTitle] = useState(item.title);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +72,7 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
             </div>
             <button
                 onClick={onDelete}
-                className="text-zinc-500 hover:text-red-400 transition-all duration-200 opacity-50 hover:opacity-100 group-hover:opacity-100 focus-within:opacity-100 group-focus-within:opacity-100 w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-500/10"
+                className={`text-zinc-500 hover:text-red-400 transition-all duration-200 w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-500/10 ${isMobileView ? 'opacity-100' : 'opacity-50 hover:opacity-100 group-hover:opacity-100 focus-within:opacity-100 group-focus-within:opacity-100'}`}
                 aria-label="Element löschen"
             >
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete</span>
@@ -187,7 +188,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                                 </div>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDeleteCollection(collection.id); }}
-                                    className="text-zinc-500 hover:text-red-400 transition-all duration-200 opacity-50 hover:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/10 -mt-1 -mr-1 flex-shrink-0"
+                                    className={`text-zinc-500 hover:text-red-400 transition-all duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/10 -mt-1 -mr-1 flex-shrink-0 ${isMobileView ? 'opacity-100' : 'opacity-50 hover:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100'}`}
                                     aria-label="Sammlung löschen"
                                 >
                                     <span className="material-symbols-outlined">delete</span>
@@ -266,6 +267,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                             item={item}
                             onUpdate={(updatedItem) => onUpdateItem(activeCollection.id, updatedItem)}
                             onDelete={() => onDeleteItem(activeCollection.id, item.id)}
+                            isMobileView={isMobileView}
                         />
                     ))}
                 </div>
@@ -397,6 +399,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                             item={item}
                             onUpdate={(updatedItem) => onUpdateItem(collection.id, updatedItem)}
                             onDelete={() => onDeleteItem(collection.id, item.id)}
+                            isMobileView={isMobileView}
                         />
                     ))}
                 </div>

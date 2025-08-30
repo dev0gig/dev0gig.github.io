@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FwDataProvider } from './hooks/useFwData';
 import { ModalProvider } from './hooks/useModal';
@@ -42,14 +43,14 @@ const FwDatenApp: React.FC<FwDatenAppProps> = ({ isMobileView, onBack }) => {
                 // onBack for MeterDetailView is for internal navigation (e.g., after deletion)
                 return <MeterDetailView meterId={selectedMeterId} onBack={() => setSelectedMeterId(null)} onEdit={handleEditMeter} />;
             }
-            return <MeterListView onSelectMeter={handleMeterSelect} selectedMeterId={null} onEditMeter={handleEditMeter} />;
+            return <MeterListView onSelectMeter={handleMeterSelect} selectedMeterId={null} onEditMeter={handleEditMeter} isMobileView={isMobileView} />;
         }
 
         // Desktop Layout
         return (
             <div className="flex h-full w-full gap-6">
                 <div className="w-1/3 max-w-sm flex-shrink-0">
-                    <MeterListView onSelectMeter={handleMeterSelect} selectedMeterId={selectedMeterId} onEditMeter={handleEditMeter} />
+                    <MeterListView onSelectMeter={handleMeterSelect} selectedMeterId={selectedMeterId} onEditMeter={handleEditMeter} isMobileView={isMobileView} />
                 </div>
                 <div className="flex-1 overflow-y-auto">
                     {selectedMeterId ? (

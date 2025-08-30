@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../AuriMeaApp';
 import Icon from './Icon';
@@ -6,9 +7,10 @@ import { TransactionType } from '../types';
 interface CategoryManagerModalProps {
     isOpen: boolean;
     onClose: () => void;
+    isMobileView: boolean;
 }
 
-const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOpen, onClose }) => {
+const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOpen, onClose, isMobileView }) => {
     const { categories, addCategory, updateCategory, deleteCategory } = useApp();
     const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense');
     const [newCategory, setNewCategory] = useState('');
@@ -86,7 +88,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ isOpen, onC
                                 <>
                                     <span className="flex-grow font-medium truncate">{cat}</span>
                                     {cat !== 'Sonstiges' && (
-                                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className={`flex items-center space-x-1 transition-opacity ${isMobileView ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                             <button onClick={() => handleStartEdit(cat)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-white"><Icon name="edit" className="!text-lg" /></button>
                                             <button onClick={() => deleteCategory(activeTab, cat)} className="w-8 h-8 flex items-center justify-center rounded-full text-zinc-300 hover:bg-zinc-700 hover:text-red-400"><Icon name="delete" className="!text-lg" /></button>
                                         </div>

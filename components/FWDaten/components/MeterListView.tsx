@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useFwData } from '../hooks/useFwData';
 import { Reading, Meter } from '../types';
@@ -8,6 +9,7 @@ interface MeterListViewProps {
     onSelectMeter: (id: string) => void;
     selectedMeterId: string | null;
     onEditMeter: (meter: Meter) => void;
+    isMobileView: boolean;
 }
 
 const calculateConsumption = (readings: Reading[]) => {
@@ -16,7 +18,7 @@ const calculateConsumption = (readings: Reading[]) => {
     return sorted[sorted.length - 1].value - sorted[0].value;
 };
 
-const MeterListView: React.FC<MeterListViewProps> = ({ onSelectMeter, selectedMeterId, onEditMeter }) => {
+const MeterListView: React.FC<MeterListViewProps> = ({ onSelectMeter, selectedMeterId, onEditMeter, isMobileView }) => {
     const { meters, getReadingsForMeter } = useFwData();
 
     const allReadingsByMeter = meters.map(meter => getReadingsForMeter(meter.id));
@@ -47,7 +49,7 @@ const MeterListView: React.FC<MeterListViewProps> = ({ onSelectMeter, selectedMe
                             <div key={meter.id} className="relative group">
                                 <button
                                     onClick={() => onSelectMeter(meter.id)}
-                                    className={`w-full text-left p-3 rounded-lg transition-colors border-2 ${
+                                    className={`w-full text-left p-3 pr-12 rounded-lg transition-colors border-2 ${
                                         isActive ? 'bg-violet-500/20 border-violet-500' : 'bg-zinc-700/50 hover:bg-zinc-700 border-transparent'
                                     }`}
                                 >
@@ -64,7 +66,7 @@ const MeterListView: React.FC<MeterListViewProps> = ({ onSelectMeter, selectedMe
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEditMeter(meter); }}
-                                    className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-full text-zinc-400 bg-zinc-800 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity hover:bg-zinc-600 hover:text-white"
+                                    className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-full text-zinc-400 bg-zinc-800 transition-opacity hover:bg-zinc-600 hover:text-white ${isMobileView ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`}
                                     aria-label="Zähler bearbeiten"
                                 >
                                     <Icon name="edit" className="!text-lg" />

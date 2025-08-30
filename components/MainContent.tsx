@@ -108,7 +108,7 @@ const MainContent: React.FC<MainContentProps> = ({
         return <FwDatenApp isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} />;
     }
     if (activeProject === MyProject.Flashcards) {
-        return <FlashcardsView isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} showNotification={ui.showNotification} />;
+        return <FlashcardsView isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} showNotification={ui.showNotification} showConfirmation={ui.showConfirmation} />;
     }
     if (activeAppView) {
         return <AppsView 

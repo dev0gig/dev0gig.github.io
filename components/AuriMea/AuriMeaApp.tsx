@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React, { useState, useEffect, useMemo, useCallback, createContext, useContext } from 'react';
 import MainView from './components/MainView';
 import DesktopView from './components/DesktopView';
@@ -370,10 +365,12 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
                 <AccountManagerModal 
                     isOpen={isAccountManagerOpen}
                     onClose={() => setAccountManagerOpen(false)}
+                    isMobileView={isMobileView}
                 />
                  <CategoryManagerModal
                     isOpen={isCategoryManagerOpen}
                     onClose={() => setCategoryManagerOpen(false)}
+                    isMobileView={isMobileView}
                 />
                 <NotificationModal
                     isOpen={notification.isOpen}
