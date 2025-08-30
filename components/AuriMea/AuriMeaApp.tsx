@@ -2,6 +2,8 @@
 
 
 
+
+
 import React, { useState, useEffect, useMemo, useCallback, createContext, useContext } from 'react';
 import MainView from './components/MainView';
 import DesktopView from './components/DesktopView';
@@ -49,6 +51,8 @@ interface AppContextType {
     deleteAccount: (accountId: string) => void;
     showNotification: (config: Omit<NotificationState, 'isOpen'>) => void;
     hideNotification: () => void;
+    currentDate: Date;
+    setCurrentDate: (date: Date) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -82,6 +86,7 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
     const [isAccountManagerOpen, setAccountManagerOpen] = useState(false);
     const [isCategoryManagerOpen, setCategoryManagerOpen] = useState(false);
     const [isAccountModalOpenForSetup, setAccountModalOpenForSetup] = useState(false);
+    const [currentDate, setCurrentDate] = useState(new Date());
     const isDesktop = !isMobileView;
 
     // Notification Handlers
@@ -282,7 +287,9 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
         deleteAccount,
         showNotification,
         hideNotification,
-    }), [accounts, transactions, templates, categories, activeAccountId, setActiveAccountId, addTransaction, updateTransaction, deleteTransaction, addTemplate, deleteTemplate, addCategory, updateCategory, deleteCategory, addAccount, updateAccount, deleteAccount, showNotification, hideNotification]);
+        currentDate,
+        setCurrentDate,
+    }), [accounts, transactions, templates, categories, activeAccountId, addTransaction, updateTransaction, deleteTransaction, addTemplate, deleteTemplate, addCategory, updateCategory, deleteCategory, addAccount, updateAccount, deleteAccount, showNotification, hideNotification, currentDate]);
 
     if (!isDataLoaded) {
         return <div className="h-full w-full bg-zinc-900 flex items-center justify-center text-zinc-400">Loading...</div>;

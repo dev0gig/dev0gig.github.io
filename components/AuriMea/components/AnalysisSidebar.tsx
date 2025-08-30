@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useApp } from '../AuriMeaApp';
 import PieChart from './PieChart';
 import { formatCurrency } from '../utils/formatters';
+import IncomeExpenseChart from './IncomeExpenseChart';
 
 // --- Color Logic for Chart ---
 const categoryColors: { [key: string]: string } = {
@@ -43,14 +44,24 @@ function getCategoryColor(category: string): string {
 }
 
 const AnalysisSidebar: React.FC = () => {
-  const { accounts, transactions, activeAccountId } = useApp();
+  const { accounts, transactions, activeAccountId, currentDate } = useApp();
   const activeAccount = accounts.find(a => a.id === activeAccountId);
   
   const { chartData, chartColors, totalExpenses } = useMemo(() => {
     if (!activeAccount) return { chartData: [], chartColors: [], totalExpenses: 0 };
 
+    const month = currentDate.getMonth();
+    const year = currentDate.getFullYear();
+
     const expensesByCategory = transactions
-      .filter(t => t.accountId === activeAccountId && t.type === 'expense' && t.category !== 'Transfer')
+      .filter(t => {
+          const txDate = new Date(t.createdAt);
+          return t.accountId === activeAccountId &&
+              t.type === 'expense' &&
+              t.category !== 'Transfer' &&
+              txDate.getMonth() === month &&
+              txDate.getFullYear() === year;
+      })
       .reduce((acc: Record<string, number>, t) => {
         acc[t.category] = (acc[t.category] || 0) + t.amount;
         return acc;
@@ -63,7 +74,120 @@ const AnalysisSidebar: React.FC = () => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
 
     return { chartData: data, chartColors: colors, totalExpenses: total };
-  }, [transactions, activeAccountId, activeAccount]);
+  }, [transactions, activeAccountId, activeAccount, currentDate]);
+
+  const dailyChartData = useMemo(() => {
+    if (!activeAccount) return [];
+    
+    const SALARY_KEYWORDS = ['gehalt', 'lohn', 'salary'];
+    const SALARY_CUTOFF_DAY = 25;
+
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    // --- Function to get a month's total income and expense based on salary rules ---
+    const getMonthTotals = (month: number, year: number) => {
+        const monthBeforeDate = new Date(year, month, 0);
+        const monthBefore = monthBeforeDate.getMonth();
+        const yearBefore = monthBeforeDate.getFullYear();
+
+        // Income for the month is regular income + late salaries from month before
+        const totalIncome = transactions
+            .filter(t => {
+                if (t.type !== 'income' || t.accountId !== activeAccountId) return false;
+                const txDate = new Date(t.createdAt);
+                // Case 1: Regular income in the target month
+                if (txDate.getMonth() === month && txDate.getFullYear() === year) {
+                    const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+                    return !(isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY);
+                }
+                // Case 2: Late salary from the month before
+                if (txDate.getMonth() === monthBefore && txDate.getFullYear() === yearBefore) {
+                    const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+                    return isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY;
+                }
+                return false;
+            })
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        // Expense is just expenses in the target month
+        const totalExpense = transactions
+            .filter(t => {
+                if (t.type !== 'expense' || t.accountId !== activeAccountId) return false;
+                const txDate = new Date(t.createdAt);
+                return txDate.getMonth() === month && txDate.getFullYear() === year;
+            })
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        return { totalIncome, totalExpense };
+    };
+
+    // --- Calculate previous month's net balance ---
+    const prevMonthDate = new Date(currentYear, currentMonth, 0);
+    const { totalIncome: prevMonthIncome, totalExpense: prevMonthExpense } = getMonthTotals(prevMonthDate.getMonth(), prevMonthDate.getFullYear());
+    const prevMonthNetBalance = prevMonthIncome - prevMonthExpense;
+
+    // --- Process daily transactions for current month ---
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
+        day: (i + 1).toString().padStart(2, '0'),
+        income: 0,
+        expense: 0,
+    }));
+
+    // Get all income transactions that count towards the CURRENT month's period
+    const currentMonthIncomeTransactions = transactions.filter(t => {
+        if (t.type !== 'income' || t.accountId !== activeAccountId || t.category === 'Transfer') return false;
+        const txDate = new Date(t.createdAt);
+        // Case 1: Regular income in the current month
+        if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
+            const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+            return !(isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY);
+        }
+        // Case 2: Late salary from previous month
+        if (txDate.getMonth() === prevMonthDate.getMonth() && txDate.getFullYear() === prevMonthDate.getFullYear()) {
+            const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+            return isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY;
+        }
+        return false;
+    });
+
+    // Distribute this income into daily buckets
+    currentMonthIncomeTransactions.forEach(t => {
+        const txDate = new Date(t.createdAt);
+        // Late salaries are conceptually day 0, but for the chart, let's put them on day 1 (index 0).
+        const dayOfMonth = (txDate.getMonth() === currentMonth) ? txDate.getDate() - 1 : 0;
+        if (dayOfMonth >= 0 && dayOfMonth < daysInMonth) {
+            dailyData[dayOfMonth].income += t.amount;
+        }
+    });
+
+    // Distribute expenses into daily buckets
+    transactions
+        .filter(t => {
+            if (t.type !== 'expense' || t.accountId !== activeAccountId || t.category === 'Transfer') return false;
+            const txDate = new Date(t.createdAt);
+            return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+        })
+        .forEach(t => {
+            const dayOfMonth = new Date(t.createdAt).getDate() - 1;
+            dailyData[dayOfMonth].expense += t.amount;
+        });
+
+    // --- Calculate Cumulative Values ---
+    let cumulativeIncome = prevMonthNetBalance;
+    let cumulativeExpense = 0;
+
+    return dailyData.map(d => {
+        cumulativeIncome += d.income;
+        cumulativeExpense += d.expense;
+        return {
+            ...d,
+            income: cumulativeIncome,
+            expense: cumulativeExpense,
+        };
+    });
+  }, [transactions, activeAccountId, activeAccount, currentDate]);
   
   if (!activeAccount) return null;
 
@@ -75,19 +199,28 @@ const AnalysisSidebar: React.FC = () => {
         <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-zinc-700/60">
             <div>
               <h2 id="analysis-sidebar-title" className="text-xl font-bold text-zinc-100">Ausgabenanalyse</h2>
-              <p className="text-sm text-zinc-400">{activeAccount.name}</p>
+              <p className="text-sm text-zinc-400">{activeAccount.name} &bull; {currentDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}</p>
             </div>
           </header>
 
-          <div className="flex-grow overflow-y-auto p-4">
-            <div className="text-center my-4">
-              <p className="text-sm text-zinc-400 font-medium">Gesamtausgaben</p>
-              <p className="text-3xl font-bold text-red-400 mt-1">
-                {formatCurrency(totalExpenses)}
-              </p>
+          <div className="flex-grow overflow-y-auto p-4 space-y-8">
+            <div>
+              <div className="text-center my-4">
+                <p className="text-sm text-zinc-400 font-medium">Gesamtausgaben ({currentDate.toLocaleDateString('de-DE', { month: 'short' })})</p>
+                <p className="text-3xl font-bold text-red-400 mt-1">
+                  {formatCurrency(totalExpenses)}
+                </p>
+              </div>
+              
+              <PieChart data={chartData} colors={chartColors} />
             </div>
-            
-            <PieChart data={chartData} colors={chartColors} />
+
+            <div>
+              <h3 className="text-lg font-bold text-zinc-100 mb-2 text-center">Kumulativer Monatsverlauf</h3>
+              <div className="h-72">
+                  <IncomeExpenseChart data={dailyChartData} />
+              </div>
+            </div>
           </div>
     </aside>
   );
