@@ -57,6 +57,12 @@ const ReadingsTable: React.FC<ReadingsTableProps> = ({ readings }) => {
         });
     };
 
+    const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        const sanitized = rawValue.replace(/[^0-9,]/g, '').replace(/,(.*?),/g, '$1,');
+        setEditData({ ...editData, value: sanitized });
+    };
+
     if (readings.length === 0) {
         return <div className="text-center text-zinc-500 py-8 bg-zinc-800/50 rounded-lg">Keine Zählerstände vorhanden.</div>;
     }
@@ -80,7 +86,7 @@ const ReadingsTable: React.FC<ReadingsTableProps> = ({ readings }) => {
                                         <input ref={dateInputRef} type="date" value={editData.date} onChange={e => setEditData({...editData, date: e.target.value})} className="bg-zinc-900 border-zinc-600 rounded-md p-2 w-full" />
                                     </td>
                                     <td className="px-6 py-4">
-                                         <input type="text" inputMode="decimal" value={editData.value} onChange={e => setEditData({...editData, value: e.target.value})} className="bg-zinc-900 border-zinc-600 rounded-md p-2 w-full" />
+                                         <input type="text" inputMode="decimal" value={editData.value} onChange={handleValueChange} className="bg-zinc-900 border-zinc-600 rounded-md p-2 w-full" />
                                     </td>
                                     <td className="px-6 py-4 text-right space-x-2">
                                         <button onClick={handleSave} className="p-2 text-green-400 hover:bg-zinc-700 rounded-full"><Icon name="check" /></button>
