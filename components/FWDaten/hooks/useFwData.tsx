@@ -72,9 +72,6 @@ export const FwDataProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (new Date(date) <= new Date(lastReading.date)) {
             return { isValid: false, error: 'Das Datum muss nach der letzten Ablesung liegen.' };
         }
-        if (value <= lastReading.value) {
-            return { isValid: false, error: 'Der Zählerstand muss höher als der letzte sein.' };
-        }
         return { isValid: true, error: '' };
     };
     
@@ -90,11 +87,9 @@ export const FwDataProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         if (prevReading) {
             if (new Date(date) <= new Date(prevReading.date)) return { isValid: false, error: 'Datum muss nach dem vorherigen Eintrag liegen.' };
-            if (value <= prevReading.value) return { isValid: false, error: 'Wert muss größer als der vorherige sein.' };
         }
         if (nextReading) {
             if (new Date(date) >= new Date(nextReading.date)) return { isValid: false, error: 'Datum muss vor dem nächsten Eintrag liegen.' };
-            if (value >= nextReading.value) return { isValid: false, error: 'Wert muss kleiner als der nächste sein.' };
         }
         
         return { isValid: true, error: '' };
