@@ -44,6 +44,7 @@ interface AppContextType {
     addAccount: (accountData: Omit<Account, 'id'>) => void;
     updateAccount: (account: Account) => void;
     deleteAccount: (accountId: string) => void;
+    reorderAccounts: (reorderedAccounts: Account[]) => void;
     showNotification: (config: Omit<NotificationState, 'isOpen'>) => void;
     hideNotification: () => void;
     currentDate: Date;
@@ -71,6 +72,7 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
         templates, setTemplates,
         categories, setCategories,
         activeAccountId, setActiveAccountId,
+        reorderAccounts,
         isInitialSetup,
         isDataLoaded
     } = auriMeaData;
@@ -171,7 +173,7 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
                 showNotification({ title: 'Kategorie existiert bereits', message: `Die Kategorie "${category}" ist bereits vorhanden.`, type: 'warning', primaryButtonText: 'OK', onPrimaryButtonClick: hideNotification });
                 return prev;
             }
-            return { ...prev, [type]: [...prev[type], category.trim()].sort() };
+            return { ...prev, [type]: [...prev[type], category.trim()].sort((a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' })) };
         });
     }, [showNotification, hideNotification, setCategories]);
 
@@ -185,7 +187,7 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
 
         setCategories(prev => ({
             ...prev,
-            [type]: prev[type].map(c => c === oldName ? newName.trim() : c).sort()
+            [type]: prev[type].map(c => c === oldName ? newName.trim() : c).sort((a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' }))
         }));
 
         setTransactions(prev => prev.map(t => {
@@ -263,6 +265,8 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
         });
     }, [accounts, activeAccountId, showNotification, hideNotification, setAccounts, setTransactions, setActiveAccountId]);
 
+    // Fix: Changed from an array `[]` to an object `{}` to match the AppContextType interface.
+    // Also added `setCurrentDate` to the dependency array.
     const contextValue: AppContextType = useMemo(() => ({
         accounts,
         transactions,
@@ -281,11 +285,12 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
         addAccount,
         updateAccount,
         deleteAccount,
+        reorderAccounts,
         showNotification,
         hideNotification,
         currentDate,
         setCurrentDate,
-    }), [accounts, transactions, templates, categories, activeAccountId, setActiveAccountId, addTransaction, updateTransaction, deleteTransaction, addTemplate, deleteTemplate, addCategory, updateCategory, deleteCategory, addAccount, updateAccount, deleteAccount, showNotification, hideNotification, currentDate]);
+    }), [accounts, transactions, templates, categories, activeAccountId, setActiveAccountId, addTransaction, updateTransaction, deleteTransaction, addTemplate, deleteTemplate, addCategory, updateCategory, deleteCategory, addAccount, updateAccount, deleteAccount, reorderAccounts, showNotification, hideNotification, currentDate, setCurrentDate]);
 
     if (!isDataLoaded) {
         return <div className="h-full w-full bg-zinc-900 flex items-center justify-center text-zinc-400">Loading...</div>;

@@ -40,6 +40,10 @@ export const useAuriMeaData = () => {
             const storedCategories = localStorage.getItem('aurimea_categories');
             const parsedCategories = storedCategories ? JSON.parse(storedCategories) : initialCategories;
 
+            // Ensure categories are sorted on load
+            parsedCategories.income.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
+            parsedCategories.expense.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
+
             // Ensure 'Gehalt' category exists for income for backwards compatibility
             if (!parsedCategories.income.find((c: string) => c.toLowerCase() === 'gehalt')) {
                 parsedCategories.income.push('Gehalt');
@@ -61,8 +65,10 @@ export const useAuriMeaData = () => {
             const fallbackCategories = { ...initialCategories };
             if (!fallbackCategories.income.find((c: string) => c.toLowerCase() === 'gehalt')) {
                 fallbackCategories.income.push('Gehalt');
-                fallbackCategories.income.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
             }
+            // sort fallback categories
+            fallbackCategories.income.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
+            fallbackCategories.expense.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
             setCategories(fallbackCategories);
         } finally {
             setIsDataLoaded(true);
@@ -82,6 +88,10 @@ export const useAuriMeaData = () => {
     useEffect(() => { if(isDataLoaded) localStorage.setItem('aurimea_transactions', JSON.stringify(transactions)); }, [transactions, isDataLoaded]);
     useEffect(() => { if(isDataLoaded) localStorage.setItem('aurimea_templates', JSON.stringify(templates)); }, [templates, isDataLoaded]);
     useEffect(() => { if(isDataLoaded) localStorage.setItem('aurimea_categories', JSON.stringify(categories)); }, [categories, isDataLoaded]);
+    
+    const reorderAccounts = useCallback((newOrder: Account[]) => {
+        setAccounts(newOrder);
+    }, [setAccounts]);
 
     const importAuriMeaData = useCallback((data: { accounts: Account[], transactions: Transaction[], categories: Categories, templates: TransactionTemplate[], activeAccountId?: string }) => {
         if (data.accounts.length === 0) {
@@ -124,6 +134,7 @@ export const useAuriMeaData = () => {
         activeAccountId, setActiveAccountId,
         isInitialSetup,
         isDataLoaded,
+        reorderAccounts,
         importAuriMeaData,
         resetAuriMeaData,
     };
