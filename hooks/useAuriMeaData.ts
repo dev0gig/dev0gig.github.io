@@ -70,7 +70,7 @@ export const useAuriMeaData = () => {
     useEffect(() => { if(isDataLoaded) localStorage.setItem('aurimea_templates', JSON.stringify(templates)); }, [templates, isDataLoaded]);
     useEffect(() => { if(isDataLoaded) localStorage.setItem('aurimea_categories', JSON.stringify(categories)); }, [categories, isDataLoaded]);
 
-    const importAuriMeaData = useCallback((data: { accounts: Account[], transactions: Transaction[], categories: Categories, templates: TransactionTemplate[] }) => {
+    const importAuriMeaData = useCallback((data: { accounts: Account[], transactions: Transaction[], categories: Categories, templates: TransactionTemplate[], activeAccountId?: string }) => {
         if (data.accounts.length === 0) {
             setIsInitialSetup(true);
             setAccounts([]);
@@ -78,15 +78,10 @@ export const useAuriMeaData = () => {
         } else {
             setIsInitialSetup(false);
             setAccounts(data.accounts);
-            const currentActiveId = localStorage.getItem('aurimea_activeAccountId');
-            const currentActiveIdIsValid = data.accounts.some(acc => acc.id === currentActiveId);
-            if (!currentActiveIdIsValid) {
-                setActiveAccountId(data.accounts[0].id);
-            } else if (currentActiveId) {
-                setActiveAccountId(currentActiveId);
-            } else {
-                setActiveAccountId(data.accounts[0].id);
-            }
+            const newActiveId = data.activeAccountId && data.accounts.some(acc => acc.id === data.activeAccountId)
+                ? data.activeAccountId
+                : data.accounts[0].id;
+            setActiveAccountId(newActiveId);
         }
         setTransactions(data.transactions);
         setCategories(data.categories);

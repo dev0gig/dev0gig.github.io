@@ -60,10 +60,11 @@ export const useApp = () => {
 interface AuriMeaAppProps {
     isMobileView: boolean;
     onBack?: () => void;
+    auriMeaData: ReturnType<typeof useAuriMeaData>;
 }
 
 // Main App Component
-export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
+export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMeaAppProps) {
     const {
         accounts, setAccounts,
         transactions, setTransactions,
@@ -72,7 +73,7 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
         activeAccountId, setActiveAccountId,
         isInitialSetup,
         isDataLoaded
-    } = useAuriMeaData();
+    } = auriMeaData;
 
     const [isFormOpen, setFormOpen] = useState(false);
     const [isSettingsOpen, setSettingsOpen] = useState(false);
@@ -284,7 +285,7 @@ export default function AuriMeaApp({ isMobileView, onBack }: AuriMeaAppProps) {
         hideNotification,
         currentDate,
         setCurrentDate,
-    }), [accounts, transactions, templates, categories, activeAccountId, addTransaction, updateTransaction, deleteTransaction, addTemplate, deleteTemplate, addCategory, updateCategory, deleteCategory, addAccount, updateAccount, deleteAccount, showNotification, hideNotification, currentDate]);
+    }), [accounts, transactions, templates, categories, activeAccountId, setActiveAccountId, addTransaction, updateTransaction, deleteTransaction, addTemplate, deleteTemplate, addCategory, updateCategory, deleteCategory, addAccount, updateAccount, deleteAccount, showNotification, hideNotification, currentDate]);
 
     if (!isDataLoaded) {
         return <div className="h-full w-full bg-zinc-900 flex items-center justify-center text-zinc-400">Loading...</div>;

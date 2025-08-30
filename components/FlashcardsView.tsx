@@ -9,29 +9,17 @@ interface FlashcardsViewProps {
     onBack?: () => void;
     showNotification: (title: string, message: string | React.ReactNode, type?: 'info' | 'success' | 'error') => void;
     showConfirmation: (title: string, message: string | React.ReactNode, onConfirm: () => void) => void;
+    deck: FlashcardDeck;
+    setDeck: (deck: FlashcardDeck) => void;
+    deckName: string;
+    setDeckName: (name: string) => void;
 }
 
-const HIRAGANA_DECK: FlashcardDeck = [
-    { front: 'あ', back: 'a' }, { front: 'い', back: 'i' }, { front: 'う', back: 'u' }, { front: 'え', back: 'e' }, { front: 'お', back: 'o' },
-    { front: 'か', back: 'ka' }, { front: 'き', back: 'ki' }, { front: 'く', back: 'ku' }, { front: 'け', back: 'ke' }, { front: 'こ', back: 'ko' },
-    { front: 'さ', back: 'sa' }, { front: 'し', back: 'shi' }, { front: 'す', back: 'su' }, { front: 'せ', back: 'se' }, { front: 'そ', back: 'so' },
-    { front: 'た', back: 'ta' }, { front: 'ち', back: 'chi' }, { front: 'つ', back: 'tsu' }, { front: 'て', back: 'te' }, { front: 'と', back: 'to' },
-    { front: 'な', back: 'na' }, { front: 'に', back: 'ni' }, { front: 'ぬ', back: 'nu' }, { front: 'ね', back: 'ne' }, { front: 'の', back: 'no' },
-    { front: 'は', back: 'ha' }, { front: 'ひ', back: 'hi' }, { front: 'ふ', back: 'fu' }, { front: 'へ', back: 'he' }, { front: 'ほ', back: 'ho' },
-    { front: 'ま', back: 'ma' }, { front: 'み', back: 'mi' }, { front: 'む', back: 'mu' }, { front: 'め', back: 'me' }, { front: 'も', back: 'mo' },
-    { front: 'や', back: 'ya' }, { front: 'ゆ', back: 'yu' }, { front: 'よ', back: 'yo' },
-    { front: 'ら', back: 'ra' }, { front: 'り', back: 'ri' }, { front: 'る', back: 'ru' }, { front: 'れ', back: 're' }, { front: 'ろ', back: 'ro' },
-    { front: 'わ', back: 'wa' }, { front: 'を', back: 'wo' },
-    { front: 'ん', back: 'n' },
-];
-
-const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, onBack, showNotification, showConfirmation }) => {
-    const [deck, setDeck] = useState<FlashcardDeck>([]);
+const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, onBack, showNotification, showConfirmation, deck, setDeck, deckName, setDeckName }) => {
     const [shuffledIndices, setShuffledIndices] = useState<number[]>([]);
     const [currentIndex, setCurrentIndex] = useState<number | null>(null);
     const [isFlipped, setIsFlipped] = useState(false);
     const [isFrontFirst, setIsFrontFirst] = useState(true);
-    const [deckName, setDeckName] = useState<string>('');
     const drawingCanvasRef = useRef<DrawingCanvasRef>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isCardListVisible, setIsCardListVisible] = useState(false);
@@ -64,11 +52,22 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
         }
         setIsFlipped(false);
         drawingCanvasRef.current?.clearCanvas();
-    }, []);
+    }, [setDeck, setDeckName]);
     
     useEffect(() => {
-        startDeck(HIRAGANA_DECK, 'Hiragana');
-    }, [startDeck]);
+        // This effect runs when the component mounts or when the deck from props changes.
+        // It initializes or resets the learning session.
+        if (deck.length > 0) {
+             const indices = deck.map((_, i) => i);
+            const newShuffledIndices = shuffleArray(indices);
+            const firstIndex = newShuffledIndices.pop() ?? null;
+            setShuffledIndices(newShuffledIndices);
+            setCurrentIndex(firstIndex);
+        } else {
+            setShuffledIndices([]);
+            setCurrentIndex(null);
+        }
+    }, [deck]);
 
 
     const handleNextCard = () => {
@@ -123,7 +122,7 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
             newDeck = [...deck, cardData];
             showNotification('Erfolg', 'Neue Karte wurde hinzugefügt.', 'success');
         }
-        startDeck(newDeck, deckName);
+        setDeck(newDeck);
         setIsCardFormModalOpen(false);
         setEditingCard(null);
     };
@@ -135,7 +134,7 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
             `Möchten Sie die Karte "${cardToDelete.front}" wirklich unwiderruflich löschen?`,
             () => {
                 const newDeck = deck.filter((_, i) => i !== indexToDelete);
-                startDeck(newDeck, deckName);
+                setDeck(newDeck);
                 showNotification('Erfolg', 'Karte wurde gelöscht.', 'success');
             }
         );

@@ -4,6 +4,7 @@
 
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, MyProject, Tile, Collection, JournalEntry } from './types';
 
@@ -25,6 +26,7 @@ import { useNavigation } from './hooks/useNavigation';
 import { useHistoryStack } from './hooks/useHistoryStack';
 import { useAuriMeaData } from './hooks/useAuriMeaData';
 import { useDataManager } from './hooks/useDataManager';
+import { useFlashcardsData } from './hooks/useFlashcardsData';
 
 
 const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }> = {
@@ -50,6 +52,7 @@ const App: React.FC = () => {
       collections: useCollections(),
       tiles: useTiles(),
       auriMea: useAuriMeaData(),
+      flashcards: useFlashcardsData(),
   };
   const ui = useUIState();
   const nav = useNavigation();

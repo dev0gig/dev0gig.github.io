@@ -14,7 +14,9 @@ import { useApps } from '../hooks/useApps';
 import { useJournal } from '../hooks/useJournal';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useCollections } from '../hooks/useCollections';
+import { useAuriMeaData } from '../hooks/useAuriMeaData';
 import { useUIState } from '../hooks/useUIState';
+import { useFlashcardsData } from '../hooks/useFlashcardsData';
 
 interface MainContentProps {
     isDesktop: boolean;
@@ -24,6 +26,8 @@ interface MainContentProps {
         journal: ReturnType<typeof useJournal>;
         bookmarks: ReturnType<typeof useBookmarks>;
         collections: ReturnType<typeof useCollections>;
+        auriMea: ReturnType<typeof useAuriMeaData>;
+        flashcards: ReturnType<typeof useFlashcardsData>;
     };
     ui: ReturnType<typeof useUIState>;
     searchQuery: string;
@@ -102,13 +106,22 @@ const MainContent: React.FC<MainContentProps> = ({
         />;
     }
     if (activeProject === MyProject.AuriMea) {
-        return <AuriMeaApp isMobileView={!isDesktop} onBack={handleExitAuriMeaSetup} />;
+        return <AuriMeaApp isMobileView={!isDesktop} onBack={handleExitAuriMeaSetup} auriMeaData={data.auriMea} />;
     }
     if (activeProject === MyProject.FWDaten) {
         return <FwDatenApp isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} />;
     }
     if (activeProject === MyProject.Flashcards) {
-        return <FlashcardsView isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} showNotification={ui.showNotification} showConfirmation={ui.showConfirmation} />;
+        return <FlashcardsView
+            isMobileView={!isDesktop}
+            onBack={nav.handleCloseMobileContent}
+            showNotification={ui.showNotification}
+            showConfirmation={ui.showConfirmation}
+            deck={data.flashcards.deck}
+            setDeck={data.flashcards.setDeck}
+            deckName={data.flashcards.deckName}
+            setDeckName={data.flashcards.setDeckName}
+        />;
     }
     if (activeAppView) {
         return <AppsView 

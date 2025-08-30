@@ -1,9 +1,10 @@
 
 
 
+
 import React, { useEffect, useRef } from 'react';
 
-type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten';
+type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'flash' | 'memomd' | 'fwdaten';
 
 interface BackupModalProps {
   mode: 'export' | 'import';
@@ -21,6 +22,7 @@ const scopeDetailsMap: Record<ExportScope, { label: string; icon: string }> = {
     read: { label: 'ReadLateR', icon: 'bookmark' },
     coll: { label: 'CollMea', icon: 'collections_bookmark' },
     auri: { label: 'AuriMea', icon: 'payments' },
+    flash: { label: 'Flashcards', icon: 'style' },
     fwdaten: { label: 'FW-Daten', icon: 'ssid_chart' },
 };
 
