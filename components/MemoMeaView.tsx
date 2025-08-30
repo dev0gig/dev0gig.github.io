@@ -4,6 +4,95 @@ import { JournalEntry } from '../types';
 import JournalEntryCard from './JournalEntryCard';
 import ContextMenu from './ContextMenu';
 
+const toYYYYMMDD = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+interface MemoMeaCalendarProps {
+  currentDate: Date;
+  onMonthChange: (date: Date) => void;
+  selectedDate: string | null;
+  onDateSelect: (date: Date | null) => void;
+  entryDates: Set<string>; // 'YYYY-MM-DD'
+}
+
+const MemoMeaCalendar: React.FC<MemoMeaCalendarProps> = ({ currentDate, onMonthChange, selectedDate, onDateSelect, entryDates }) => {
+    const monthName = currentDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    const dayHeaders = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+    const handlePrevMonth = () => onMonthChange(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    const handleNextMonth = () => onMonthChange(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    const handleGoToToday = () => onMonthChange(new Date());
+
+    const calendarGrid = useMemo(() => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const todayString = toYYYYMMDD(new Date());
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        let startDayOfWeek = firstDayOfMonth.getDay() - 1;
+        if (startDayOfWeek === -1) startDayOfWeek = 6; // Adjust Sunday
+
+        const gridStartDate = new Date(firstDayOfMonth);
+        gridStartDate.setDate(gridStartDate.getDate() - startDayOfWeek);
+
+        const days = [];
+        for (let i = 0; i < 42; i++) {
+            const date = new Date(gridStartDate);
+            date.setDate(date.getDate() + i);
+            const dateString = toYYYYMMDD(date);
+            
+            days.push({
+                key: dateString,
+                date: date,
+                isToday: dateString === todayString,
+                hasEntry: entryDates.has(dateString),
+                isCurrentMonth: date.getMonth() === month,
+                isSelected: selectedDate === dateString,
+            });
+        }
+        return days;
+    }, [currentDate, entryDates, selectedDate]);
+
+    return (
+        <div className="bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 rounded-xl p-4 flex flex-col">
+            <header className="flex justify-between items-center mb-3">
+                <h3 className="font-bold text-zinc-100">{monthName}</h3>
+                <div className="flex items-center space-x-1">
+                    <button onClick={handleGoToToday} className="text-xs font-semibold text-zinc-300 bg-zinc-700/50 hover:bg-zinc-700/80 px-2 py-1 rounded-md transition-colors">Heute</button>
+                    <button onClick={handlePrevMonth} className="p-1.5 rounded-full hover:bg-zinc-700 transition-colors" aria-label="Vorheriger Monat"><span className="material-symbols-outlined text-xl">chevron_left</span></button>
+                    <button onClick={handleNextMonth} className="p-1.5 rounded-full hover:bg-zinc-700 transition-colors" aria-label="Nächster Monat"><span className="material-symbols-outlined text-xl">chevron_right</span></button>
+                </div>
+            </header>
+            <div className="grid grid-cols-7 gap-1 text-center">
+                {dayHeaders.map(header => (
+                    <div key={header} className="font-semibold text-zinc-400 text-xs py-1">{header}</div>
+                ))}
+                {calendarGrid.map(day => (
+                    <button
+                        key={day.key}
+                        onClick={() => onDateSelect(day.date)}
+                        className={`
+                            relative w-full aspect-square flex items-center justify-center rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500
+                            ${day.isSelected ? 'ring-2 ring-violet-400 bg-violet-500/20' : ''}
+                            ${!day.isSelected && day.isCurrentMonth ? 'hover:bg-zinc-700/50' : ''}
+                            ${day.isToday ? 'bg-violet-600 text-white font-bold' : (day.isCurrentMonth ? 'text-zinc-200' : 'text-zinc-600')}
+                        `}
+                    >
+                        {day.date.getDate()}
+                        {day.hasEntry && (
+                            <span className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${day.isToday ? 'bg-white' : 'bg-violet-400'}`} />
+                        )}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 interface MemoMeaViewProps {
   entries: JournalEntry[];
   entryCount: number;
@@ -41,24 +130,49 @@ const TagCloud: React.FC<{ tags: { tag: string; count: number }[], onTagClick: (
     const maxCount = Math.max(...counts);
 
     const getFontSize = (count: number) => {
-        if (maxCount === minCount) return '1em';
-        const minSize = 0.8; // rem
-        const maxSize = 1.6; // rem
+        if (maxCount === minCount) return '0.85rem';
+        const minSize = 0.75; // rem
+        const maxSize = 1.25; // rem
         const size = minSize + (maxSize - minSize) * (Math.log(count) - Math.log(minCount)) / (Math.log(maxCount) - Math.log(minCount) || 1);
         return `${size}rem`;
     };
 
+    const colors = [
+        'bg-violet-500/10 hover:bg-violet-500/20 text-violet-300',
+        'bg-sky-500/10 hover:bg-sky-500/20 text-sky-300',
+        'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300',
+        'bg-amber-500/10 hover:bg-amber-500/20 text-amber-300',
+        'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300',
+        'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300',
+        'bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300',
+    ];
+
+    const stringToHash = (str: string) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+    };
+
+    const getColorClass = (tag: string) => {
+        const hash = stringToHash(tag);
+        return colors[hash % colors.length];
+    };
+
     return (
-        <div className="flex flex-wrap gap-x-3 gap-y-4 items-baseline">
+        <div className="flex flex-wrap gap-2 items-center">
             {tags.map(({ tag, count }) => (
                 <button
                     key={tag}
                     onClick={() => onTagClick(tag)}
-                    className="text-zinc-400 hover:text-violet-400 transition-colors leading-none font-medium"
+                    className={`px-3 py-1.5 rounded-full transition-colors font-medium leading-none flex items-center ${getColorClass(tag)}`}
                     style={{ fontSize: getFontSize(count) }}
                     aria-label={`Filter by tag: ${tag}`}
                 >
-                    #{tag}
+                    <span className="opacity-60 mr-1">#</span>{tag}
                 </button>
             ))}
         </div>
@@ -68,9 +182,11 @@ const TagCloud: React.FC<{ tags: { tag: string; count: number }[], onTagClick: (
 
 const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQuery, onUpdate, onDelete, onTagClick, onSuggestedTagsChange, showConfirmation, onAddNew, isMobileView = false, onBack, onSearchChange, onClearSearch, suggestedTags = [] }) => {
   const [visibleEntriesCount, setVisibleEntriesCount] = useState(10);
-  const [isTagCloudOpen, setIsTagCloudOpen] = useState(false);
   const entriesPerLoad = 10;
   
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   const lowercasedQuery = searchQuery.toLowerCase();
   const isTagSearch = lowercasedQuery.startsWith('#');
   const plainQuery = isTagSearch ? lowercasedQuery.substring(1) : lowercasedQuery;
@@ -87,10 +203,38 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
         .map(([tag, count]) => ({ tag, count }))
         .sort((a, b) => a.tag.localeCompare(b.tag));
   }, [entries]);
+  
+  const entryDates = useMemo(() => {
+    const dates = new Set<string>();
+    entries.forEach(entry => {
+        dates.add(toYYYYMMDD(new Date(entry.createdAt)));
+    });
+    return dates;
+  }, [entries]);
+
+  const handleDateSelect = (date: Date | null) => {
+    const dateString = date ? toYYYYMMDD(date) : null;
+    if (selectedDate && dateString && selectedDate === dateString) {
+        setSelectedDate(null); // Toggle off if same date is clicked
+    } else {
+        setSelectedDate(dateString);
+    }
+  };
+
+  const handleLocalTagClick = (tag: string) => {
+    onTagClick(tag);
+    setSelectedDate(null);
+  };
 
   const { taggedEntries, unlinkedEntries, filteredEntries } = useMemo(() => {
+    const dateFilter = (entry: JournalEntry) => {
+        if (!selectedDate) return true;
+        const entryDateString = toYYYYMMDD(new Date(entry.createdAt));
+        return entryDateString === selectedDate;
+    };
+
     if (!plainQuery) {
-        return { taggedEntries: [], unlinkedEntries: [], filteredEntries: entries };
+        return { taggedEntries: [], unlinkedEntries: [], filteredEntries: entries.filter(dateFilter) };
     }
 
     if (isTagSearch) {
@@ -103,14 +247,13 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
             const hasTag = entryTags.includes(plainQuery);
             const hasText = new RegExp(`\\b${escapedQuery}\\b`, 'i').test(entry.content);
             
-            if (hasTag) {
-                tagged.push(entry);
-            } else if (hasText) {
-                unlinked.push(entry);
-            }
+            if (hasTag) tagged.push(entry);
+            else if (hasText) unlinked.push(entry);
         });
         
-        return { taggedEntries: tagged, unlinkedEntries: unlinked, filteredEntries: [...tagged, ...unlinked] };
+        const finalTagged = tagged.filter(dateFilter);
+        const finalUnlinked = unlinked.filter(dateFilter);
+        return { taggedEntries: finalTagged, unlinkedEntries: finalUnlinked, filteredEntries: [...finalTagged, ...finalUnlinked] };
     } 
     
     // Regular search
@@ -121,9 +264,9 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
         const tagMatch = entryTags.some(tag => tag.includes(plainQuery));
         return contentMatch || dateMatch || tagMatch;
     });
-    return { taggedEntries: [], unlinkedEntries: [], filteredEntries: regularFiltered };
+    return { taggedEntries: [], unlinkedEntries: [], filteredEntries: regularFiltered.filter(dateFilter) };
     
-  }, [searchQuery, entries, isTagSearch, plainQuery]);
+  }, [searchQuery, entries, isTagSearch, plainQuery, selectedDate]);
 
   const internalSuggestedTags = useMemo(() => {
       if (!plainQuery || isTagSearch) {
@@ -139,7 +282,7 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
 
   useEffect(() => {
     setVisibleEntriesCount(entriesPerLoad);
-  }, [searchQuery, entries.length]);
+  }, [searchQuery, entries.length, selectedDate]);
 
   const currentEntries = filteredEntries.slice(0, visibleEntriesCount);
   const hasMoreEntries = visibleEntriesCount < filteredEntries.length;
@@ -167,7 +310,11 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
             <>
                <span className="material-symbols-outlined text-6xl mb-4 text-zinc-600">search_off</span>
                <h2 className="text-2xl font-bold text-zinc-400">Nichts gefunden</h2>
-               <p className="mt-1 text-zinc-500">Für "{searchQuery}" gibt es keine Treffer.</p>
+               {selectedDate ? (
+                    <p className="mt-1 text-zinc-500">Für den {new Date(selectedDate.replace(/-/g, '/')).toLocaleDateString('de-DE')} {searchQuery ? `und die Suche "${searchQuery}"` : ''} gibt es keine Treffer.</p>
+                ) : (
+                    <p className="mt-1 text-zinc-500">Für "{searchQuery}" gibt es keine Treffer.</p>
+                )}
                {isTagSearch && (
                   <button onClick={() => onTagClick('')} className="mt-4 text-violet-400 hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-md px-2 py-1">
                       Tag-Filter zurücksetzen
@@ -200,7 +347,7 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
                     entry={entry}
                     onUpdate={onUpdate}
                     onDelete={onDelete}
-                    onTagClick={onTagClick}
+                    onTagClick={handleLocalTagClick}
                     showConfirmation={showConfirmation}
                   />
                 </React.Fragment>
@@ -223,40 +370,53 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
     </>
   );
 
-  const memoMeaOnTagClick = (tag: string) => {
-    onTagClick(tag);
-    if (isMobileView) {
-        setIsTagCloudOpen(false);
-    }
-  };
-
+  const calendarComponent = (
+    <MemoMeaCalendar
+        currentDate={calendarDate}
+        onMonthChange={setCalendarDate}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        entryDates={entryDates}
+    />
+  );
+  
   const tagCloudComponent = allTagsWithCounts.length > 0 ? (
-    <div className="bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 rounded-xl p-4 flex flex-col h-full">
+    <div className="bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 rounded-xl p-4 flex flex-col flex-grow min-h-0">
       <h3 className="text-lg font-bold text-zinc-200 mb-4 flex-shrink-0">Tag-Wolke</h3>
       <div className="overflow-y-auto no-scrollbar flex-grow">
-        <TagCloud tags={allTagsWithCounts} onTagClick={memoMeaOnTagClick} />
+        <TagCloud tags={allTagsWithCounts} onTagClick={handleLocalTagClick} />
       </div>
     </div>
   ) : null;
   
   const desktopView = (
     <div className="flex h-full gap-6">
-        <div className={`flex-1 ${tagCloudComponent ? 'overflow-y-auto pr-2' : ''}`}>
+        <div className="flex-grow overflow-y-auto pr-2">
+            {selectedDate && (
+                 <div className="mb-4 p-3 bg-zinc-800/70 rounded-lg flex justify-between items-center animate-fadeIn border border-zinc-700/60">
+                    <p className="text-zinc-300 text-sm">
+                        Zeige Einträge für: <span className="font-bold text-white">{new Date(selectedDate.replace(/-/g, '/')).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                    </p>
+                    <button 
+                        onClick={() => setSelectedDate(null)}
+                        className="text-violet-400 hover:underline text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-sm"
+                    >
+                        Filter zurücksetzen
+                    </button>
+                </div>
+            )}
             {content}
         </div>
-        {tagCloudComponent && (
-            <aside className="w-72 flex-shrink-0">
-                <div className="sticky top-0 p-1 max-h-[calc(100vh-8rem)]">
-                    {tagCloudComponent}
-                </div>
-            </aside>
-        )}
+        <aside className="w-80 flex-shrink-0 h-full flex flex-col gap-6">
+            {calendarComponent}
+            {tagCloudComponent}
+        </aside>
     </div>
   );
 
 
   return (
-    <div className={`animate-fadeIn ${isMobileView ? 'h-full flex flex-col' : ''}`}>
+    <div className={`animate-fadeIn h-full ${isMobileView ? 'flex flex-col' : ''}`}>
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -291,15 +451,6 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
                         </div>
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0">
-                        {tagCloudComponent && (
-                            <button
-                                onClick={() => setIsTagCloudOpen(true)}
-                                className="flex items-center justify-center font-medium w-10 h-10 rounded-lg transition-colors bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
-                                aria-label="Tag-Wolke anzeigen"
-                            >
-                                <span className="material-symbols-outlined text-lg">tag</span>
-                            </button>
-                        )}
                         <button
                             onClick={onAddNew}
                             className="flex items-center justify-center font-bold w-10 h-10 sm:w-auto sm:h-auto sm:py-2 sm:px-3 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"
@@ -356,21 +507,6 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
                     {content}
                 </div>
             </div>
-            {isTagCloudOpen && (
-                <div className="fixed inset-0 z-40 bg-zinc-900/80 backdrop-blur-sm flex flex-col p-4 animate-fadeIn" onClick={() => setIsTagCloudOpen(false)}>
-                    <div className="bg-zinc-800 rounded-xl flex flex-col h-full max-h-[80vh] m-auto w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                        <header className="flex justify-between items-center p-4 border-b border-zinc-700 flex-shrink-0">
-                            <h2 className="text-xl font-bold text-zinc-100">Tag-Wolke</h2>
-                            <button onClick={() => setIsTagCloudOpen(false)} className="p-2 -m-2 rounded-full hover:bg-zinc-700">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                        </header>
-                        <div className="flex-grow overflow-y-auto p-6">
-                            {tagCloudComponent}
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
       ) : desktopView}
     </div>
