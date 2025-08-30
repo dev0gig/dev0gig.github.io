@@ -79,7 +79,6 @@ const AnalysisSidebar: React.FC = () => {
   const dailyChartData = useMemo(() => {
     if (!activeAccount) return [];
     
-    const SALARY_KEYWORDS = ['gehalt', 'lohn', 'salary'];
     const SALARY_CUTOFF_DAY = 25;
 
     const currentMonth = currentDate.getMonth();
@@ -98,12 +97,12 @@ const AnalysisSidebar: React.FC = () => {
                 const txDate = new Date(t.createdAt);
                 // Case 1: Regular income in the target month
                 if (txDate.getMonth() === month && txDate.getFullYear() === year) {
-                    const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+                    const isSalary = t.category === 'Gehalt';
                     return !(isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY);
                 }
                 // Case 2: Late salary from the month before
                 if (txDate.getMonth() === monthBefore && txDate.getFullYear() === yearBefore) {
-                    const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+                    const isSalary = t.category === 'Gehalt';
                     return isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY;
                 }
                 return false;
@@ -137,16 +136,16 @@ const AnalysisSidebar: React.FC = () => {
 
     // Get all income transactions that count towards the CURRENT month's period
     const currentMonthIncomeTransactions = transactions.filter(t => {
-        if (t.type !== 'income' || t.accountId !== activeAccountId || t.category === 'Transfer') return false;
+        if (t.type !== 'income' || t.accountId !== activeAccountId) return false;
         const txDate = new Date(t.createdAt);
         // Case 1: Regular income in the current month
         if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
-            const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+            const isSalary = t.category === 'Gehalt';
             return !(isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY);
         }
         // Case 2: Late salary from previous month
         if (txDate.getMonth() === prevMonthDate.getMonth() && txDate.getFullYear() === prevMonthDate.getFullYear()) {
-            const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+            const isSalary = t.category === 'Gehalt';
             return isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY;
         }
         return false;
@@ -165,7 +164,7 @@ const AnalysisSidebar: React.FC = () => {
     // Distribute expenses into daily buckets
     transactions
         .filter(t => {
-            if (t.type !== 'expense' || t.accountId !== activeAccountId || t.category === 'Transfer') return false;
+            if ((t.type !== 'expense' && t.type !== 'transfer') || t.accountId !== activeAccountId) return false;
             const txDate = new Date(t.createdAt);
             return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
         })

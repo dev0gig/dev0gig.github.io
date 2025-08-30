@@ -6,8 +6,6 @@ import { Transaction } from '../types';
 import AccountSwitcherModal from './AccountSwitcherModal';
 
 // --- Configuration for Salary Handling ---
-// Keywords to identify salary transactions (case-insensitive).
-const SALARY_KEYWORDS = ['gehalt', 'lohn', 'salary'];
 // Salaries received on or after this day of the month count towards the next month's income summary.
 const SALARY_CUTOFF_DAY = 25;
 
@@ -97,7 +95,7 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onBack 
             .filter(t => {
                 if (t.type !== 'income') return false;
                 const txDate = new Date(t.createdAt);
-                const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+                const isSalary = t.category === 'Gehalt';
                 // Exclude if it's a salary payment on or after the cutoff day
                 return !(isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY);
             });
@@ -116,7 +114,7 @@ const MainView: React.FC<MainViewProps> = ({ onOpenForm, onOpenSettings, onBack 
                 const txDate = new Date(t.createdAt);
                 if (txDate.getMonth() !== prevMonth || txDate.getFullYear() !== prevMonthYear) return false;
                 
-                const isSalary = SALARY_KEYWORDS.some(kw => t.description.toLowerCase().includes(kw));
+                const isSalary = t.category === 'Gehalt';
                 // Include if it's a salary payment on or after the cutoff day
                 return isSalary && txDate.getDate() >= SALARY_CUTOFF_DAY;
             });

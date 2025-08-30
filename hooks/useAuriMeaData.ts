@@ -38,7 +38,14 @@ export const useAuriMeaData = () => {
             setTemplates(storedTemplates ? JSON.parse(storedTemplates) : initialTemplates);
 
             const storedCategories = localStorage.getItem('aurimea_categories');
-            setCategories(storedCategories ? JSON.parse(storedCategories) : initialCategories);
+            const parsedCategories = storedCategories ? JSON.parse(storedCategories) : initialCategories;
+
+            // Ensure 'Gehalt' category exists for income for backwards compatibility
+            if (!parsedCategories.income.find((c: string) => c.toLowerCase() === 'gehalt')) {
+                parsedCategories.income.push('Gehalt');
+                parsedCategories.income.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
+            }
+            setCategories(parsedCategories);
 
         } catch (error) {
             console.error("Failed to load data from localStorage, falling back to initial data.", error);
@@ -50,7 +57,13 @@ export const useAuriMeaData = () => {
             }
             setTransactions(initialTransactions);
             setTemplates(initialTemplates);
-            setCategories(initialCategories);
+            
+            const fallbackCategories = { ...initialCategories };
+            if (!fallbackCategories.income.find((c: string) => c.toLowerCase() === 'gehalt')) {
+                fallbackCategories.income.push('Gehalt');
+                fallbackCategories.income.sort((a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
+            }
+            setCategories(fallbackCategories);
         } finally {
             setIsDataLoaded(true);
         }

@@ -5,6 +5,6 @@ export const initialTransactions: Transaction[] = [];
 export const initialTemplates: TransactionTemplate[] = [];
 
 export const initialCategories: Categories = {
-    "income": [],
+    "income": ["Gehalt"],
     "expense": [],
 };
