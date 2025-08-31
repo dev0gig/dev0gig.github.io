@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 import { MyProject, View } from '../types';
@@ -99,6 +100,8 @@ const MainContent: React.FC<MainContentProps> = ({
             onDeleteItem={data.collections.handleDeleteCollectionItem}
             onAddNew={handleAddNew}
             onAddNewItem={data.collections.handleAddNewCollectionItem}
+            onReorderCollections={data.collections.handleReorderCollections}
+            onReorderItems={data.collections.handleReorderItems}
             isMobileView={!isDesktop}
             onBack={nav.handleCloseMobileContent}
             onSearchChange={(e) => setSearchQuery(e.target.value)}

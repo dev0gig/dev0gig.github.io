@@ -1,5 +1,7 @@
 
 
+
+
 import { useState, useEffect } from 'react';
 import { Collection, GenericListItem } from '../types';
 import { initialCollections } from '../data/collections';
@@ -10,7 +12,8 @@ export const useCollections = () => {
       const savedCollections = localStorage.getItem('axismea-collections');
       if (savedCollections) {
         const parsed = JSON.parse(savedCollections) as Collection[];
-        return parsed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        // No sort on load to preserve order
+        return parsed;
       }
     } catch(error) { console.error("Error parsing collections from localStorage", error); }
     return [...initialCollections].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -39,6 +42,10 @@ export const useCollections = () => {
       setCollections(prev => prev.filter(c => c.id !== id));
       if (callback) callback();
   };
+  
+  const handleReorderCollections = (reorderedCollections: Collection[]) => {
+    setCollections(reorderedCollections);
+  };
 
   const handleAddNewCollectionItem = (collectionId: string) => {
       const newItem: GenericListItem = {
@@ -58,7 +65,6 @@ export const useCollections = () => {
             return {
                 ...c,
                 items: c.items.map(item => item.id === updatedItem.id ? updatedItem : item)
-                             .sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1)
             };
         }
         return c;
@@ -71,13 +77,21 @@ export const useCollections = () => {
     ));
   };
   
+  const handleReorderItems = (collectionId: string, reorderedItems: GenericListItem[]) => {
+    setCollections(prev => prev.map(c => 
+        c.id === collectionId ? { ...c, items: reorderedItems } : c
+    ));
+  };
+
   return {
     collections,
     setCollections,
     handleSaveCollection,
     handleDeleteCollection,
+    handleReorderCollections,
     handleAddNewCollectionItem,
     handleUpdateCollectionItem,
     handleDeleteCollectionItem,
+    handleReorderItems,
   };
 };

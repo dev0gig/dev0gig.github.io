@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Collection, GenericListItem } from '../types';
 import ContextMenu from './ContextMenu';
@@ -9,12 +10,17 @@ interface GenericListItemRowProps {
     onUpdate: (item: GenericListItem) => void;
     onDelete: () => void;
     isMobileView: boolean;
+    isDragging: boolean;
+    onDragStart: (e: React.DragEvent) => void;
+    onDragEnter: (e: React.DragEvent) => void;
+    onDragEnd: (e: React.DragEvent) => void;
 }
 
-const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate, onDelete, isMobileView }) => {
+const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate, onDelete, isMobileView, isDragging, onDragStart, onDragEnter, onDragEnd }) => {
     const [isEditing, setIsEditing] = useState(() => item.title === '');
     const [title, setTitle] = useState(item.title);
     const inputRef = useRef<HTMLInputElement>(null);
+    const rowRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isEditing) {
@@ -44,7 +50,16 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
     };
 
     return (
-         <div className="group flex items-center bg-zinc-800/50 p-3 rounded-lg transition-colors hover:bg-zinc-800">
+         <div 
+            ref={rowRef}
+            draggable
+            onDragStart={onDragStart}
+            onDragEnter={onDragEnter}
+            onDragEnd={onDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`group flex items-center bg-zinc-800/50 p-3 rounded-lg transition-all duration-200 hover:bg-zinc-800 cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-30' : 'opacity-100'}`}
+        >
+            <span className="material-symbols-outlined text-zinc-500 pr-2 cursor-grab active:cursor-grabbing">drag_indicator</span>
             <input
                 type="checkbox"
                 checked={item.completed}
@@ -84,31 +99,67 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
 // --- ItemList Component for reusability ---
 const ItemList: React.FC<{
     items: GenericListItem[];
+    collectionId: string;
     onUpdate: (item: GenericListItem) => void;
     onDelete: (itemId: string) => void;
+    onReorder: (collectionId: string, reorderedItems: GenericListItem[]) => void;
     isMobileView: boolean;
-}> = ({ items, onUpdate, onDelete, isMobileView }) => {
+}> = ({ items, collectionId, onUpdate, onDelete, onReorder, isMobileView }) => {
+    const [draggedItem, setDraggedItem] = useState<GenericListItem | null>(null);
+
+    const handleDragStart = (e: React.DragEvent, item: GenericListItem) => {
+        setDraggedItem(item);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.id);
+    };
+
+    const handleDragEnter = (e: React.DragEvent, targetItem: GenericListItem) => {
+        e.preventDefault();
+        if (!draggedItem || draggedItem.id === targetItem.id) return;
+        
+        const currentIndex = items.findIndex(item => item.id === draggedItem.id);
+        const targetIndex = items.findIndex(item => item.id === targetItem.id);
+        
+        const reorderedItems = [...items];
+        const [movedItem] = reorderedItems.splice(currentIndex, 1);
+        reorderedItems.splice(targetIndex, 0, movedItem);
+        
+        onReorder(collectionId, reorderedItems);
+    };
+
+    const handleDragEnd = (e: React.DragEvent) => {
+        setDraggedItem(null);
+    };
+
     const activeItems = items.filter(item => !item.completed);
     const completedItems = items.filter(item => item.completed);
 
-    const [showCompleted, setShowCompleted] = useState(true);
+    const [showCompleted, setShowCompleted] = useState(false);
 
     const hasActive = activeItems.length > 0;
     const hasCompleted = completedItems.length > 0;
+    
+    const renderList = (list: GenericListItem[]) => (
+        list.map(item => (
+            <GenericListItemRow
+                key={item.id}
+                item={item}
+                onUpdate={onUpdate}
+                onDelete={() => onDelete(item.id)}
+                isMobileView={isMobileView}
+                isDragging={draggedItem?.id === item.id}
+                onDragStart={(e) => handleDragStart(e, item)}
+                onDragEnter={(e) => handleDragEnter(e, item)}
+                onDragEnd={handleDragEnd}
+            />
+        ))
+    );
 
     return (
         <>
             {hasActive && (
                 <div className="space-y-3">
-                    {activeItems.map(item => (
-                        <GenericListItemRow
-                            key={item.id}
-                            item={item}
-                            onUpdate={onUpdate}
-                            onDelete={() => onDelete(item.id)}
-                            isMobileView={isMobileView}
-                        />
-                    ))}
+                    {renderList(activeItems)}
                 </div>
             )}
             
@@ -126,15 +177,7 @@ const ItemList: React.FC<{
             {hasCompleted && (
                 showCompleted ? (
                     <div className="space-y-3">
-                        {completedItems.map(item => (
-                             <GenericListItemRow
-                                key={item.id}
-                                item={item}
-                                onUpdate={onUpdate}
-                                onDelete={() => onDelete(item.id)}
-                                isMobileView={isMobileView}
-                            />
-                        ))}
+                       {renderList(completedItems)}
                     </div>
                 ) : null
             )}
@@ -160,6 +203,8 @@ interface CollMeaViewProps {
   onDeleteCollection: (id: string) => void;
   onUpdateItem: (collectionId: string, item: GenericListItem) => void;
   onDeleteItem: (collectionId: string, itemId: string) => void;
+  onReorderCollections: (reorderedCollections: Collection[]) => void;
+  onReorderItems: (collectionId: string, reorderedItems: GenericListItem[]) => void;
   onAddNew: () => void;
   onAddNewItem?: (collectionId: string) => void;
   isMobileView?: boolean;
@@ -179,6 +224,8 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
   onDeleteCollection,
   onUpdateItem,
   onDeleteItem,
+  onReorderCollections,
+  onReorderItems,
   onAddNew,
   onAddNewItem,
   isMobileView = false,
@@ -186,6 +233,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
   onSearchChange,
   onClearSearch
 }) => {
+  const [draggedCollection, setDraggedCollection] = useState<Collection | null>(null);
 
   const activeCollection = useMemo(() => {
     return collections.find(c => c.id === activeCollectionId) || null;
@@ -206,6 +254,30 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
       );
   }, [activeCollection, lowercasedQuery]);
 
+  // --- Drag and Drop for Collections (Desktop & Mobile) ---
+  const handleCollectionDragStart = (e: React.DragEvent, collection: Collection) => {
+    setDraggedCollection(collection);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', collection.id);
+  };
+
+  const handleCollectionDragEnter = (e: React.DragEvent, targetCollection: Collection) => {
+    e.preventDefault();
+    if (!draggedCollection || draggedCollection.id === targetCollection.id) return;
+
+    const currentIndex = collections.findIndex(c => c.id === draggedCollection.id);
+    const targetIndex = collections.findIndex(c => c.id === targetCollection.id);
+    
+    let reordered = [...collections];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+    
+    onReorderCollections(reordered);
+  };
+
+  const handleCollectionDragEnd = () => {
+    setDraggedCollection(null);
+  };
 
   // --- Render Collection Overview ---
   const renderOverview = () => (
@@ -241,12 +313,18 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                             key={collection.id}
                             role="button"
                             tabIndex={0}
+                            draggable
+                            onDragStart={(e) => handleCollectionDragStart(e, collection)}
+                            onDragEnter={(e) => handleCollectionDragEnter(e, collection)}
+                            onDragEnd={handleCollectionDragEnd}
+                            onDragOver={(e) => e.preventDefault()}
                             onClick={() => onCollectionSelect(collection.id)}
                             onKeyDown={e => e.key === 'Enter' && onCollectionSelect(collection.id)}
-                            className="group bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 p-4 rounded-xl shadow-md transition-all hover:border-zinc-600 hover:bg-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
+                            className={`group bg-zinc-800/70 backdrop-blur-xl border border-zinc-700/60 p-4 rounded-xl shadow-md transition-all hover:border-zinc-600 hover:bg-zinc-800 cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 ${draggedCollection?.id === collection.id ? 'opacity-30' : 'opacity-100'}`}
                         >
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center overflow-hidden mr-4">
+                                    <span className="material-symbols-outlined mr-4 text-zinc-500">drag_indicator</span>
                                     <span className="material-symbols-outlined mr-4 text-zinc-400 transition-colors">{collection.icon}</span>
                                     <div className="overflow-hidden">
                                         <p className="font-bold text-lg text-zinc-200 truncate">{collection.name}</p>
@@ -329,8 +407,10 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
             {filteredItems.length > 0 ? (
                 <ItemList
                     items={filteredItems}
+                    collectionId={activeCollection.id}
                     onUpdate={(updatedItem) => onUpdateItem(activeCollection.id, updatedItem)}
                     onDelete={(itemId) => onDeleteItem(activeCollection.id, itemId)}
+                    onReorder={onReorderItems}
                     isMobileView={isMobileView}
                 />
             ) : (
@@ -437,17 +517,27 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
             }
         `}</style>
         {filteredCollections.map(collection => (
-            <div key={collection.id} className="w-96 h-full flex flex-col flex-shrink-0 bg-zinc-800/60 rounded-xl overflow-hidden border border-zinc-700/60">
+            <div 
+                key={collection.id} 
+                className={`w-96 h-full flex flex-col flex-shrink-0 bg-zinc-800/60 rounded-xl overflow-hidden border border-zinc-700/60 transition-opacity duration-200 ${draggedCollection?.id === collection.id ? 'opacity-30' : 'opacity-100'}`}
+            >
                 {/* Header */}
-                <div className="p-3 border-b border-zinc-700/60 flex justify-between items-center flex-shrink-0">
+                <div 
+                    className="p-3 border-b border-zinc-700/60 flex justify-between items-center flex-shrink-0 cursor-grab active:cursor-grabbing"
+                    draggable
+                    onDragStart={(e) => handleCollectionDragStart(e, collection)}
+                    onDragEnter={(e) => handleCollectionDragEnter(e, collection)}
+                    onDragEnd={handleCollectionDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                >
                     <div className="flex items-center space-x-3 overflow-hidden">
                         <span className="material-symbols-outlined text-zinc-400">{collection.icon}</span>
                         <h2 className="font-bold text-zinc-200 truncate">{collection.name}</h2>
                         <span className="text-sm font-medium bg-zinc-700/80 text-zinc-300 rounded-full px-2 py-0.5 flex-shrink-0">{collection.items.length}</span>
                     </div>
                     <button
-                        onClick={() => onDeleteCollection(collection.id)}
-                        className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 rounded-full hover:bg-red-500/10"
+                        onClick={(e) => { e.stopPropagation(); onDeleteCollection(collection.id); }}
+                        className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 rounded-full hover:bg-red-500/10 cursor-pointer"
                         aria-label="Sammlung löschen"
                     >
                         <span className="material-symbols-outlined text-lg">delete</span>
@@ -458,8 +548,10 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                     {collection.items.length > 0 ? (
                         <ItemList
                             items={collection.items}
+                            collectionId={collection.id}
                             onUpdate={(updatedItem) => onUpdateItem(collection.id, updatedItem)}
                             onDelete={(itemId) => onDeleteItem(collection.id, itemId)}
+                            onReorder={onReorderItems}
                             isMobileView={isMobileView}
                         />
                     ) : (
