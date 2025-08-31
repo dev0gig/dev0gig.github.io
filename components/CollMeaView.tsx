@@ -81,6 +81,73 @@ const GenericListItemRow: React.FC<GenericListItemRowProps> = ({ item, onUpdate,
     );
 };
 
+// --- ItemList Component for reusability ---
+const ItemList: React.FC<{
+    items: GenericListItem[];
+    onUpdate: (item: GenericListItem) => void;
+    onDelete: (itemId: string) => void;
+    isMobileView: boolean;
+}> = ({ items, onUpdate, onDelete, isMobileView }) => {
+    const activeItems = items.filter(item => !item.completed);
+    const completedItems = items.filter(item => item.completed);
+
+    const [showCompleted, setShowCompleted] = useState(true);
+
+    const hasActive = activeItems.length > 0;
+    const hasCompleted = completedItems.length > 0;
+
+    return (
+        <>
+            {hasActive && (
+                <div className="space-y-3">
+                    {activeItems.map(item => (
+                        <GenericListItemRow
+                            key={item.id}
+                            item={item}
+                            onUpdate={onUpdate}
+                            onDelete={() => onDelete(item.id)}
+                            isMobileView={isMobileView}
+                        />
+                    ))}
+                </div>
+            )}
+            
+            {hasCompleted && hasActive && (
+                 <div className="flex items-center my-4 cursor-pointer" onClick={() => setShowCompleted(!showCompleted)}>
+                    <div className="flex-grow border-t border-zinc-700/60"></div>
+                    <div className="flex-shrink mx-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center">
+                        <span>{completedItems.length} Erledigt</span>
+                        <span className="material-symbols-outlined text-lg ml-1 transition-transform" style={{ transform: showCompleted ? 'rotate(0deg)' : 'rotate(-180deg)'}}>expand_more</span>
+                    </div>
+                    <div className="flex-grow border-t border-zinc-700/60"></div>
+                </div>
+            )}
+            
+            {hasCompleted && (
+                showCompleted ? (
+                    <div className="space-y-3">
+                        {completedItems.map(item => (
+                             <GenericListItemRow
+                                key={item.id}
+                                item={item}
+                                onUpdate={onUpdate}
+                                onDelete={() => onDelete(item.id)}
+                                isMobileView={isMobileView}
+                            />
+                        ))}
+                    </div>
+                ) : null
+            )}
+
+            {!hasActive && hasCompleted && (
+                <div className="text-center py-4 text-zinc-400">
+                    <p>🎉 Alle Aufgaben erledigt!</p>
+                </div>
+            )}
+        </>
+    );
+};
+
 
 // --- Main CollMea View Component ---
 interface CollMeaViewProps {
@@ -260,17 +327,12 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
 
          <div className={isMobileView ? "pt-4" : ""}>
             {filteredItems.length > 0 ? (
-                <div className="space-y-3">
-                    {filteredItems.map(item => (
-                        <GenericListItemRow 
-                            key={item.id}
-                            item={item}
-                            onUpdate={(updatedItem) => onUpdateItem(activeCollection.id, updatedItem)}
-                            onDelete={() => onDeleteItem(activeCollection.id, item.id)}
-                            isMobileView={isMobileView}
-                        />
-                    ))}
-                </div>
+                <ItemList
+                    items={filteredItems}
+                    onUpdate={(updatedItem) => onUpdateItem(activeCollection.id, updatedItem)}
+                    onDelete={(itemId) => onDeleteItem(activeCollection.id, itemId)}
+                    isMobileView={isMobileView}
+                />
             ) : (
                 <div className="flex-grow flex flex-col items-center justify-center text-center text-zinc-500 min-h-[300px]">
                     {searchQuery ? (
@@ -392,16 +454,19 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
                     </button>
                 </div>
                 {/* Item List */}
-                <div className="flex-grow overflow-y-auto p-3 space-y-2">
-                    {collection.items.map(item => (
-                        <GenericListItemRow
-                            key={item.id}
-                            item={item}
+                <div className="flex-grow overflow-y-auto p-3">
+                    {collection.items.length > 0 ? (
+                        <ItemList
+                            items={collection.items}
                             onUpdate={(updatedItem) => onUpdateItem(collection.id, updatedItem)}
-                            onDelete={() => onDeleteItem(collection.id, item.id)}
+                            onDelete={(itemId) => onDeleteItem(collection.id, itemId)}
                             isMobileView={isMobileView}
                         />
-                    ))}
+                    ) : (
+                        <div className="text-center py-8 text-zinc-500 h-full flex items-center justify-center">
+                            <p>Keine Elemente in dieser Liste.</p>
+                        </div>
+                    )}
                 </div>
                 {/* Footer */}
                 <div className="p-2 border-t border-zinc-700/60 flex-shrink-0">

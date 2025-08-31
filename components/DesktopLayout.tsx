@@ -4,6 +4,10 @@
 
 
 
+
+
+
+
 import React, { useState } from 'react';
 import { View, MyProject } from '../types';
 import Sidebar from './Sidebar';
@@ -22,6 +26,7 @@ interface DesktopLayoutProps {
   activeMyProject: MyProject | null;
   onMyProjectSelect: (project: MyProject) => void;
   headerTitle?: string | null;
+  headerIcon?: string | null;
   headerSubtitle?: string | null;
   headerActions?: React.ReactNode[];
   onOpenSettings: () => void;
@@ -42,6 +47,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     activeMyProject,
     onMyProjectSelect,
     headerTitle,
+    headerIcon,
     headerSubtitle,
     headerActions,
     onOpenSettings,
@@ -74,9 +80,12 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           <header className="flex-shrink-0 h-20 px-4 flex items-center justify-between border-b border-zinc-800 gap-x-8">
             <div className="flex items-center justify-start flex-1 min-w-0">
               {headerTitle && (
-                  <div className="flex items-baseline space-x-3 overflow-hidden">
-                      <h1 className="text-2xl font-bold tracking-tight text-white truncate" title={headerTitle}>{headerTitle}</h1>
-                      {headerSubtitle && <p className="text-xs font-medium text-zinc-500 truncate" title={headerSubtitle}>{headerSubtitle}</p>}
+                  <div className="flex items-center space-x-4 overflow-hidden">
+                      {headerIcon && <span className="material-symbols-outlined text-3xl text-violet-400 flex-shrink-0">{headerIcon}</span>}
+                      <div className="overflow-hidden">
+                          <h1 className="text-2xl font-bold tracking-tight text-white truncate" title={headerTitle}>{headerTitle}</h1>
+                          {headerSubtitle && <p className="text-sm font-medium text-zinc-500 truncate" title={headerSubtitle}>{headerSubtitle}</p>}
+                      </div>
                   </div>
               )}
             </div>
@@ -117,7 +126,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     <img
                       src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/250px-Google_Favicon_2025.svg.png"
                       alt="Google"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 object-contain pointer-events-none"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 aspect-square object-contain pointer-events-none"
                     />
                     <input
                       type="text"

@@ -1,6 +1,8 @@
 
 
 
+
+
 import React from 'react';
 import { Tile, MyProject, ViewLinkTile, AppLinkTile, MyProjectTile } from '../types';
 
@@ -24,7 +26,7 @@ const ListItem: React.FC<{
             className="w-full flex items-center text-left p-4 bg-zinc-800/70 hover:bg-zinc-800 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500"
         >
             {isIconUrl ? (
-                <img src={icon} alt="" className="w-8 h-8 object-cover rounded-md mr-4 flex-shrink-0" crossOrigin="anonymous"/>
+                <img src={icon} alt="" className="aspect-square w-8 h-8 object-cover rounded-md mr-4 flex-shrink-0" crossOrigin="anonymous"/>
             ) : (
                 <span className="material-symbols-outlined mr-4 text-zinc-400 text-2xl w-8 text-center flex-shrink-0">{icon}</span>
             )}

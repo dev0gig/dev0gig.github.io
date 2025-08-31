@@ -384,7 +384,7 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
                     </button>
                 )}
                 <div className="flex items-center space-x-2 flex-grow min-w-0">
-                    <span className="material-symbols-outlined text-3xl">style</span>
+                    <span className="material-symbols-outlined text-3xl text-violet-400">style</span>
                     <h1 className="text-2xl font-bold tracking-tight truncate">Flashcards</h1>
                 </div>
                  <div className="flex items-center space-x-2 flex-shrink-0">

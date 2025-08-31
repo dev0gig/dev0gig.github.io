@@ -5,6 +5,7 @@
 
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, MyProject, Tile, Collection, JournalEntry } from './types';
 
@@ -137,20 +138,21 @@ const App: React.FC = () => {
 
   const desktopHeaderProps = useMemo(() => {
     if (nav.activeMyProject) {
+      const projectDef = MY_PROJECT_DEFINITIONS[nav.activeMyProject];
       if (nav.activeMyProject === MyProject.MemoMea) {
         const count = data.journal.journalEntries.length;
-        return { title: 'MemoMea', subtitle: `${count} ${count === 1 ? 'Eintrag' : 'Einträge'}` };
+        return { title: projectDef.label, subtitle: `${count} ${count === 1 ? 'Eintrag' : 'Einträge'}`, icon: projectDef.icon };
       }
       if (nav.activeMyProject === MyProject.CollMea) {
         const count = data.collections.collections.length;
-        return { title: 'CollMea', subtitle: `${count} ${count === 1 ? 'Sammlung' : 'Sammlungen'}` };
+        return { title: projectDef.label, subtitle: `${count} ${count === 1 ? 'Sammlung' : 'Sammlungen'}`, icon: projectDef.icon };
       }
-      return { title: MY_PROJECT_DEFINITIONS[nav.activeMyProject].label, subtitle: null };
+      return { title: projectDef.label, subtitle: null, icon: projectDef.icon };
     }
     if (nav.activeView === View.Apps) {
-      return { title: 'Apps', subtitle: null };
+      return { title: 'Apps', subtitle: null, icon: 'apps' };
     }
-    return { title: 'Tools', subtitle: 'Wählen Sie ein Projekt aus' };
+    return { title: 'Tools', subtitle: 'Wählen Sie ein Projekt aus', icon: 'category' };
   }, [nav.activeMyProject, nav.activeView, data.journal.journalEntries.length, data.collections.collections.length]);
   
   const mainContentProps = {
@@ -192,6 +194,7 @@ const App: React.FC = () => {
               suggestedTags={suggestedTags}
               onTagClick={(tag) => setSearchQuery(`#${tag}`)}
               headerTitle={desktopHeaderProps.title}
+              headerIcon={desktopHeaderProps.icon}
               headerSubtitle={desktopHeaderProps.subtitle}
               headerActions={(() => {
                   const actions = [];

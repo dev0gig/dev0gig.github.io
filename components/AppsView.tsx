@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { AppItem } from '../types';
 import ContextMenu from './ContextMenu';
@@ -21,7 +22,7 @@ const AppIcon: React.FC<{ app: AppItem; onContextMenu: (event: React.MouseEvent,
         className="flex flex-col items-center justify-start p-2 rounded-lg transition-colors duration-200 hover:bg-zinc-800 focus:outline-none focus-visible:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-violet-500"
         onContextMenu={(e) => onContextMenu(e, app)}
     >
-        <div className="w-12 h-12 flex items-center justify-center mb-1.5 rounded-full bg-zinc-700 overflow-hidden">
+        <div className="aspect-square w-12 h-12 flex items-center justify-center mb-1.5 rounded-full bg-zinc-700 overflow-hidden">
             <img src={app.iconUrl} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
         </div>
         <span className="text-xs text-center text-zinc-300 w-16 line-clamp-2 break-words">
