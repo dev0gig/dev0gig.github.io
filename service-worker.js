@@ -1,7 +1,6 @@
 
 
 
-
 const CACHE_NAME = 'axismea-cache-v9';
 
 const PRECACHE_URLS = [
@@ -40,6 +39,7 @@ const PRECACHE_URLS = [
   './components/MetroView.tsx',
   './components/NotificationModal.tsx',
   './components/SidebarInfoWidget.tsx',
+  './components/AuriMea/components/TemplatesModal.tsx',
   
   // Hooks
   './hooks/useApps.ts',

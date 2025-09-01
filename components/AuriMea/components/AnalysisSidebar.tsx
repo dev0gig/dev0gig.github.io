@@ -21,6 +21,7 @@ const categoryColors: { [key: string]: string } = {
   'Bildung': '#6366f1', // indigo-500
   'Haushalt': '#f43f5e', // rose-500
   'Geschenke': '#fbbf24', // amber-400
+  'Transfer': '#475569', // slate-600, for transfers
   'Sonstiges': '#a1a1aa', // zinc-400
 };
 
@@ -58,7 +59,6 @@ const AnalysisSidebar: React.FC = () => {
           const txDate = new Date(t.createdAt);
           return t.accountId === activeAccountId &&
               t.type === 'expense' &&
-              t.category !== 'Transfer' &&
               txDate.getMonth() === month &&
               txDate.getFullYear() === year;
       })

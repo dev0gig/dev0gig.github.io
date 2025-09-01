@@ -361,6 +361,7 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
                     isOpen={isFormOpen}
                     onClose={() => setFormOpen(false)}
                     transactionToEdit={editingTransaction}
+                    isMobileView={isMobileView}
                 />
                 <SettingsModal
                     isOpen={isSettingsOpen}

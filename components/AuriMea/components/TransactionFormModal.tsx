@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useApp } from '../AuriMeaApp';
-import { Transaction } from '../types';
+import { Transaction, TransactionTemplate } from '../types';
 import Icon from './Icon';
+import TemplatesModal from './TemplatesModal';
 
 interface CategoryInputProps {
     value: string;
@@ -132,10 +133,11 @@ interface TransactionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   transactionToEdit?: Transaction | null;
+  isMobileView?: boolean;
 }
 
-const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onClose, transactionToEdit }) => {
-  const { accounts, activeAccountId, categories, addTransaction, updateTransaction, deleteTransaction } = useApp();
+const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onClose, transactionToEdit, isMobileView }) => {
+  const { accounts, activeAccountId, categories, addTransaction, updateTransaction, deleteTransaction, addTemplate, showNotification, hideNotification } = useApp();
   const [formType, setFormType] = useState<'expense' | 'income' | 'transfer'>('expense');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -145,6 +147,7 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
   const [toAccountId, setToAccountId] = useState('');
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const [isTemplatesModalOpen, setTemplatesModalOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isEditMode = !!transactionToEdit;
@@ -248,6 +251,30 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
     }
   };
 
+  const handleSaveAsTemplate = () => {
+      const parsedAmount = parseFloat(amount.replace(',', '.'));
+      if (formType === 'transfer' || !description.trim() || isNaN(parsedAmount) || parsedAmount <= 0 || !category.trim()) {
+          showNotification({
+              title: 'Unvollständige Daten',
+              message: 'Um eine Vorlage zu speichern, müssen Beschreibung, Betrag (>0) und Kategorie ausgefüllt sein. Überweisungen können nicht als Vorlage gespeichert werden.',
+              type: 'warning',
+              primaryButtonText: 'OK',
+              onPrimaryButtonClick: hideNotification,
+          });
+          return;
+      }
+      addTemplate({ type: formType, description, amount: parsedAmount, category });
+      showNotification({ title: 'Gespeichert', message: 'Die Transaktion wurde als Vorlage gespeichert.', type: 'success' });
+  };
+
+  const handleSelectTemplate = (template: TransactionTemplate) => {
+      setFormType(template.type);
+      setDescription(template.description);
+      setAmount(template.amount.toString().replace('.', ','));
+      setCategory(template.category);
+      setTemplatesModalOpen(false);
+  };
+
   const handleDelete = () => {
       if (transactionToEdit) {
           onClose();
@@ -329,18 +356,35 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
                     )}
                 </div>
 
-                <div className="pt-4 mt-auto flex-shrink-0 flex items-center gap-3">
-                    {isEditMode && formType !== 'transfer' && (
-                        <button type="button" onClick={handleDelete} className="bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold p-3 rounded-lg">
-                            <Icon name="delete" />
-                        </button>
-                    )}
-                    <button type="submit" className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-lg">
-                        {isEditMode ? 'Änderungen speichern' : 'Hinzufügen'}
+                <div className="pt-4 mt-auto flex-shrink-0 space-y-3">
+                    <button type="button" onClick={() => setTemplatesModalOpen(true)} className="w-full bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-200 font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                        <Icon name="file_present" className="mr-2" />
+                        Aus Vorlage laden
                     </button>
+                    <div className="flex items-center gap-3">
+                        {isEditMode && formType !== 'transfer' && (
+                            <button type="button" onClick={handleDelete} className="bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold p-3 rounded-lg" aria-label="Löschen">
+                                <Icon name="delete" />
+                            </button>
+                        )}
+                        <button type="submit" className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-lg whitespace-nowrap">
+                            {isEditMode ? 'Änderungen speichern' : 'Hinzufügen'}
+                        </button>
+                         {formType !== 'transfer' && (
+                            <button type="button" onClick={handleSaveAsTemplate} title="Als Vorlage speichern" className="bg-zinc-600 hover:bg-zinc-700 text-white font-bold p-3 rounded-lg" aria-label="Als Vorlage speichern">
+                                <Icon name="bookmark_add" />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </form>
         </div>
+        <TemplatesModal 
+            isOpen={isTemplatesModalOpen}
+            onClose={() => setTemplatesModalOpen(false)}
+            onSelect={handleSelectTemplate}
+            isMobileView={isMobileView}
+        />
     </div>
   );
 };
