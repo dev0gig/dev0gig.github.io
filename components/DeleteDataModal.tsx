@@ -2,9 +2,11 @@
 
 
 
+
+
 import React, { useEffect } from 'react';
 
-type DeleteScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'flash' | 'fwdaten';
+type DeleteScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'fwdaten';
 
 interface DeleteDataModalProps {
   isOpen: boolean;
@@ -19,7 +21,6 @@ const deleteOptions: { scope: DeleteScope; label: string; icon: string }[] = [
     { scope: 'read', label: 'Nur ReadLateR löschen', icon: 'bookmark' },
     { scope: 'coll', label: 'Nur CollMea löschen', icon: 'collections_bookmark' },
     { scope: 'auri', label: 'Nur AuriMea löschen', icon: 'payments' },
-    { scope: 'flash', label: 'Nur Flashcards löschen', icon: 'style' },
     { scope: 'fwdaten', label: 'Nur FW-Daten löschen', icon: 'ssid_chart' },
 ];
 

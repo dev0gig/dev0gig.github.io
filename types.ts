@@ -1,6 +1,4 @@
 
-
-
 export enum View {
   Apps,
   MyProjects,
@@ -14,7 +12,6 @@ export enum MyProject {
   CollMea = 'CollMea',
   AuriMea = 'AuriMea',
   FWDaten = 'FWDaten',
-  Flashcards = 'Flashcards',
 }
 
 export interface AppItem {
@@ -72,14 +69,6 @@ export interface Collection {
   items: GenericListItem[];
 }
 
-// Flashcards Types
-export interface Flashcard {
-  front: string;
-  back: string;
-}
-export type FlashcardDeck = Flashcard[];
-
-
 // Weather Widget Types
 export interface WeatherData {
   temperature: number;
@@ -124,3 +113,12 @@ export interface ExternalProjectTile extends BaseTile {
 }
 
 export type Tile = MyProjectTile | AppLinkTile | ViewLinkTile | DateTimeTile | ExternalProjectTile;
+
+// FIX: Added missing Flashcard and FlashcardDeck type definitions.
+// Flashcard Types
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+
+export type FlashcardDeck = Flashcard[];

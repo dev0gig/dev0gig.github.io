@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo, useCallback, createContext, useContext } from 'react';
 import MainView from './components/MainView';
 import DesktopView from './components/DesktopView';
@@ -307,16 +308,7 @@ export default function AuriMeaApp({ isMobileView, onBack, auriMeaData }: AuriMe
                             </button>
                         </header>
                     )}
-                     <div className="flex-grow flex flex-col items-center justify-center text-zinc-400 p-8 text-center animate-fadeIn">
-                        <style>{`
-                            @keyframes fadeIn {
-                              from { opacity: 0; transform: translateY(10px); }
-                              to { opacity: 1; transform: translateY(0); }
-                            }
-                            .animate-fadeIn {
-                              animation: fadeIn 0.5s ease-out forwards;
-                            }
-                        `}</style>
+                     <div className="flex-grow flex flex-col items-center justify-center text-zinc-400 p-8 text-center">
                         <Icon name="payments" className="!text-6xl mb-4 text-zinc-600" />
                         <h2 className="text-2xl font-bold text-zinc-400">Willkommen bei AuriMea</h2>
                         <p className="mt-1 text-zinc-500 mb-6 max-w-sm">Erstelle dein erstes Konto, um deine Einnahmen und Ausgaben zu verfolgen und deine Finanzen zu verwalten.</p>

@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { JournalEntry } from '../types';
 import JournalEntryCard from './JournalEntryCard';
@@ -393,7 +394,7 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
     <div className="flex h-full gap-6">
         <div className="flex-grow overflow-y-auto pr-2">
             {selectedDate && (
-                 <div className="mb-4 p-3 bg-zinc-800/70 rounded-lg flex justify-between items-center animate-fadeIn border border-zinc-700/60">
+                 <div className="mb-4 p-3 bg-zinc-800/70 rounded-lg flex justify-between items-center border border-zinc-700/60">
                     <p className="text-zinc-300 text-sm">
                         Zeige Einträge für: <span className="font-bold text-white">{new Date(selectedDate.replace(/-/g, '/')).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                     </p>
@@ -416,15 +417,8 @@ const MemoMeaView: React.FC<MemoMeaViewProps> = ({ entries, entryCount, searchQu
 
 
   return (
-    <div className={`animate-fadeIn h-full ${isMobileView ? 'flex flex-col' : ''}`}>
+    <div className={`h-full ${isMobileView ? 'flex flex-col' : ''}`}>
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }

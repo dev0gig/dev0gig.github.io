@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { BookmarkItem } from '../types';
 import BookmarkItemCard from './BookmarkItemCard';
@@ -85,17 +86,7 @@ const ReadLateRView: React.FC<ReadLateRViewProps> = ({ bookmarks, onDelete, onTo
   );
 
   return (
-    <div className={`animate-fadeIn h-full flex flex-col ${isMobileView ? '' : ''}`}>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-      `}</style>
-      
+    <div className={`h-full flex flex-col ${isMobileView ? '' : ''}`}>
       {isMobileView ? (
         <div className="p-4 sm:p-6 pb-0 flex flex-col h-full">
             <header className="flex items-center justify-between text-zinc-300 mb-0 flex-shrink-0 flex-nowrap gap-x-2">

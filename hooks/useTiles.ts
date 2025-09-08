@@ -19,7 +19,6 @@ export const useTiles = () => {
             { id: 'myproject-collmea', type: 'MY_PROJECT', projectId: MyProject.CollMea, size: '2x1', color: 'bg-sky-600', order: 2 },
             { id: 'myproject-aurimea', type: 'MY_PROJECT', projectId: MyProject.AuriMea, size: '2x2', color: 'bg-indigo-600', order: 3 },
             { id: 'myproject-fwdaten', type: 'MY_PROJECT', projectId: MyProject.FWDaten, size: '1x1', color: 'bg-rose-500', order: 4 },
-            { id: 'myproject-flashcards', type: 'MY_PROJECT', projectId: MyProject.Flashcards, size: '1x1', color: 'bg-teal-500', order: 5 },
         ];
         const externalProjectTiles: Tile[] = [];
         
@@ -39,7 +38,7 @@ export const useTiles = () => {
             let savedTiles: Tile[] = JSON.parse(savedTilesJSON);
 
             // Filter out the external project tiles for existing users.
-            savedTiles = savedTiles.filter(t => t.type !== 'EXTERNAL_PROJECT');
+            savedTiles = savedTiles.filter(t => t.type !== 'EXTERNAL_PROJECT' && t.id !== 'myproject-flashcards');
             
             savedTiles = savedTiles.filter(t => t.type !== 'APP_LINK');
             
@@ -61,9 +60,6 @@ export const useTiles = () => {
 
             if (!savedTiles.find(t => t.id === 'myproject-fwdaten')) {
                  savedTiles.push({ id: 'myproject-fwdaten', type: 'MY_PROJECT', projectId: MyProject.FWDaten, size: '1x1', color: 'bg-rose-500', order: 9999 });
-            }
-            if (!savedTiles.find(t => t.id === 'myproject-flashcards')) {
-                 savedTiles.push({ id: 'myproject-flashcards', type: 'MY_PROJECT', projectId: MyProject.Flashcards, size: '1x1', color: 'bg-teal-500', order: 10000 });
             }
 
             const finalTiles = savedTiles.sort((a,b) => a.order - b.order).map((t, i) => ({ ...t, order: i }));

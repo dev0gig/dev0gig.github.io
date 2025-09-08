@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Collection, GenericListItem } from '../types';
 import ContextMenu from './ContextMenu';
@@ -470,17 +471,7 @@ const CollMeaView: React.FC<CollMeaViewProps> = ({
       }
 
     return (
-        <div className={`animate-fadeIn h-full flex flex-col`}>
-            <style>{`
-                @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fadeIn {
-                animation: fadeIn 0.5s ease-out forwards;
-                }
-            `}</style>
-            
+        <div className={`h-full flex flex-col`}>
             <MobileWrapper>
                 {activeCollectionId ? renderDetailView() : renderOverview()}
             </MobileWrapper>

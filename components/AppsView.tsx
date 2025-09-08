@@ -1,5 +1,6 @@
 
 
+
 import React, { useState } from 'react';
 import { AppItem } from '../types';
 import ContextMenu from './ContextMenu';
@@ -46,17 +47,7 @@ const AppsView: React.FC<AppsViewProps> = ({ apps, searchQuery, onContextMenu, i
   const noAppsAtAll = apps.length === 0;
 
   return (
-    <div className={`animate-fadeIn h-full flex flex-col ${isMobileView ? '' : ''}`}>
-       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-      `}</style>
-
+    <div className={`h-full flex flex-col ${isMobileView ? '' : ''}`}>
       {isMobileView && (
           <header className="flex items-center justify-between text-zinc-300 p-4 sm:p-6 pb-2 sm:pb-4 flex-shrink-0 gap-x-2 flex-nowrap">
               {onBack && (

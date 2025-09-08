@@ -5,7 +5,6 @@ import { useBookmarks } from './useBookmarks';
 import { useCollections } from './useCollections';
 import { useAuriMeaData } from './useAuriMeaData';
 import { useUIState } from './useUIState';
-import { useFlashcardsData } from './useFlashcardsData';
 
 type DataHooks = {
     apps: ReturnType<typeof useApps>;
@@ -13,7 +12,6 @@ type DataHooks = {
     bookmarks: ReturnType<typeof useBookmarks>;
     collections: ReturnType<typeof useCollections>;
     auriMea: ReturnType<typeof useAuriMeaData>;
-    flashcards: ReturnType<typeof useFlashcardsData>;
 };
 
 type UIHook = ReturnType<typeof useUIState>;
@@ -26,15 +24,14 @@ interface UseDataManagerProps {
 
 export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManagerProps) => {
     
-    const handleDeleteAppData = (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'flash' | 'fwdaten') => {
+    const handleDeleteAppData = (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'fwdaten') => {
         const confirmationMessage: Record<typeof scope, string> = {
-            all: "Möchten Sie wirklich ALLE Anwendungsdaten (Apps, MemoMea, ReadLateR, CollMea, AuriMea, Flashcards, FW-Daten) unwiderruflich löschen?",
+            all: "Möchten Sie wirklich ALLE Anwendungsdaten (Apps, MemoMea, ReadLateR, CollMea, AuriMea, FW-Daten) unwiderruflich löschen?",
             apps: "Möchten Sie wirklich ALLE Apps löschen?",
             memo: "Möchten Sie wirklich ALLE MemoMea-Einträge löschen?",
             read: "Möchten Sie wirklich ALLE ReadLateR-Lesezeichen löschen?",
             coll: "Möchten Sie wirklich ALLE CollMea-Sammlungen löschen?",
             auri: "Möchten Sie wirklich ALLE AuriMea-Daten (Konten, Transaktionen etc.) löschen?",
-            flash: "Möchten Sie wirklich ALLE Flashcard-Decks löschen?",
             fwdaten: "Möchten Sie wirklich ALLE FW-Daten (Zähler, Zählerstände) unwiderruflich löschen?",
         };
         
@@ -47,7 +44,6 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
             if (scope === 'all' || scope === 'read') data.bookmarks.setBookmarks([]);
             if (scope === 'all' || scope === 'coll') data.collections.setCollections([]);
             if (scope === 'all' || scope === 'auri') data.auriMea.resetAuriMeaData();
-            if (scope === 'all' || scope === 'flash') data.flashcards.resetFlashcardsData();
             if (scope === 'all' || scope === 'fwdaten') {
                 localStorage.removeItem('fw-data-meters');
                 localStorage.removeItem('fw-data-readings');
@@ -75,7 +71,7 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
         ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
     };
 
-    const handleExportData = async (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'flash' | 'memomd' | 'fwdaten') => {
+    const handleExportData = async (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten') => {
         if (scope === 'memomd') {
             const JSZip = (await import('jszip')).default;
             const zip = new JSZip();
@@ -125,10 +121,6 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
                         templates: data.auriMea.templates,
                         activeAccountId: data.auriMea.activeAccountId,
                     },
-                    flash: {
-                        deck: data.flashcards.deck,
-                        deckName: data.flashcards.deckName,
-                    },
                     fwdaten: {
                         meters: JSON.parse(localStorage.getItem('fw-data-meters') || '[]'),
                         readings: JSON.parse(localStorage.getItem('fw-data-readings') || '[]'),
@@ -146,12 +138,6 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
                     categories: data.auriMea.categories,
                     templates: data.auriMea.templates,
                     activeAccountId: data.auriMea.activeAccountId,
-                };
-                break;
-            case 'flash':
-                moduleData = {
-                    deck: data.flashcards.deck,
-                    deckName: data.flashcards.deckName,
                 };
                 break;
             case 'fwdaten':
@@ -247,7 +233,6 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
                     if (importData.read) data.bookmarks.setBookmarks(importData.read);
                     if (importData.coll) data.collections.setCollections(importData.coll);
                     if (importData.auri) data.auriMea.importAuriMeaData(importData.auri);
-                    if (importData.flash) data.flashcards.importFlashcardsData(importData.flash);
                     if (importData.fwdaten) {
                         localStorage.setItem('fw-data-meters', JSON.stringify(importData.fwdaten.meters));
                         localStorage.setItem('fw-data-readings', JSON.stringify(importData.fwdaten.readings));
@@ -259,7 +244,6 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
                 case 'read': data.bookmarks.setBookmarks(importData); break;
                 case 'coll': data.collections.setCollections(importData); break;
                 case 'auri': data.auriMea.importAuriMeaData(importData); break;
-                case 'flash': data.flashcards.importFlashcardsData(importData); break;
                 case 'fwdaten':
                     localStorage.setItem('fw-data-meters', JSON.stringify(importData.meters));
                     localStorage.setItem('fw-data-readings', JSON.stringify(importData.readings));

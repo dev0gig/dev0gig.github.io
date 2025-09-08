@@ -1,8 +1,3 @@
-
-
-
-
-
 import React from 'react';
 import { Tile, MyProject, ViewLinkTile, AppLinkTile, MyProjectTile } from '../types';
 
@@ -46,7 +41,9 @@ const ListSection: React.FC<{title: string, children: React.ReactNode}> = ({ tit
 );
 
 const MetroView: React.FC<MetroViewProps> = ({ tiles, onTileClick, projectDefinitions, onOpenSettings }) => {
-    const myProjects = tiles.filter(t => t.type === 'MY_PROJECT') as MyProjectTile[];
+    const myProjects = (tiles.filter(t => t.type === 'MY_PROJECT') as MyProjectTile[]).sort((a, b) =>
+        projectDefinitions[a.projectId].label.localeCompare(projectDefinitions[b.projectId].label)
+    );
     const apps = tiles.filter(t => t.type === 'VIEW_LINK' || t.type === 'APP_LINK') as (ViewLinkTile | AppLinkTile)[];
 
     return (

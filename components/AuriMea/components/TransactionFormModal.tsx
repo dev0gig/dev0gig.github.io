@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, memo } from 'react';
 import { useApp } from '../AuriMeaApp';
 import { Transaction, TransactionTemplate } from '../types';
 import Icon from './Icon';
@@ -11,7 +11,7 @@ interface CategoryInputProps {
     error?: string;
 }
 
-const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, allCategories, error }) => {
+const CategoryInput = memo<CategoryInputProps>(({ value, onChange, allCategories, error }) => {
     const [inputValue, setInputValue] = useState(value);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isListOpen, setIsListOpen] = useState(false);
@@ -126,7 +126,7 @@ const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, allCateg
             )}
         </div>
     );
-};
+});
 
 
 interface TransactionFormModalProps {
@@ -147,7 +147,6 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
   const [toAccountId, setToAccountId] = useState('');
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const [isTemplatesModalOpen, setTemplatesModalOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isEditMode = !!transactionToEdit;
@@ -267,13 +266,12 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
       showNotification({ title: 'Gespeichert', message: 'Die Transaktion wurde als Vorlage gespeichert.', type: 'success' });
   };
 
-  const handleSelectTemplate = (template: TransactionTemplate) => {
+  const handleSelectTemplate = useCallback((template: TransactionTemplate) => {
       setFormType(template.type);
       setDescription(template.description);
       setAmount(template.amount.toString().replace('.', ','));
       setCategory(template.category);
-      setTemplatesModalOpen(false);
-  };
+  }, []);
 
   const handleDelete = () => {
       if (transactionToEdit) {
@@ -286,6 +284,88 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
 
   const modalTitle = isEditMode ? 'Transaktion bearbeiten' : 'Neue Transaktion';
 
+  const formContent = (
+    <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-sm h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-6 flex-shrink-0 p-6 pb-0">
+            <h2 className="text-xl font-bold">{modalTitle}</h2>
+            <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
+        </div>
+        
+        <form onSubmit={handleSubmit} noValidate ref={formRef} onKeyDown={handleFormKeyDown} className="flex-1 flex flex-col overflow-hidden px-6 pb-6">
+            <div className="flex-grow overflow-y-auto -mr-3 pl-1 pr-3 space-y-4 py-1">
+                <div className="grid grid-cols-3 bg-zinc-800 rounded-lg p-1 gap-1">
+                    <button type="button" onClick={() => setFormType('expense')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'expense' ? 'bg-red-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Ausgabe</button>
+                    <button type="button" onClick={() => setFormType('income')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'income' ? 'bg-green-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Einnahme</button>
+                    <button type="button" onClick={() => setFormType('transfer')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'transfer' ? 'bg-blue-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Überweisung</button>
+                </div>
+
+                <div className="flex gap-4">
+                    <div className="flex-1">
+                        <label htmlFor="date" className="block text-sm font-medium text-zinc-300 mb-1">Datum</label>
+                        <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white ${errors.date ? 'border-red-500/50' : 'border-zinc-600'}`} />
+                        {errors.date && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.date}</p>}
+                    </div>
+                    <div className="flex-1">
+                        <label htmlFor="amount" className="block text-sm font-medium text-zinc-300 mb-1">Betrag</label>
+                        <input type="text" inputMode="decimal" id="amount" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="0,00" className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.amount ? 'border-red-500/50' : 'border-zinc-600'}`} />
+                         {errors.amount && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.amount}</p>}
+                    </div>
+                </div>
+                
+                {formType === 'transfer' ? (
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="fromAccount" className="block text-sm font-medium text-zinc-300 mb-1">Von</label>
+                            <select id="fromAccount" value={fromAccountId} onChange={e => setFromAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label htmlFor="toAccount" className="block text-sm font-medium text-zinc-300 mb-1">Nach</label>
+                            <select id="toAccount" value={toAccountId} onChange={e => setToAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                {accounts.filter(acc => acc.id !== fromAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                            </select>
+                        </div>
+                         {errors.transfer && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.transfer}</p>}
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="description" className="block text-sm font-medium text-zinc-300 mb-1">Beschreibung</label>
+                            <textarea ref={descriptionTextareaRef} id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="z.B. Wocheneinkauf" rows={1} className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none overflow-hidden ${errors.description ? 'border-red-500/50' : 'border-zinc-600'}`} />
+                            {errors.description && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.description}</p>}
+                        </div>
+                        <CategoryInput
+                            value={category}
+                            onChange={setCategory}
+                            allCategories={categories[formType]}
+                            error={errors.category}
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="pt-4 mt-auto flex-shrink-0 space-y-3">
+                <div className="flex items-center gap-3">
+                    {isEditMode && formType !== 'transfer' && (
+                        <button type="button" onClick={handleDelete} className="bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold p-3 rounded-lg" aria-label="Löschen">
+                            <Icon name="delete" />
+                        </button>
+                    )}
+                    <button type="submit" className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-lg whitespace-nowrap">
+                        {isEditMode ? 'Änderungen speichern' : 'Hinzufügen'}
+                    </button>
+                     {formType !== 'transfer' && (
+                        <button type="button" onClick={handleSaveAsTemplate} title="Als Vorlage speichern" className="bg-zinc-600 hover:bg-zinc-700 text-white font-bold p-3 rounded-lg" aria-label="Als Vorlage speichern">
+                            <Icon name="bookmark_add" />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </form>
+    </div>
+  );
+
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
         <style>{`
@@ -296,95 +376,102 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ isOpen, onC
             .animate-scaleIn { animation: scaleIn 0.2s ease-out forwards; }
             .animate-fadeInDown { animation: fadeInDown 0.2s ease-out; }
         `}</style>
-        <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-sm m-4 p-6 animate-scaleIn h-[90vh] max-h-[700px] flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6 flex-shrink-0">
-                <h2 className="text-xl font-bold">{modalTitle}</h2>
-                <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
+        
+        {isMobileView ? (
+             <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-lg w-full max-w-sm m-4 p-6 animate-scaleIn h-[90vh] max-h-[700px] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6 flex-shrink-0">
+                    <h2 className="text-xl font-bold">{modalTitle}</h2>
+                    <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors rounded-full w-7 h-7 flex items-center justify-center -m-1"><Icon name="close" /></button>
+                </div>
+                
+                <form onSubmit={handleSubmit} noValidate ref={formRef} onKeyDown={handleFormKeyDown} className="flex-1 flex flex-col overflow-hidden">
+                    <div className="flex-grow overflow-y-auto -mr-3 pl-1 pr-3 space-y-4 py-1">
+                        <details className="border border-zinc-700 rounded-lg">
+                            <summary className="font-bold text-zinc-200 cursor-pointer select-none p-3">Aus Vorlage laden</summary>
+                            <div className="p-3 border-t border-zinc-700 max-h-48 overflow-y-auto">
+                                <TemplatesModal onSelect={handleSelectTemplate} isMobileView={isMobileView} variant="list" />
+                            </div>
+                        </details>
+
+                        <div className="grid grid-cols-3 bg-zinc-800 rounded-lg p-1 gap-1">
+                            <button type="button" onClick={() => setFormType('expense')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'expense' ? 'bg-red-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Ausgabe</button>
+                            <button type="button" onClick={() => setFormType('income')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'income' ? 'bg-green-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Einnahme</button>
+                            <button type="button" onClick={() => setFormType('transfer')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'transfer' ? 'bg-blue-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Überweisung</button>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <label htmlFor="date" className="block text-sm font-medium text-zinc-300 mb-1">Datum</label>
+                                <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white ${errors.date ? 'border-red-500/50' : 'border-zinc-600'}`} />
+                                {errors.date && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.date}</p>}
+                            </div>
+                            <div className="flex-1">
+                                <label htmlFor="amount" className="block text-sm font-medium text-zinc-300 mb-1">Betrag</label>
+                                <input type="text" inputMode="decimal" id="amount" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="0,00" className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.amount ? 'border-red-500/50' : 'border-zinc-600'}`} />
+                                 {errors.amount && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.amount}</p>}
+                            </div>
+                        </div>
+                        
+                        {formType === 'transfer' ? (
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="fromAccount" className="block text-sm font-medium text-zinc-300 mb-1">Von</label>
+                                    <select id="fromAccount" value={fromAccountId} onChange={e => setFromAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                        {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="toAccount" className="block text-sm font-medium text-zinc-300 mb-1">Nach</label>
+                                    <select id="toAccount" value={toAccountId} onChange={e => setToAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+                                        {accounts.filter(acc => acc.id !== fromAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                                    </select>
+                                </div>
+                                 {errors.transfer && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.transfer}</p>}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="description" className="block text-sm font-medium text-zinc-300 mb-1">Beschreibung</label>
+                                    <textarea ref={descriptionTextareaRef} id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="z.B. Wocheneinkauf" rows={1} className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none overflow-hidden ${errors.description ? 'border-red-500/50' : 'border-zinc-600'}`} />
+                                    {errors.description && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.description}</p>}
+                                </div>
+                                <CategoryInput
+                                    value={category}
+                                    onChange={setCategory}
+                                    allCategories={categories[formType]}
+                                    error={errors.category}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pt-4 mt-auto flex-shrink-0 space-y-3">
+                        <div className="flex items-center gap-3">
+                            {isEditMode && formType !== 'transfer' && (
+                                <button type="button" onClick={handleDelete} className="bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold p-3 rounded-lg" aria-label="Löschen">
+                                    <Icon name="delete" />
+                                </button>
+                            )}
+                            <button type="submit" className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-lg whitespace-nowrap">
+                                {isEditMode ? 'Änderungen speichern' : 'Hinzufügen'}
+                            </button>
+                             {formType !== 'transfer' && (
+                                <button type="button" onClick={handleSaveAsTemplate} title="Als Vorlage speichern" className="bg-zinc-600 hover:bg-zinc-700 text-white font-bold p-3 rounded-lg" aria-label="Als Vorlage speichern">
+                                    <Icon name="bookmark_add" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </form>
             </div>
-            
-            <form onSubmit={handleSubmit} noValidate ref={formRef} onKeyDown={handleFormKeyDown} className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex-grow overflow-y-auto -mr-3 pl-1 pr-3 space-y-4 py-1">
-                    <div className="grid grid-cols-3 bg-zinc-800 rounded-lg p-1 gap-1">
-                        <button type="button" onClick={() => setFormType('expense')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'expense' ? 'bg-red-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Ausgabe</button>
-                        <button type="button" onClick={() => setFormType('income')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'income' ? 'bg-green-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Einnahme</button>
-                        <button type="button" onClick={() => setFormType('transfer')} className={`py-2 text-sm font-bold rounded-md transition-colors ${formType === 'transfer' ? 'bg-blue-500/50 text-white' : 'text-zinc-400 hover:bg-zinc-700/50'}`}>Überweisung</button>
-                    </div>
-
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            <label htmlFor="date" className="block text-sm font-medium text-zinc-300 mb-1">Datum</label>
-                            <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white ${errors.date ? 'border-red-500/50' : 'border-zinc-600'}`} />
-                            {errors.date && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.date}</p>}
-                        </div>
-                        <div className="flex-1">
-                            <label htmlFor="amount" className="block text-sm font-medium text-zinc-300 mb-1">Betrag</label>
-                            <input type="text" inputMode="decimal" id="amount" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="0,00" className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.amount ? 'border-red-500/50' : 'border-zinc-600'}`} />
-                             {errors.amount && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.amount}</p>}
-                        </div>
-                    </div>
-                    
-                    {formType === 'transfer' ? (
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="fromAccount" className="block text-sm font-medium text-zinc-300 mb-1">Von</label>
-                                <select id="fromAccount" value={fromAccountId} onChange={e => setFromAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
-                                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="toAccount" className="block text-sm font-medium text-zinc-300 mb-1">Nach</label>
-                                <select id="toAccount" value={toAccountId} onChange={e => setToAccountId(e.target.value)} className="w-full bg-zinc-700/50 border border-zinc-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500">
-                                    {accounts.filter(acc => acc.id !== fromAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                                </select>
-                            </div>
-                             {errors.transfer && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.transfer}</p>}
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="description" className="block text-sm font-medium text-zinc-300 mb-1">Beschreibung</label>
-                                <textarea ref={descriptionTextareaRef} id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="z.B. Wocheneinkauf" rows={1} className={`w-full bg-zinc-700/50 border rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none overflow-hidden ${errors.description ? 'border-red-500/50' : 'border-zinc-600'}`} />
-                                {errors.description && <p className="text-red-400 text-sm mt-1 animate-fadeInDown">{errors.description}</p>}
-                            </div>
-                            <CategoryInput
-                                value={category}
-                                onChange={setCategory}
-                                allCategories={categories[formType]}
-                                error={errors.category}
-                            />
-                        </div>
-                    )}
+        ) : (
+            <div className="flex gap-6 animate-scaleIn h-[90vh] max-h-[700px]" onClick={(e) => e.stopPropagation()}>
+                {formContent}
+                <div className="w-full max-w-sm h-full">
+                    <TemplatesModal onSelect={handleSelectTemplate} isMobileView={isMobileView} />
                 </div>
-
-                <div className="pt-4 mt-auto flex-shrink-0 space-y-3">
-                    <button type="button" onClick={() => setTemplatesModalOpen(true)} className="w-full bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-200 font-bold py-3 px-4 rounded-lg flex items-center justify-center">
-                        <Icon name="file_present" className="mr-2" />
-                        Aus Vorlage laden
-                    </button>
-                    <div className="flex items-center gap-3">
-                        {isEditMode && formType !== 'transfer' && (
-                            <button type="button" onClick={handleDelete} className="bg-red-900/40 hover:bg-red-900/60 text-red-300 font-bold p-3 rounded-lg" aria-label="Löschen">
-                                <Icon name="delete" />
-                            </button>
-                        )}
-                        <button type="submit" className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-lg whitespace-nowrap">
-                            {isEditMode ? 'Änderungen speichern' : 'Hinzufügen'}
-                        </button>
-                         {formType !== 'transfer' && (
-                            <button type="button" onClick={handleSaveAsTemplate} title="Als Vorlage speichern" className="bg-zinc-600 hover:bg-zinc-700 text-white font-bold p-3 rounded-lg" aria-label="Als Vorlage speichern">
-                                <Icon name="bookmark_add" />
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </form>
-        </div>
-        <TemplatesModal 
-            isOpen={isTemplatesModalOpen}
-            onClose={() => setTemplatesModalOpen(false)}
-            onSelect={handleSelectTemplate}
-            isMobileView={isMobileView}
-        />
+            </div>
+        )}
     </div>
   );
 };

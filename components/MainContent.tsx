@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 
 import { MyProject, View } from '../types';
@@ -7,7 +8,6 @@ import ReadLateRView from './ReadLateRView';
 import CollMeaView from './CollMeaView';
 import AuriMeaApp from './AuriMea';
 import FwDatenApp from './FWDaten';
-import FlashcardsView from './FlashcardsView';
 import AppsView from './AppsView';
 
 import { useNavigation } from '../hooks/useNavigation';
@@ -17,7 +17,6 @@ import { useBookmarks } from '../hooks/useBookmarks';
 import { useCollections } from '../hooks/useCollections';
 import { useAuriMeaData } from '../hooks/useAuriMeaData';
 import { useUIState } from '../hooks/useUIState';
-import { useFlashcardsData } from '../hooks/useFlashcardsData';
 
 interface MainContentProps {
     isDesktop: boolean;
@@ -28,7 +27,6 @@ interface MainContentProps {
         bookmarks: ReturnType<typeof useBookmarks>;
         collections: ReturnType<typeof useCollections>;
         auriMea: ReturnType<typeof useAuriMeaData>;
-        flashcards: ReturnType<typeof useFlashcardsData>;
     };
     ui: ReturnType<typeof useUIState>;
     searchQuery: string;
@@ -113,18 +111,6 @@ const MainContent: React.FC<MainContentProps> = ({
     }
     if (activeProject === MyProject.FWDaten) {
         return <FwDatenApp isMobileView={!isDesktop} onBack={nav.handleCloseMobileContent} />;
-    }
-    if (activeProject === MyProject.Flashcards) {
-        return <FlashcardsView
-            isMobileView={!isDesktop}
-            onBack={nav.handleCloseMobileContent}
-            showNotification={ui.showNotification}
-            showConfirmation={ui.showConfirmation}
-            deck={data.flashcards.deck}
-            setDeck={data.flashcards.setDeck}
-            deckName={data.flashcards.deckName}
-            setDeckName={data.flashcards.setDeckName}
-        />;
     }
     if (activeAppView) {
         return <AppsView 

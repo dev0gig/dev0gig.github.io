@@ -1,8 +1,3 @@
-
-
-
-
-
 import React from 'react';
 import { View, MyProject } from '../types';
 import SidebarInfoWidget from './SidebarInfoWidget';
@@ -31,14 +26,15 @@ const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }>
   [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
   [MyProject.AuriMea]: { label: 'AuriMea', icon: 'payments' },
   [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
-  [MyProject.Flashcards]: { label: 'Flashcards', icon: 'style' },
 };
 
-const myProjectNavItems = Object.entries(MY_PROJECT_DEFINITIONS).map(([key, value]) => ({
+const myProjectNavItems = Object.entries(MY_PROJECT_DEFINITIONS)
+  .map(([key, value]) => ({
     id: key as MyProject,
     label: value.label,
     icon: value.icon,
-}));
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 const NavButton: React.FC<{
     label: string;

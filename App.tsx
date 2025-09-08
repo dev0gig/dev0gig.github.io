@@ -8,6 +8,7 @@
 
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, MyProject, Tile, Collection, JournalEntry } from './types';
 
@@ -29,7 +30,6 @@ import { useNavigation } from './hooks/useNavigation';
 import { useHistoryStack } from './hooks/useHistoryStack';
 import { useAuriMeaData } from './hooks/useAuriMeaData';
 import { useDataManager } from './hooks/useDataManager';
-import { useFlashcardsData } from './hooks/useFlashcardsData';
 
 
 const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }> = {
@@ -38,7 +38,6 @@ const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }>
   [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
   [MyProject.AuriMea]: { label: 'AuriMea', icon: 'payments' },
   [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
-  [MyProject.Flashcards]: { label: 'Flashcards', icon: 'style' },
 };
 
 const App: React.FC = () => {
@@ -55,7 +54,6 @@ const App: React.FC = () => {
       collections: useCollections(),
       tiles: useTiles(),
       auriMea: useAuriMeaData(),
-      flashcards: useFlashcardsData(),
   };
   const ui = useUIState();
   const nav = useNavigation();
@@ -180,7 +178,7 @@ const App: React.FC = () => {
               onMyProjectSelect={nav.handleMyProjectSelect}
               showSearchBar={(() => {
                   if (nav.activeView === View.Apps) return true;
-                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject);
+                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea, MyProject.FWDaten].includes(nav.activeMyProject);
                   return false;
               })()}
               searchPlaceholder={(() => {
@@ -209,7 +207,7 @@ const App: React.FC = () => {
                   return actions;
               })()}
               onOpenSettings={() => setIsSettingsModalOpen(true)}
-              isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten, MyProject.Flashcards].includes(nav.activeMyProject as MyProject)}
+              isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten].includes(nav.activeMyProject as MyProject)}
           >
               <MainContent {...mainContentProps} />
           </DesktopLayout>

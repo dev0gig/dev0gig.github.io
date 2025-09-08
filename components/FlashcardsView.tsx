@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Flashcard, FlashcardDeck } from '../types';
 import DrawingCanvas, { DrawingCanvasRef } from './DrawingCanvas';
@@ -362,7 +363,7 @@ const FlashcardsView: React.FC<FlashcardsViewProps> = ({ isMobileView = false, o
     );
     
     return (
-        <div className={`animate-fadeIn h-full flex flex-col`}>
+        <div className={`h-full flex flex-col`}>
             <style>{`
                 .flashcard-container { perspective: 1000px; }
                 .flashcard {
