@@ -1,7 +1,5 @@
 
-
-
-const CACHE_NAME = 'axismea-cache-v9';
+const CACHE_NAME = 'axismea-cache-v10';
 
 const PRECACHE_URLS = [
   './',
@@ -17,15 +15,8 @@ const PRECACHE_URLS = [
   
   // Components
   './components/AnalysisSidebar.tsx',
-  './components/AppFormModal.tsx',
-  './components/AppsView.tsx',
   './components/AuriMeaView.tsx',
   './components/BackupModal.tsx',
-  './components/BookmarkFormModal.tsx',
-  './components/BookmarkItemCard.tsx',
-  './components/BottomNavigation.tsx',
-  './components/CollMeaView.tsx',
-  './components/CollectionFormModal.tsx',
   './components/CompletedTasksModal.tsx',
   './components/ContextMenu.tsx',
   './components/JournalEntryCard.tsx',
@@ -34,7 +25,6 @@ const PRECACHE_URLS = [
   './components/MyProjectsOverview.tsx',
   './components/PieChart.tsx',
   './components/PlaceholderView.tsx',
-  './components/ReadLateRView.tsx',
   './components/TransactionFormModal.tsx',
   './components/MetroView.tsx',
   './components/NotificationModal.tsx',
@@ -42,9 +32,6 @@ const PRECACHE_URLS = [
   './components/AuriMea/components/TemplatesModal.tsx',
   
   // Hooks
-  './hooks/useApps.ts',
-  './hooks/useBookmarks.ts',
-  './hooks/useCollections.ts',
   './hooks/useHistoryStack.ts',
   './hooks/useJournal.ts',
   './hooks/useMediaQuery.ts',
@@ -53,13 +40,8 @@ const PRECACHE_URLS = [
   './hooks/useUIState.ts',
 
   // Data
-  './data/apps.ts',
-  './data/bookmarks.ts',
-  './data/collections.ts',
   './data/categories.ts',
   './data/transactions.ts',
-  './data/fwDatenMeters.ts',
-  './data/fwDatenReadings.ts',
   
   // External assets
   'https://cdn.tailwindcss.com',

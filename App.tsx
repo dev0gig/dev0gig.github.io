@@ -1,16 +1,6 @@
 
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, MyProject, Tile, Collection, JournalEntry } from './types';
+import { View, MyProject, Tile, JournalEntry } from './types';
 
 // Components
 import DesktopLayout from './components/DesktopLayout';
@@ -20,10 +10,7 @@ import GlobalModals from './components/GlobalModals';
 
 // Hooks
 import { useMediaQuery } from './hooks/useMediaQuery';
-import { useApps } from './hooks/useApps';
 import { useJournal } from './hooks/useJournal';
-import { useBookmarks } from './hooks/useBookmarks';
-import { useCollections } from './hooks/useCollections';
 import { useTiles } from './hooks/useTiles';
 import { useUIState } from './hooks/useUIState';
 import { useNavigation } from './hooks/useNavigation';
@@ -34,10 +21,7 @@ import { useDataManager } from './hooks/useDataManager';
 
 const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }> = {
   [MyProject.MemoMea]: { label: 'MemoMea', icon: 'edit_note' },
-  [MyProject.ReadLateR]: { label: 'ReadLateR', icon: 'bookmark' },
-  [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
   [MyProject.AuriMea]: { label: 'AuriMea', icon: 'payments' },
-  [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
 };
 
 const App: React.FC = () => {
@@ -48,44 +32,32 @@ const App: React.FC = () => {
 
   // --- Custom Hooks for State Management ---
   const data = {
-      apps: useApps(),
       journal: useJournal(),
-      bookmarks: useBookmarks(),
-      collections: useCollections(),
       tiles: useTiles(),
       auriMea: useAuriMeaData(),
   };
   const ui = useUIState();
   const nav = useNavigation();
-  const { handleExportData, handleImportData, handleDeleteAppData } = useDataManager({ data, ui, setIsDeleteModalOpen });
+  const { handleExportData, handleImportData, handleDeleteAppData, handleExportMemoMeaAsMarkdown } = useDataManager({ data, ui, setIsDeleteModalOpen });
   
   // --- History / Back Button Management ---
   const isOverlayVisible =
     ui.notification.isOpen ||
-    ui.isAppContextMenuOpen ||
-    ui.appFormModal.isOpen ||
-    ui.isBookmarkModalOpen ||
-    ui.collectionFormModal.isOpen ||
     ui.backupModalState.isOpen ||
     isSettingsModalOpen ||
     isDeleteModalOpen ||
     !!nav.activeMobileContent ||
-    (isDesktop && (!!nav.activeCollectionId || !!nav.activeMyProject));
+    (isDesktop && !!nav.activeMyProject);
   
   const closeTopOverlay = () => {
       if (ui.notification.isOpen) ui.closeNotification();
-      else if (ui.isAppContextMenuOpen) ui.closeAllPopups();
-      else if (ui.appFormModal.isOpen) ui.setAppFormModal({ isOpen: false, mode: 'add' });
-      else if (ui.isBookmarkModalOpen) ui.setIsBookmarkModalOpen(false);
-      else if (ui.collectionFormModal.isOpen) ui.setCollectionFormModal({ isOpen: false, mode: 'add' });
-      else if (ui.backupModalState.isOpen) ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
+      // FIX: Removed invalid 'scope' property. The backup modal state does not have a 'scope' property.
+      else if (ui.backupModalState.isOpen) ui.setBackupModalState({ isOpen: false, mode: 'export' });
       else if (isSettingsModalOpen) setIsSettingsModalOpen(false);
       else if (isDeleteModalOpen) setIsDeleteModalOpen(false);
       else if (nav.activeMobileContent) nav.handleCloseMobileContent();
       else if (isDesktop) {
-          if (nav.activeCollectionId) {
-              nav.setActiveCollectionId(null);
-          } else if (nav.activeMyProject) {
+          if (nav.activeMyProject) {
               nav.handleMyProjectSelect(null);
           }
       }
@@ -101,29 +73,16 @@ const App: React.FC = () => {
   useEffect(() => {
     setSearchQuery('');
     setSuggestedTags([]);
-  }, [nav.activeView, nav.activeMyProject, nav.activeCollectionId, data.bookmarks.readLaterShowArchived]);
+  }, [nav.activeView, nav.activeMyProject]);
 
   // --- New Item Handler ---
   const handleAddNew = () => {
     if (isDesktop) {
         if (nav.activeMyProject === MyProject.MemoMea) data.journal.handleAddNewJournalEntry();
-        else if (nav.activeMyProject === MyProject.ReadLateR) ui.setIsBookmarkModalOpen(true);
-        else if (nav.activeMyProject === MyProject.CollMea) ui.setCollectionFormModal({ isOpen: true, mode: 'add' });
-        else if (nav.activeView === View.Apps) ui.setAppFormModal({ isOpen: true, mode: 'add' });
     } else { // Mobile
       if (nav.activeView === View.MyProjects && nav.activeMobileContent?.type === 'MY_PROJECT') {
           const projectId = (nav.activeMobileContent as any).projectId;
           if (projectId === MyProject.MemoMea) data.journal.handleAddNewJournalEntry();
-          else if (projectId === MyProject.ReadLateR) ui.setIsBookmarkModalOpen(true);
-          else if (projectId === MyProject.CollMea) {
-              if (nav.activeCollectionId) {
-                  data.collections.handleAddNewCollectionItem(nav.activeCollectionId);
-              } else {
-                  ui.setCollectionFormModal({ isOpen: true, mode: 'add' });
-              }
-          }
-      } else if (nav.activeView === View.Apps && nav.activeMobileContent?.type === 'VIEW_LINK') {
-          ui.setAppFormModal({ isOpen: true, mode: 'add' });
       }
     }
   };
@@ -143,17 +102,10 @@ const App: React.FC = () => {
         const count = data.journal.journalEntries.length;
         return { title: projectDef.label, subtitle: `${count} ${count === 1 ? 'Eintrag' : 'Einträge'}`, icon: projectDef.icon };
       }
-      if (nav.activeMyProject === MyProject.CollMea) {
-        const count = data.collections.collections.length;
-        return { title: projectDef.label, subtitle: `${count} ${count === 1 ? 'Sammlung' : 'Sammlungen'}`, icon: projectDef.icon };
-      }
       return { title: projectDef.label, subtitle: null, icon: projectDef.icon };
     }
-    if (nav.activeView === View.Apps) {
-      return { title: 'Apps', subtitle: null, icon: 'apps' };
-    }
     return { title: 'Tools', subtitle: 'Wählen Sie ein Projekt aus', icon: 'category' };
-  }, [nav.activeMyProject, nav.activeView, data.journal.journalEntries.length, data.collections.collections.length]);
+  }, [nav.activeMyProject, nav.activeView, data.journal.journalEntries.length]);
   
   const mainContentProps = {
     isDesktop,
@@ -177,15 +129,11 @@ const App: React.FC = () => {
               activeMyProject={nav.activeMyProject}
               onMyProjectSelect={nav.handleMyProjectSelect}
               showSearchBar={(() => {
-                  if (nav.activeView === View.Apps) return true;
-                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea, MyProject.FWDaten].includes(nav.activeMyProject);
+                  if (nav.activeView === View.MyProjects && nav.activeMyProject) return ![MyProject.AuriMea].includes(nav.activeMyProject);
                   return false;
               })()}
               searchPlaceholder={(() => {
                   if (nav.activeMyProject === MyProject.MemoMea) return 'Einträge durchsuchen... (z.B. #tag)';
-                  if (nav.activeMyProject === MyProject.ReadLateR) return 'Lesezeichen durchsuchen...';
-                  if (nav.activeMyProject === MyProject.CollMea) return 'Sammlungen und Elemente durchsuchen...';
-                  if (nav.activeView === View.Apps) return "Apps durchsuchen...";
                   return '';
               })()}
               searchValue={searchQuery}
@@ -198,23 +146,20 @@ const App: React.FC = () => {
               headerSubtitle={desktopHeaderProps.subtitle}
               headerActions={(() => {
                   const actions = [];
-                  if (nav.activeMyProject === MyProject.ReadLateR) {
-                      actions.push(<button key="toggle-archive" onClick={() => data.bookmarks.setReadLaterShowArchived(p => !p)} className="flex items-center font-medium py-2 px-4 rounded-lg transition-colors bg-zinc-700/50 hover:bg-zinc-700/80 text-zinc-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"><span className="material-symbols-outlined mr-2 text-lg">{data.bookmarks.readLaterShowArchived ? 'unarchive' : 'archive'}</span><span>{data.bookmarks.readLaterShowArchived ? "Aktive anzeigen" : "Archiv anzeigen"}</span></button>);
-                  }
-                  if (nav.activeMyProject && [MyProject.MemoMea, MyProject.ReadLateR, MyProject.CollMea].includes(nav.activeMyProject) || nav.activeView === View.Apps) {
+                  if (nav.activeMyProject && [MyProject.MemoMea].includes(nav.activeMyProject)) {
                       actions.push(<button key="add-new" onClick={handleAddNew} className="flex items-center font-bold py-2 px-4 rounded-lg transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-500 whitespace-nowrap"><span className="material-symbols-outlined mr-2 text-lg">add_circle</span><span>Neu</span></button>);
                   }
                   return actions;
               })()}
               onOpenSettings={() => setIsSettingsModalOpen(true)}
-              isSubAppActive={[MyProject.AuriMea, MyProject.FWDaten].includes(nav.activeMyProject as MyProject)}
+              isSubAppActive={[MyProject.AuriMea].includes(nav.activeMyProject as MyProject)}
           >
               <MainContent {...mainContentProps} />
           </DesktopLayout>
       ) : (
           <MobileLayout
               tiles={data.tiles.tiles}
-              onTileClick={(tile) => nav.handleTileClick(tile, () => nav.setActiveView(tile.type === 'VIEW_LINK' ? tile.viewId : View.MyProjects))}
+              onTileClick={(tile) => nav.handleTileClick(tile, () => nav.setActiveView(View.MyProjects))}
               activeMobileContent={nav.activeMobileContent}
               projectDefinitions={MY_PROJECT_DEFINITIONS}
               onOpenSettings={() => setIsSettingsModalOpen(true)}
@@ -226,14 +171,14 @@ const App: React.FC = () => {
       {/* --- Global Modals & Overlays --- */}
       <GlobalModals
           ui={ui}
-          data={data}
           isSettingsModalOpen={isSettingsModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
-      isDeleteModalOpen={isDeleteModalOpen}
+          isDeleteModalOpen={isDeleteModalOpen}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           handleExportData={handleExportData}
           handleImportData={handleImportData}
           handleDeleteAppData={handleDeleteAppData}
+          handleExportMemoMeaAsMarkdown={handleExportMemoMeaAsMarkdown}
           isDesktop={isDesktop}
         />
     </>

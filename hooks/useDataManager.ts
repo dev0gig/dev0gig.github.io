@@ -1,16 +1,11 @@
+import JSZip from 'jszip';
 import { JournalEntry } from '../types';
-import { useApps } from './useApps';
 import { useJournal } from './useJournal';
-import { useBookmarks } from './useBookmarks';
-import { useCollections } from './useCollections';
 import { useAuriMeaData } from './useAuriMeaData';
 import { useUIState } from './useUIState';
 
 type DataHooks = {
-    apps: ReturnType<typeof useApps>;
     journal: ReturnType<typeof useJournal>;
-    bookmarks: ReturnType<typeof useBookmarks>;
-    collections: ReturnType<typeof useCollections>;
     auriMea: ReturnType<typeof useAuriMeaData>;
 };
 
@@ -24,32 +19,19 @@ interface UseDataManagerProps {
 
 export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManagerProps) => {
     
-    const handleDeleteAppData = (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'fwdaten') => {
+    const handleDeleteAppData = (scope: 'all' | 'memo' | 'auri') => {
         const confirmationMessage: Record<typeof scope, string> = {
-            all: "Möchten Sie wirklich ALLE Anwendungsdaten (Apps, MemoMea, ReadLateR, CollMea, AuriMea, FW-Daten) unwiderruflich löschen?",
-            apps: "Möchten Sie wirklich ALLE Apps löschen?",
+            all: "Möchten Sie wirklich ALLE Anwendungsdaten (MemoMea, AuriMea) unwiderruflich löschen?",
             memo: "Möchten Sie wirklich ALLE MemoMea-Einträge löschen?",
-            read: "Möchten Sie wirklich ALLE ReadLateR-Lesezeichen löschen?",
-            coll: "Möchten Sie wirklich ALLE CollMea-Sammlungen löschen?",
             auri: "Möchten Sie wirklich ALLE AuriMea-Daten (Konten, Transaktionen etc.) löschen?",
-            fwdaten: "Möchten Sie wirklich ALLE FW-Daten (Zähler, Zählerstände) unwiderruflich löschen?",
         };
         
         ui.showConfirmation(
           "Bestätigen Sie die Löschung",
           confirmationMessage[scope],
           () => {
-            if (scope === 'all' || scope === 'apps') data.apps.setApps([]);
             if (scope === 'all' || scope === 'memo') data.journal.setJournalEntries([]);
-            if (scope === 'all' || scope === 'read') data.bookmarks.setBookmarks([]);
-            if (scope === 'all' || scope === 'coll') data.collections.setCollections([]);
             if (scope === 'all' || scope === 'auri') data.auriMea.resetAuriMeaData();
-            if (scope === 'all' || scope === 'fwdaten') {
-                localStorage.removeItem('fw-data-meters');
-                localStorage.removeItem('fw-data-readings');
-                localStorage.removeItem('fw-data-meter-draft');
-                localStorage.removeItem('fw-data-reading-drafts');
-            }
             
             setIsDeleteModalOpen(false);
             ui.showNotification("Erfolg", "Die ausgewählten Daten wurden gelöscht.", 'success');
@@ -68,87 +50,25 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
+        ui.setBackupModalState({ isOpen: false, mode: 'export' });
     };
 
-    const handleExportData = async (scope: 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten') => {
-        if (scope === 'memomd') {
-            const JSZip = (await import('jszip')).default;
-            const zip = new JSZip();
-            const filenames = new Map<string, number>();
-
-            data.journal.journalEntries.forEach(entry => {
-                const date = new Date(entry.createdAt);
-                const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                
-                const count = filenames.get(dateString) || 0;
-                const finalFilename = count > 0 ? `${dateString}-${count + 1}.md` : `${dateString}.md`;
-                
-                filenames.set(dateString, count + 1);
-
-                zip.file(finalFilename, entry.content);
-            });
-
-            const blob = await zip.generateAsync({ type: "blob" });
-            const zipFileName = `axismea_backup_memomea_markdown_${new Date().toISOString().split('T')[0]}.zip`;
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = zipFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            ui.setBackupModalState({ isOpen: false, mode: 'export', scope: null });
-            return;
-        }
-
-        let dataToExport;
+    const handleExportData = async () => {
+        const scope = 'all';
         const fileName = `axismea_backup_${scope}_${new Date().toISOString().split('T')[0]}.json`;
-        let moduleData;
-
-        switch(scope) {
-            case 'all':
-                moduleData = {
-                    apps: data.apps.apps,
-                    memo: data.journal.journalEntries,
-                    read: data.bookmarks.bookmarks,
-                    coll: data.collections.collections,
-                    auri: {
-                        accounts: data.auriMea.accounts,
-                        transactions: data.auriMea.transactions,
-                        categories: data.auriMea.categories,
-                        templates: data.auriMea.templates,
-                        activeAccountId: data.auriMea.activeAccountId,
-                    },
-                    fwdaten: {
-                        meters: JSON.parse(localStorage.getItem('fw-data-meters') || '[]'),
-                        readings: JSON.parse(localStorage.getItem('fw-data-readings') || '[]'),
-                    }
-                };
-                break;
-            case 'apps': moduleData = data.apps.apps; break;
-            case 'memo': moduleData = data.journal.journalEntries; break;
-            case 'read': moduleData = data.bookmarks.bookmarks; break;
-            case 'coll': moduleData = data.collections.collections; break;
-            case 'auri':
-                moduleData = {
-                    accounts: data.auriMea.accounts,
-                    transactions: data.auriMea.transactions,
-                    categories: data.auriMea.categories,
-                    templates: data.auriMea.templates,
-                    activeAccountId: data.auriMea.activeAccountId,
-                };
-                break;
-            case 'fwdaten':
-                moduleData = {
-                    meters: JSON.parse(localStorage.getItem('fw-data-meters') || '[]'),
-                    readings: JSON.parse(localStorage.getItem('fw-data-readings') || '[]'),
-                };
-                break;
-        }
         
-        dataToExport = {
+        const moduleData = {
+            memo: data.journal.journalEntries,
+            auri: {
+                accounts: data.auriMea.accounts,
+                transactions: data.auriMea.transactions,
+                categories: data.auriMea.categories,
+                templates: data.auriMea.templates,
+                activeAccountId: data.auriMea.activeAccountId,
+            },
+        };
+        
+        const dataToExport = {
             backupType: scope,
             version: 1,
             data: moduleData,
@@ -156,6 +76,38 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
         
         createDownload(dataToExport, fileName);
     };
+    
+    const handleExportMemoMeaAsMarkdown = async () => {
+        const zip = new JSZip();
+        const entriesByDate = new Map<string, JournalEntry[]>();
+
+        data.journal.journalEntries.forEach(entry => {
+            const dateStr = new Date(entry.createdAt).toISOString().split('T')[0]; // YYYY-MM-DD
+            if (!entriesByDate.has(dateStr)) {
+                entriesByDate.set(dateStr, []);
+            }
+            entriesByDate.get(dateStr)!.push(entry);
+        });
+
+        entriesByDate.forEach((entries, dateStr) => {
+            entries.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            const content = entries.map(e => e.content).join('\n\n---\n\n');
+            zip.file(`${dateStr}.md`, content);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = `memomea_backup_markdown_${new Date().toISOString().split('T')[0]}.zip`;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        ui.setBackupModalState({ isOpen: false, mode: 'export' });
+    };
+
   
     const handleImportData = (file: File) => {
         const reader = new FileReader();
@@ -208,7 +160,7 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
                 }
             };
             reader.readAsArrayBuffer(file);
-            ui.setBackupModalState({ isOpen: false, mode: 'import', scope: null });
+            ui.setBackupModalState({ isOpen: false, mode: 'import' });
             return;
         }
         
@@ -228,27 +180,11 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
 
             switch(backupType) {
                 case 'all':
-                    if (importData.apps) data.apps.setApps(importData.apps);
                     if (importData.memo) data.journal.setJournalEntries(importData.memo);
-                    if (importData.read) data.bookmarks.setBookmarks(importData.read);
-                    if (importData.coll) data.collections.setCollections(importData.coll);
                     if (importData.auri) data.auriMea.importAuriMeaData(importData.auri);
-                    if (importData.fwdaten) {
-                        localStorage.setItem('fw-data-meters', JSON.stringify(importData.fwdaten.meters));
-                        localStorage.setItem('fw-data-readings', JSON.stringify(importData.fwdaten.readings));
-                        needsReload = true;
-                    }
                     break;
-                case 'apps': data.apps.setApps(importData); break;
                 case 'memo': data.journal.setJournalEntries(importData); break;
-                case 'read': data.bookmarks.setBookmarks(importData); break;
-                case 'coll': data.collections.setCollections(importData); break;
                 case 'auri': data.auriMea.importAuriMeaData(importData); break;
-                case 'fwdaten':
-                    localStorage.setItem('fw-data-meters', JSON.stringify(importData.meters));
-                    localStorage.setItem('fw-data-readings', JSON.stringify(importData.readings));
-                    needsReload = true;
-                    break;
                 default:
                     throw new Error(`Unrecognized backup type: ${backupType}`);
             }
@@ -264,12 +200,13 @@ export const useDataManager = ({ data, ui, setIsDeleteModalOpen }: UseDataManage
           }
         };
         reader.readAsText(file);
-        ui.setBackupModalState({ isOpen: false, mode: 'import', scope: null });
+        ui.setBackupModalState({ isOpen: false, mode: 'import' });
     };
     
     return {
         handleDeleteAppData,
         handleExportData,
         handleImportData,
+        handleExportMemoMeaAsMarkdown,
     };
 };

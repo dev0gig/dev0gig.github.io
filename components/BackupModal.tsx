@@ -1,33 +1,14 @@
-
-
-
-
-
-
 import React, { useEffect, useRef } from 'react';
-
-type ExportScope = 'all' | 'apps' | 'memo' | 'read' | 'coll' | 'auri' | 'memomd' | 'fwdaten';
 
 interface BackupModalProps {
   mode: 'export' | 'import';
-  scope: ExportScope | null;
   onClose: () => void;
-  onExport: (scope: ExportScope) => void;
+  onExport: () => void;
   onImport: (file: File) => void;
+  onExportMemoMea: () => void;
 }
 
-const scopeDetailsMap: Record<ExportScope, { label: string; icon: string }> = {
-    all: { label: 'Alle Daten', icon: 'database' },
-    apps: { label: 'Apps', icon: 'apps' },
-    memo: { label: 'MemoMea (JSON)', icon: 'edit_note' },
-    memomd: { label: 'MemoMea (Markdown)', icon: 'markdown' },
-    read: { label: 'ReadLateR', icon: 'bookmark' },
-    coll: { label: 'CollMea', icon: 'collections_bookmark' },
-    auri: { label: 'AuriMea', icon: 'payments' },
-    fwdaten: { label: 'FW-Daten', icon: 'ssid_chart' },
-};
-
-const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExport, onImport }) => {
+const BackupModal: React.FC<BackupModalProps> = ({ mode, onClose, onExport, onImport, onExportMemoMea }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,27 +34,7 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
     fileInputRef.current?.click();
   };
   
-  const details = scope ? scopeDetailsMap[scope] : null;
-  const modalTitle = mode === 'export' 
-    ? (scope ? `${details?.label} exportieren` : 'Backup exportieren') 
-    : 'Backup importieren';
-  
-  const renderExportSelection = () => (
-    <div className="space-y-3">
-        <p className="text-sm text-zinc-400">Wählen Sie aus, welche Daten Sie als Datei exportieren möchten.</p>
-        {(Object.keys(scopeDetailsMap) as ExportScope[]).map(key => (
-             <button
-                key={key}
-                onClick={() => onExport(key)}
-                className="w-full flex items-center text-left p-4 bg-zinc-700/50 hover:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
-              >
-                <span className="material-symbols-outlined mr-4 text-zinc-300">{scopeDetailsMap[key].icon}</span>
-                <span className="font-medium">{scopeDetailsMap[key].label}</span>
-              </button>
-        ))}
-    </div>
-  );
-
+  const modalTitle = mode === 'export' ? 'Backup exportieren' : 'Backup importieren';
 
   return (
     <div
@@ -106,18 +67,31 @@ const BackupModal: React.FC<BackupModalProps> = ({ mode, scope, onClose, onExpor
           </button>
         </div>
         
-        {mode === 'export' && !scope && renderExportSelection()}
-        
-        {mode === 'export' && details && scope && (
+        {mode === 'export' && (
           <div className="space-y-4">
-            <p className="text-sm text-zinc-400">Ihre {details.label}-Daten werden als Datei exportiert.</p>
-              <button
-                onClick={() => onExport(scope)}
-                className="w-full flex items-center justify-center text-left p-4 bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors duration-200 text-white font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800 focus:ring-violet-500"
-              >
-                <span className="material-symbols-outlined mr-3">{details.icon}</span>
-                <span>{`Backup für ${details.label} erstellen`}</span>
-              </button>
+             <p className="text-sm text-zinc-400">Wählen Sie eine Exportmethode aus. Es wird empfohlen, regelmäßig vollständige Backups zu erstellen.</p>
+             <div className="space-y-3 pt-2">
+                <button
+                    onClick={onExport}
+                    className="w-full flex items-center text-left p-4 bg-zinc-700/50 hover:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200"
+                >
+                    <span className="material-symbols-outlined mr-4 text-zinc-300">database</span>
+                    <div>
+                        <span className="font-medium">Gesamtes Backup (.json)</span>
+                        <p className="text-xs text-zinc-400">Sichert alle Anwendungsdaten (MemoMea, AuriMea, etc.) in einer Datei.</p>
+                    </div>
+                </button>
+                 <button
+                    onClick={onExportMemoMea}
+                    className="w-full flex items-center text-left p-4 bg-zinc-700/50 hover:bg-zinc-700/80 rounded-lg transition-colors duration-200 text-zinc-200"
+                >
+                    <span className="material-symbols-outlined mr-4 text-zinc-300">folder_zip</span>
+                     <div>
+                        <span className="font-medium">MemoMea als Markdown (.zip)</span>
+                        <p className="text-xs text-zinc-400">Exportiert alle MemoMea-Einträge als .md-Dateien, pro Tag zusammengefasst.</p>
+                    </div>
+                </button>
+             </div>
           </div>
         )}
 

@@ -1,13 +1,4 @@
 
-
-
-
-
-
-
-
-
-
 import React, { useState } from 'react';
 import { View, MyProject } from '../types';
 import Sidebar from './Sidebar';
@@ -53,17 +44,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     onOpenSettings,
     isSubAppActive = false,
 }) => {
-  const [googleSearchQuery, setGoogleSearchQuery] = useState('');
   const mainContentClass = `flex-1 overflow-y-auto ${!isSubAppActive ? 'p-4' : ''}`;
-
-  const handleGoogleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (googleSearchQuery.trim()) {
-      const url = `https://www.google.com/search?q=${encodeURIComponent(googleSearchQuery)}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
-      setGoogleSearchQuery('');
-    }
-  };
 
   return (
     <div className="h-dvh w-full flex bg-zinc-900 text-zinc-100 antialiased">
@@ -92,7 +73,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             
             <div className="flex items-center justify-center gap-x-8 flex-grow max-w-4xl">
               {showSearchBar && (
-                <div className={`relative w-full ${activeView === View.Apps ? 'max-w-xl' : 'max-w-full'}`}>
+                <div className={`relative w-full max-w-full`}>
                   <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xl">
                     search
                   </span>
@@ -116,27 +97,6 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     </button>
                   )}
                 </div>
-              )}
-
-              {activeView === View.Apps && (
-                <form 
-                  onSubmit={handleGoogleSearchSubmit} 
-                  className={`m-0 relative w-full ${showSearchBar ? 'max-w-sm' : 'max-w-xl'}`}
-                >
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/250px-Google_Favicon_2025.svg.png"
-                      alt="Google"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 aspect-square object-contain pointer-events-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Bei Google suchen..."
-                      value={googleSearchQuery}
-                      onChange={(e) => setGoogleSearchQuery(e.target.value)}
-                      className="h-12 w-full bg-zinc-800 border border-transparent rounded-full py-3 pl-12 pr-4 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                      aria-label="Bei Google suchen"
-                    />
-                </form>
               )}
             </div>
             

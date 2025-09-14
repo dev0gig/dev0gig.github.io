@@ -22,21 +22,18 @@ export const useNavigation = () => {
     }
     return MyProject.MemoMea; // Default project
   });
-
-  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
   
   // State for mobile fullscreen content
   const [activeMobileContent, setActiveMobileContent] = useState<Tile | null>(null);
   
   const handleMyProjectSelect = (project: MyProject | null) => {
-    setActiveCollectionId(null);
     setActiveMyProject(project);
     try {
         if (project) {
             localStorage.setItem('axismea-lastActiveProject', project);
             setActiveView(View.MyProjects);
         } else {
-            // If no project is selected (e.g. navigating to 'Apps'), remove the stored value.
+            // If no project is selected, remove the stored value.
             localStorage.removeItem('axismea-lastActiveProject');
         }
     } catch (e) {
@@ -46,10 +43,6 @@ export const useNavigation = () => {
 
   const handleTileClick = (tile: Tile, callback?: () => void) => {
     if (tile.type === 'DATETIME') return;
-    if (tile.type === 'APP_LINK') {
-      window.open(tile.app.targetUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
     setActiveMobileContent(tile);
     if (callback) callback();
   };
@@ -63,8 +56,6 @@ export const useNavigation = () => {
     setActiveView,
     activeMyProject,
     setActiveMyProject,
-    activeCollectionId,
-    setActiveCollectionId,
     activeMobileContent,
     setActiveMobileContent,
     handleMyProjectSelect,

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { View, MyProject } from '../types';
 import SidebarInfoWidget from './SidebarInfoWidget';
@@ -10,22 +11,9 @@ interface SidebarProps {
   onOpenSettings: () => void;
 }
 
-interface NavItem {
-  view: View;
-  label: string;
-  icon: string;
-}
-
-const mainNavItems: NavItem[] = [
-  { view: View.Apps, label: 'Alle Apps', icon: 'apps' },
-];
-
 const MY_PROJECT_DEFINITIONS: Record<MyProject, { label: string; icon: string }> = {
   [MyProject.MemoMea]: { label: 'MemoMea', icon: 'edit_note' },
-  [MyProject.ReadLateR]: { label: 'ReadLateR', icon: 'bookmark' },
-  [MyProject.CollMea]: { label: 'CollMea', icon: 'collections_bookmark' },
   [MyProject.AuriMea]: { label: 'AuriMea', icon: 'payments' },
-  [MyProject.FWDaten]: { label: 'FW-Daten', icon: 'ssid_chart' },
 };
 
 const myProjectNavItems = Object.entries(MY_PROJECT_DEFINITIONS)
@@ -79,20 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <SidebarInfoWidget />
 
         <div className="flex-grow overflow-y-auto overflow-x-hidden -mr-2 pr-2">
-            <h3 className="px-2 mb-3 mt-2 font-bold text-zinc-100">My Favorites</h3>
-            <nav className="space-y-1">
-                {mainNavItems.map((item) => (
-                    <NavButton
-                        key={item.view}
-                        label={item.label}
-                        icon={item.icon}
-                        isActive={activeView === item.view}
-                        onClick={() => onNavigate(item.view)}
-                    />
-                ))}
-            </nav>
-            
-            <h3 className="px-2 mb-3 mt-6 font-bold text-zinc-100">Tools</h3>
+            <h3 className="px-2 mb-3 mt-2 font-bold text-zinc-100">Tools</h3>
             <nav className="space-y-1">
                 {myProjectNavItems.map((project) => (
                     <NavButton

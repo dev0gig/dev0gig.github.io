@@ -1,25 +1,11 @@
 
 export enum View {
-  Apps,
   MyProjects,
-  New,
-  ExternalProjects,
 }
 
 export enum MyProject {
   MemoMea = 'MemoMea',
-  ReadLateR = 'ReadLateR',
-  CollMea = 'CollMea',
   AuriMea = 'AuriMea',
-  FWDaten = 'FWDaten',
-}
-
-export interface AppItem {
-  id: string;
-  iconUrl: string;
-  targetUrl: string;
-  ariaLabel: string;
-  isFavorite: boolean;
 }
 
 export interface JournalEntry {
@@ -36,6 +22,17 @@ export interface TaskItem {
   entryCreatedAt: string;
 }
 
+// FIX: Added missing AppItem, BookmarkItem, Collection, and GenericListItem types to resolve compilation errors.
+// App Management Types
+export interface AppItem {
+  id: string;
+  ariaLabel: string;
+  targetUrl: string;
+  iconUrl: string;
+  isFavorite: boolean;
+}
+
+// ReadLater Types
 export interface BookmarkItem {
   id: string;
   url: string;
@@ -45,27 +42,20 @@ export interface BookmarkItem {
   isArchived: boolean;
 }
 
-export interface ExternalProjectItem {
-  name: string;
-  icon: string;
-  description: string;
-  url: string;
-}
-
-// CollMea Types
+// CollMea (Collections) Types
 export interface GenericListItem {
   id: string;
   title: string;
   completed: boolean;
-  createdAt: string;
+  createdAt: string; // ISO String
 }
 
 export interface Collection {
   id: string;
   name: string;
-  icon: string; // Material symbol name
+  icon: string;
   type: 'GenericList';
-  createdAt: string;
+  createdAt: string; // ISO String
   items: GenericListItem[];
 }
 
@@ -91,28 +81,24 @@ export interface MyProjectTile extends BaseTile {
     projectId: MyProject;
 }
 
+export interface DateTimeTile extends BaseTile {
+    type: 'DATETIME';
+}
+
+// FIX: Added missing tile types to resolve compilation errors.
+export interface ViewLinkTile extends BaseTile {
+    type: 'VIEW_LINK';
+    viewId: View;
+    icon: string;
+    label: string;
+}
+
 export interface AppLinkTile extends BaseTile {
     type: 'APP_LINK';
     app: AppItem;
 }
 
-export interface ViewLinkTile extends BaseTile {
-    type: 'VIEW_LINK';
-    viewId: View;
-    label: string;
-    icon: string;
-}
-
-export interface DateTimeTile extends BaseTile {
-    type: 'DATETIME';
-}
-
-export interface ExternalProjectTile extends BaseTile {
-    type: 'EXTERNAL_PROJECT';
-    project: ExternalProjectItem;
-}
-
-export type Tile = MyProjectTile | AppLinkTile | ViewLinkTile | DateTimeTile | ExternalProjectTile;
+export type Tile = MyProjectTile | DateTimeTile | ViewLinkTile | AppLinkTile;
 
 // FIX: Added missing Flashcard and FlashcardDeck type definitions.
 // Flashcard Types
