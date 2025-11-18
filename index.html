@@ -4,103 +4,369 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Projekte — dev0gig</title>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    :root { --bg:#0f1720; --card:#0b1220; --accent:#7dd3fc; --muted:#9ca3af; }
-    html,body{height:100%;margin:0;font-family:'Ubuntu', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:linear-gradient(180deg,#071021 0%, #081229 100%); color:#e6eef6}
-    .wrap{max-width:1100px;margin:48px auto;padding:24px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-    h1{margin:0;font-size:1.6rem}
-    p.lead{margin:6px 0 0;color:var(--muted)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
-    a.card{display:block;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));text-decoration:none;color:inherit;box-shadow:0 6px 18px rgba(2,6,23,0.6);transition:transform .12s,box-shadow .12s}
-    a.card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(2,6,23,0.7)}
-    .meta{display:flex;align-items:center;gap:12px}
-    .icon{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:#042028}
-    .material-icons{font-size:24px;line-height:1}
-    .title{font-size:1.05rem;margin:0}
-    .desc{margin:6px 0 0;color:var(--muted);font-size:.92rem}
-    footer{margin-top:28px;color:var(--muted);font-size:.9rem}
-    @media (prefers-color-scheme:light){:root{--bg:#f7fafc;--card:#fff}}
+    :root {
+      --bg: #0a0610;
+      --bg-alt: #1a0b2e;
+      --surface: #2d1b69;
+      --surface-alt: #1e0b3a;
+      --accent: #ff007f;
+      --accent-secondary: #00d4ff;
+      --accent-tertiary: #ff073a;
+      --muted: #8892b0;
+      --text-primary: #ffffff;
+      --text-secondary: #a8b2d1;
+      --neon-pink: #ff0080;
+      --neon-blue: #0080ff;
+      --neon-purple: #8000ff;
+      --neon-red: #ff073a;
+      --neon-orange: #ff8c00;
+      --glow-pink: 0 0 20px #ff0080, 0 0 40px #ff0080, 0 0 60px #ff0080, 0 0 80px #ff0080;
+      --glow-blue: 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 60px #00d4ff, 0 0 80px #00d4ff;
+      --glow-red: 0 0 20px #ff073a, 0 0 40px #ff073a, 0 0 60px #ff073a, 0 0 80px #ff073a;
+      --text-shadow: 0 0 8px rgba(255, 0, 128, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
+      --text-shadow-glow: 0 0 15px rgba(255, 0, 128, 0.6), 0 0 30px rgba(0, 212, 255, 0.4), 0 1px 3px rgba(0, 0, 0, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: 'Exo 2', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: var(--bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255, 0, 128, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(0, 212, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 75% 25%, rgba(255, 7, 58, 0.03) 0%, transparent 30%),
+        radial-gradient(circle at 25% 75%, rgba(0, 212, 255, 0.02) 0%, transparent 30%),
+        linear-gradient(90deg, rgba(255, 0, 128, 0.015) 1px, transparent 1px),
+        linear-gradient(rgba(0, 212, 255, 0.015) 1px, transparent 1px);
+      background-size: 200px 200px, 300px 300px, 150px 150px, 180px 180px, 25px 25px, 25px 25px;
+      z-index: -3;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(0deg, transparent 0%, rgba(255, 0, 128, 0.01) 50%, transparent 100%),
+        linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.008) 50%, transparent 100%);
+      animation: scan 4s linear infinite, flicker 0.5s ease-in-out infinite alternate;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    @keyframes flicker {
+      0% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+
+    .wrap{
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      position: relative;
+    }
+
+
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 35px;
+      margin-top: 40px;
+    }
+
+    a.card{
+      display: block;
+      padding: 0;
+      background: var(--surface);
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+      border: 2px solid var(--accent-secondary);
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    a.card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 0, 128, 0.2), rgba(0, 212, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+      z-index: 1;
+    }
+
+    a.card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(255, 0, 128, 0.03) 2px,
+          rgba(255, 0, 128, 0.03) 4px
+        );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    a.card:hover::before {
+      left: 100%;
+    }
+
+    a.card:hover::after {
+      opacity: 1;
+    }
+
+    a.card:hover{
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: var(--glow-blue);
+      border-color: var(--neon-pink);
+      background: linear-gradient(145deg, #351a7a, #2d1b69);
+    }
+
+    .card-content {
+      padding: 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .meta{
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .icon{
+      width: 70px;
+      height: 70px;
+      border-radius: 0;
+      background: linear-gradient(145deg, var(--surface-alt), var(--surface));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-secondary);
+      border: 3px solid var(--neon-red);
+      position: relative;
+      clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+      box-shadow: var(--glow-red);
+    }
+
+    .icon::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      background: linear-gradient(45deg, var(--neon-red), var(--neon-blue), var(--neon-orange));
+      z-index: -1;
+      clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+      animation: iconGlow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes iconGlow {
+      0% { filter: brightness(1) saturate(1); }
+      100% { filter: brightness(1.4) saturate(1.3); }
+    }
+
+    .material-icons{
+      font-size: 32px;
+      line-height: 1;
+      text-shadow: var(--glow-red);
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+
+    .title{
+      font-size: 1.3rem;
+      margin: 0;
+      color: var(--text-primary);
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-shadow: var(--text-shadow);
+      position: relative;
+    }
+
+    .title::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue));
+      transition: width 0.3s ease;
+    }
+
+    a.card:hover .title::after {
+      width: 100%;
+    }
+
+    .desc{
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      text-shadow: var(--text-shadow);
+    }
+
+
+
+    /* Enhanced Cyberpunk glitch effects */
+    @keyframes dataGlitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+    }
+
+    .glitch:hover {
+      animation: dataGlitch 0.4s ease-in-out;
+    }
+
+    /* Holographic overlay effect */
+    .card-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        linear-gradient(45deg, transparent 30%, rgba(255, 0, 128, 0.05) 50%, transparent 70%),
+        linear-gradient(-45deg, transparent 30%, rgba(0, 212, 255, 0.05) 50%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    }
+
+    a.card:hover .card-content::before {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div>
-        <h1>Meine Projekte</h1>
-        <p class="lead">Klicke auf ein Projektname, um es direkt in diesem Tab zu öffnen.</p>
-      </div>
-      <div style="text-align:right;color:var(--muted);font-size:.9rem">dev0gig • Übersicht</div>
-    </header>
 
     <main>
       <div class="grid">
         <a class="card" href="https://aurimea-257795081067.us-west1.run.app">
-          <div class="meta">
-            <div class="icon"><span class="material-icons">code</span></div>
-            <div>
-              <div class="title">Aurimea</div>
-              <div class="desc">Web-App zur Visualisierung / Prototyping kleiner UI-Experimente.</div>
+          <div class="card-content">
+            <div class="meta">
+              <div class="icon"><span class="material-icons">code</span></div>
+              <div>
+                <div class="title">Aurimea</div>
+                <div class="desc">Web-App zur Visualisierung / Prototyping kleiner UI-Experimente.</div>
+              </div>
             </div>
           </div>
         </a>
 
         <a class="card" href="https://cbz-studio-257795081067.us-west1.run.app">
-          <div class="meta">
-            <div class="icon"><span class="material-icons">brush</span></div>
-            <div>
-              <div class="title">CBZ Studio</div>
-              <div class="desc">Tool zum Erstellen und Anzeigen von Comics/Sequenzen (Editor- und Viewer-Funktionen).</div>
+          <div class="card-content">
+            <div class="meta">
+              <div class="icon"><span class="material-icons">brush</span></div>
+              <div>
+                <div class="title">CBZ Studio</div>
+                <div class="desc">Tool zum Erstellen und Anzeigen von Comics/Sequenzen (Editor- und Viewer-Funktionen).</div>
+              </div>
             </div>
           </div>
         </a>
 
         <a class="card" href="https://journaling-257795081067.us-west1.run.app">
-          <div class="meta">
-            <div class="icon"><span class="material-icons">book</span></div>
-            <div>
-              <div class="title">Journaling</div>
-              <div class="desc">Privates Notiz- und Tagebuch-Tool mit einfacher, fokussierter Oberfläche.</div>
+          <div class="card-content">
+            <div class="meta">
+              <div class="icon"><span class="material-icons">book</span></div>
+              <div>
+                <div class="title">Journaling</div>
+                <div class="desc">Privates Notiz- und Tagebuch-Tool mit einfacher, fokussierter Oberfläche.</div>
+              </div>
             </div>
           </div>
         </a>
 
         <a class="card" href="https://my-dashboard-257795081067.us-west1.run.app">
-          <div class="meta">
-            <div class="icon"><span class="material-icons">dashboard</span></div>
-            <div>
-              <div class="title">My Dashboard</div>
-              <div class="desc">Anpassbares Dashboard zur Anzeige von KPIs, Widgets und schnellen Links.</div>
+          <div class="card-content">
+            <div class="meta">
+              <div class="icon"><span class="material-icons">dashboard</span></div>
+              <div>
+                <div class="title">My Dashboard</div>
+                <div class="desc">Anpassbares Dashboard zur Anzeige von KPIs, Widgets und schnellen Links.</div>
+              </div>
             </div>
           </div>
         </a>
 
         <a class="card" href="https://pdf-zeitbest-tigung-generator-257795081067.us-west1.run.app">
-          <div class="meta">
-            <div class="icon"><span class="material-icons">picture_as_pdf</span></div>
-            <div>
-              <div class="title">PDF Zeitbestätigung Generator</div>
-              <div class="desc">Generiert formale PDF-Zeitbestätigungen mit dynamischen Feldern und Download.</div>
+          <div class="card-content">
+            <div class="meta">
+              <div class="icon"><span class="material-icons">picture_as_pdf</span></div>
+              <div>
+                <div class="title">PDF Zeitbestätigung Generator</div>
+                <div class="desc">Generiert formale PDF-Zeitbestätigungen mit dynamischen Feldern und Download.</div>
+              </div>
             </div>
           </div>
         </a>
 
         <a class="card" href="https://unicorn-257795081067.us-west1.run.app">
-          <div class="meta">
-            <div class="icon"><span class="material-icons">emoji_events</span></div>
-            <div>
-              <div class="title">Unicorn</div>
-              <div class="desc">Kleine Demo/Spiel-Ansicht — interaktive Animationen und Spaß zum Ausprobieren.</div>
+          <div class="card-content">
+            <div class="meta">
+              <div class="icon"><span class="material-icons">emoji_events</span></div>
+              <div>
+                <div class="title">Unicorn</div>
+                <div class="desc">Kleine Demo/Spiel-Ansicht — interaktive Animationen und Spaß zum Ausprobieren.</div>
+              </div>
             </div>
           </div>
         </a>
       </div>
 
-      <footer>
-        Hinweis: Alle Links öffnen sich absichtlich im selben Tab. Wenn du ein neues Tab bevorzugst, halte Strg/Cmd beim Klicken.
-      </footer>
     </main>
   </div>
 </body>
