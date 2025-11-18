@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Projekte — dev0gig</title>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root { --bg:#0f1720; --card:#0b1220; --accent:#7dd3fc; --muted:#9ca3af; }
+    html,body{height:100%;margin:0;font-family:'Ubuntu', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:linear-gradient(180deg,#071021 0%, #081229 100%); color:#e6eef6}
+    .wrap{max-width:1100px;margin:48px auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{margin:0;font-size:1.6rem}
+    p.lead{margin:6px 0 0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
+    a.card{display:block;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));text-decoration:none;color:inherit;box-shadow:0 6px 18px rgba(2,6,23,0.6);transition:transform .12s,box-shadow .12s}
+    a.card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(2,6,23,0.7)}
+    .meta{display:flex;align-items:center;gap:12px}
+    .icon{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:#042028}
+    .material-icons{font-size:24px;line-height:1}
+    .title{font-size:1.05rem;margin:0}
+    .desc{margin:6px 0 0;color:var(--muted);font-size:.92rem}
+    footer{margin-top:28px;color:var(--muted);font-size:.9rem}
+    @media (prefers-color-scheme:light){:root{--bg:#f7fafc;--card:#fff}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Meine Projekte</h1>
+        <p class="lead">Klicke auf ein Projektname, um es direkt in diesem Tab zu öffnen.</p>
+      </div>
+      <div style="text-align:right;color:var(--muted);font-size:.9rem">dev0gig • Übersicht</div>
+    </header>
+
+    <main>
+      <div class="grid">
+        <a class="card" href="https://aurimea-257795081067.us-west1.run.app">
+          <div class="meta">
+            <div class="icon"><span class="material-icons">code</span></div>
+            <div>
+              <div class="title">Aurimea</div>
+              <div class="desc">Web-App zur Visualisierung / Prototyping kleiner UI-Experimente.</div>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="https://cbz-studio-257795081067.us-west1.run.app">
+          <div class="meta">
+            <div class="icon"><span class="material-icons">brush</span></div>
+            <div>
+              <div class="title">CBZ Studio</div>
+              <div class="desc">Tool zum Erstellen und Anzeigen von Comics/Sequenzen (Editor- und Viewer-Funktionen).</div>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="https://journaling-257795081067.us-west1.run.app">
+          <div class="meta">
+            <div class="icon"><span class="material-icons">book</span></div>
+            <div>
+              <div class="title">Journaling</div>
+              <div class="desc">Privates Notiz- und Tagebuch-Tool mit einfacher, fokussierter Oberfläche.</div>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="https://my-dashboard-257795081067.us-west1.run.app">
+          <div class="meta">
+            <div class="icon"><span class="material-icons">dashboard</span></div>
+            <div>
+              <div class="title">My Dashboard</div>
+              <div class="desc">Anpassbares Dashboard zur Anzeige von KPIs, Widgets und schnellen Links.</div>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="https://pdf-zeitbest-tigung-generator-257795081067.us-west1.run.app">
+          <div class="meta">
+            <div class="icon"><span class="material-icons">picture_as_pdf</span></div>
+            <div>
+              <div class="title">PDF Zeitbestätigung Generator</div>
+              <div class="desc">Generiert formale PDF-Zeitbestätigungen mit dynamischen Feldern und Download.</div>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="https://unicorn-257795081067.us-west1.run.app">
+          <div class="meta">
+            <div class="icon"><span class="material-icons">emoji_events</span></div>
+            <div>
+              <div class="title">Unicorn</div>
+              <div class="desc">Kleine Demo/Spiel-Ansicht — interaktive Animationen und Spaß zum Ausprobieren.</div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <footer>
+        Hinweis: Alle Links öffnen sich absichtlich im selben Tab. Wenn du ein neues Tab bevorzugst, halte Strg/Cmd beim Klicken.
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
