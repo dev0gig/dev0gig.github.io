@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const a = document.createElement('a');
         a.href = project.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
         a.className = 'project-card';
         const favicon = getFaviconUrl(project.url);
         a.innerHTML = `
@@ -99,6 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function createBookmarkCard(bookmark, index) {
         const a = document.createElement('a');
         a.href = bookmark.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
         a.className = 'card';
         a.dataset.name = bookmark.name.toLowerCase(); // For search
 
