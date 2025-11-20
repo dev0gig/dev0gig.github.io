@@ -7,9 +7,10 @@
     "theme_color": "#1e1e1e",
     "icons": [
         {
-            "src": "dashboard.png",
-            "sizes": "512x512",
-            "type": "image/png"
+            "src": "house.png",
+            "sizes": "192x192 512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }

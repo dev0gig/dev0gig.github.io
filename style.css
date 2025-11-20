@@ -133,6 +133,25 @@ header {
   align-items: center;
 }
 
+footer {
+  text-align: center;
+  padding: 10px 0 0 0;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+footer a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 .header-content {
   text-align: center;
 }
