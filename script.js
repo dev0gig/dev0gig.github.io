@@ -65,7 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function getFaviconUrl(url) {
         try {
             const domain = new URL(url).hostname;
-            return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            const googleFallback = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            return `https://unavatar.io/${domain}?fallback=${encodeURIComponent(googleFallback)}`;
         } catch (e) {
             return ''; // Fallback or empty if invalid URL
         }
