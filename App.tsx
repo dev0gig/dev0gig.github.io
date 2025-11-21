@@ -62,11 +62,11 @@ const App: React.FC = () => {
       }
       setIsLoading(false);
     };
-    
+
     const timer = setTimeout(loadData, 500);
     return () => clearTimeout(timer);
   }, []);
-  
+
   useEffect(() => {
     if (!isLoading) {
       localStorage.setItem('dashboard_projects', JSON.stringify(projects));
@@ -111,7 +111,7 @@ const App: React.FC = () => {
     setItemType('bookmark');
     setIsModalOpen(true);
   }, []);
-  
+
   const onAddNewProject = useCallback(() => {
     setEditingItem(null);
     setItemType('project');
@@ -164,7 +164,7 @@ const App: React.FC = () => {
   const handleImportClick = () => {
     fileInputRef.current?.click();
   };
-  
+
   const handleCloseNotification = () => {
     setNotification({ isOpen: false, title: '', message: '' });
   };
@@ -172,33 +172,33 @@ const App: React.FC = () => {
   const handleConfirmImport = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-        try {
-            const text = e.target?.result;
-            if (typeof text === 'string') {
-                const importedData = JSON.parse(text);
-                if (Array.isArray(importedData.projects) && Array.isArray(importedData.bookmarks)) {
-                    setProjects(importedData.projects.sort((a: Project, b: Project) => a.name.localeCompare(b.name)));
-                    setBookmarks(importedData.bookmarks.sort((a: Project, b: Project) => a.name.localeCompare(b.name)));
-                    setIsEditing(false);
-                    setNotification({
-                        isOpen: true,
-                        title: 'Import Erfolgreich',
-                        message: 'Die Konfiguration wurde erfolgreich importiert.',
-                        actions: [{ label: 'Schließen', onClick: handleCloseNotification, type: 'primary' }]
-                    });
-                } else {
-                    throw new Error('Invalid file format.');
-                }
-            }
-        } catch (error) {
-            console.error('Failed to import file:', error);
+      try {
+        const text = e.target?.result;
+        if (typeof text === 'string') {
+          const importedData = JSON.parse(text);
+          if (Array.isArray(importedData.projects) && Array.isArray(importedData.bookmarks)) {
+            setProjects(importedData.projects.sort((a: Project, b: Project) => a.name.localeCompare(b.name)));
+            setBookmarks(importedData.bookmarks.sort((a: Project, b: Project) => a.name.localeCompare(b.name)));
+            setIsEditing(false);
             setNotification({
-                isOpen: true,
-                title: 'Import Fehlgeschlagen',
-                message: 'Fehler beim Importieren der Datei. Bitte stelle sicher, dass es eine gültige Export-Datei ist.',
-                actions: [{ label: 'Schließen', onClick: handleCloseNotification, type: 'primary' }]
+              isOpen: true,
+              title: 'Import Erfolgreich',
+              message: 'Die Konfiguration wurde erfolgreich importiert.',
+              actions: [{ label: 'Schließen', onClick: handleCloseNotification, type: 'primary' }]
             });
+          } else {
+            throw new Error('Invalid file format.');
+          }
         }
+      } catch (error) {
+        console.error('Failed to import file:', error);
+        setNotification({
+          isOpen: true,
+          title: 'Import Fehlgeschlagen',
+          message: 'Fehler beim Importieren der Datei. Bitte stelle sicher, dass es eine gültige Export-Datei ist.',
+          actions: [{ label: 'Schließen', onClick: handleCloseNotification, type: 'primary' }]
+        });
+      }
     };
     reader.readAsText(file);
   };
@@ -208,24 +208,24 @@ const App: React.FC = () => {
     if (!file) {
       return;
     }
-    
+
     setNotification({
-        isOpen: true,
-        title: 'Import Bestätigen',
-        message: 'Möchtest du wirklich eine neue Konfiguration importieren? Deine aktuellen Daten werden überschrieben.',
-        actions: [
-            { label: 'Abbrechen', onClick: handleCloseNotification, type: 'secondary' },
-            { label: 'Importieren', onClick: () => handleConfirmImport(file), type: 'primary' },
-        ]
+      isOpen: true,
+      title: 'Import Bestätigen',
+      message: 'Möchtest du wirklich eine neue Konfiguration importieren? Deine aktuellen Daten werden überschrieben.',
+      actions: [
+        { label: 'Abbrechen', onClick: handleCloseNotification, type: 'secondary' },
+        { label: 'Importieren', onClick: () => handleConfirmImport(file), type: 'primary' },
+      ]
     });
-    
+
     if (event.target) {
-        event.target.value = '';
+      event.target.value = '';
     }
   };
-  
-  const favoriteItems = useMemo(() => 
-    [...projects, ...bookmarks].filter(item => item.isFavorite).sort((a,b) => a.name.localeCompare(b.name)), 
+
+  const favoriteItems = useMemo(() =>
+    [...projects, ...bookmarks].filter(item => item.isFavorite).sort((a, b) => a.name.localeCompare(b.name)),
     [projects, bookmarks]
   );
 
@@ -233,7 +233,7 @@ const App: React.FC = () => {
     bookmarks.filter(b => !b.isFavorite && b.name.toLowerCase().includes(searchTerm.toLowerCase())),
     [bookmarks, searchTerm]
   );
-  
+
   const regularProjects = useMemo(() =>
     projects.filter(p => !p.isFavorite),
     [projects]
@@ -244,42 +244,42 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen text-gray-100 p-4 sm:p-6 lg:p-8 relative">
-       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-         {isEditing && (
-            <>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".json"
-                className="hidden"
-              />
-              <button
-                onClick={handleImportClick}
-                className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
-                aria-label="Konfiguration importieren"
-                title="Importieren"
-              >
-                <span className="material-symbols-outlined">upload</span>
-              </button>
-              <button
-                onClick={handleExport}
-                className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
-                aria-label="Konfiguration exportieren"
-                title="Exportieren"
-              >
-                <span className="material-symbols-outlined">download</span>
-              </button>
-            </>
-         )}
-         <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
-            aria-label={isEditing ? 'Bearbeitungsmodus beenden' : 'Bearbeitungsmodus starten'}
-         >
-           <span className="material-symbols-outlined">{isEditing ? 'done' : 'edit'}</span>
-         </button>
-       </div>
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        {isEditing && (
+          <>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".json"
+              className="hidden"
+            />
+            <button
+              onClick={handleImportClick}
+              className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
+              aria-label="Konfiguration importieren"
+              title="Importieren"
+            >
+              <span className="material-symbols-outlined">upload</span>
+            </button>
+            <button
+              onClick={handleExport}
+              className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
+              aria-label="Konfiguration exportieren"
+              title="Exportieren"
+            >
+              <span className="material-symbols-outlined">download</span>
+            </button>
+          </>
+        )}
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
+          aria-label={isEditing ? 'Bearbeitungsmodus beenden' : 'Bearbeitungsmodus starten'}
+        >
+          <span className="material-symbols-outlined">{isEditing ? 'done' : 'edit'}</span>
+        </button>
+      </div>
 
       <div>
         <header className="text-center mb-10">
@@ -298,7 +298,7 @@ const App: React.FC = () => {
             {projects.length === 0 && bookmarks.length === 0 ? (
               <div className="text-center py-20 text-slate-400 flex flex-col items-center">
                 <span className="material-symbols-outlined text-6xl text-slate-500 mb-4">
-                    space_dashboard
+                  space_dashboard
                 </span>
                 <h2 className="text-2xl font-bold text-slate-300 mb-2">Dein Dashboard ist leer</h2>
                 <p>Klicke oben rechts auf den <span className="font-bold">Bearbeiten-Button</span>, um deine ersten Projekte und Lesezeichen hinzuzufügen.</p>
@@ -312,13 +312,13 @@ const App: React.FC = () => {
                       {favoriteItems.map(item => {
                         const isProject = projectUrlSet.has(item.url);
                         return isProject ? (
-                           <ProjectCard
-                              key={item.url}
-                              project={item}
-                              isEditing={isEditing}
-                              onDelete={onDeleteProject}
-                              onEdit={onEditProject}
-                              onToggleFavorite={onToggleProject}
+                          <ProjectCard
+                            key={item.url}
+                            project={item}
+                            isEditing={isEditing}
+                            onDelete={onDeleteProject}
+                            onEdit={onEditProject}
+                            onToggleFavorite={onToggleProject}
                           />
                         ) : (
                           <BookmarkCard
@@ -340,7 +340,7 @@ const App: React.FC = () => {
                   <div className="lg:col-span-4 2xl:col-span-5">
                     <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-3">
                       <h2 className="text-2xl font-bold text-slate-300">Lesezeichen</h2>
-                       <div className="relative">
+                      <div className="relative">
                         <input
                           type="text"
                           placeholder="Suchen..."
@@ -362,8 +362,8 @@ const App: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                       {filteredBookmarks.map((bookmark) => (
-                        <BookmarkCard 
-                          key={bookmark.url} 
+                        <BookmarkCard
+                          key={bookmark.url}
                           bookmark={bookmark}
                           isEditing={isEditing}
                           onDelete={onDeleteBookmark}
@@ -372,7 +372,7 @@ const App: React.FC = () => {
                           onCardClick={onClearSearch}
                         />
                       ))}
-                       {isEditing && (
+                      {isEditing && (
                         <button onClick={onAddNewBookmark} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-cyan-400 hover:border-cyan-400 min-h-[68px]">
                           <span className="material-symbols-outlined">add_circle</span>
                           <span className="text-sm font-medium">Neu</span>
@@ -385,8 +385,8 @@ const App: React.FC = () => {
                     <h2 className="text-2xl font-bold text-slate-300 mb-6 border-b border-white/10 pb-3">Meine Projekte</h2>
                     <div className="flex flex-col gap-4">
                       {regularProjects.map((project) => (
-                        <ProjectCard 
-                          key={project.url} 
+                        <ProjectCard
+                          key={project.url}
                           project={project}
                           isEditing={isEditing}
                           onDelete={onDeleteProject}
@@ -395,7 +395,7 @@ const App: React.FC = () => {
                         />
                       ))}
                       {isEditing && (
-                         <button onClick={onAddNewProject} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-cyan-400 hover:border-cyan-400">
+                        <button onClick={onAddNewProject} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-cyan-400 hover:border-cyan-400">
                           <span className="material-symbols-outlined">add_circle</span>
                           <span className="text-sm font-medium">Neues Projekt</span>
                         </button>
@@ -408,7 +408,21 @@ const App: React.FC = () => {
           </main>
         )}
       </div>
-      
+
+      <footer className="mt-12 py-6 text-center border-t border-white/10">
+        <p className="text-slate-400 text-sm">
+          <a
+            href="https://www.flaticon.com/free-icons/house"
+            title="house icons"
+            className="hover:text-cyan-400 transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            House icons created by Freepik - Flaticon
+          </a>
+        </p>
+      </footer>
+
       {isModalOpen && (
         <EditModal
           isOpen={isModalOpen}
