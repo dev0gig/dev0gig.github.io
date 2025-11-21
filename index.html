@@ -1,137 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://icons.iconarchive.com/icons/graphicloads/100-flat/256/home-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🏡⭐ My Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+      body {
+        font-family: 'Ubuntu', sans-serif;
+        background-color: #18181b; /* Neutral Dark Gray */
+      }
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="192x192 512x512" href="house.png">
-  <link rel="apple-touch-icon" href="house.png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
-
-<body>
-
-  <div class="app-container">
-    <header>
-      <div class="header-content">
-        <h1>🏠⭐ My Dashboard</h1>
-        <p>Schneller Zugriff auf meine Werkzeuge und Lesezeichen</p>
-      </div>
-      <div class="header-controls">
-        <button id="exit-edit-btn" onclick="toggleEditMode()">
-          <span class="material-icons" style="font-size: 18px;">close</span> Verlassen
-        </button>
-        <button id="settings-btn" class="icon-btn" aria-label="Settings">
-          <span class="material-icons">settings</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2>Einstellungen</h2>
-
-        <div class="settings-section">
-          <h3>Datenverwaltung</h3>
-          <p class="settings-desc" style="margin-bottom: 15px;">Hier kannst du deine Dashboard-Daten (Projekte &
-            Lesezeichen) exportieren oder eine Sicherung importieren.</p>
-          <div class="settings-actions">
-            <button onclick="importData()" class="btn"><span class="material-icons">upload</span> Import</button>
-            <button onclick="exportData()" class="btn"><span class="material-icons">download</span> Export</button>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>Bearbeitungsmodus</h3>
-          <div class="settings-row">
-            <p class="settings-desc">Aktiviere diesen Modus, um Links hinzuzufügen, zu bearbeiten oder zu löschen.</p>
-            <label class="switch">
-              <input type="checkbox" id="edit-mode-toggle">
-              <span class="slider round"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add/Edit Item Modal -->
-    <div id="edit-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-edit-modal close-modal">&times;</span>
-        <h2 id="modal-title">Element hinzufügen</h2>
-        <form id="edit-form">
-          <input type="hidden" id="edit-id">
-          <input type="hidden" id="edit-type"> <!-- 'project' or 'bookmark' -->
-
-          <div class="form-group">
-            <label for="edit-name">Name</label>
-            <input type="text" id="edit-name" required>
-          </div>
-
-          <div class="form-group">
-            <label for="edit-url">URL</label>
-            <input type="url" id="edit-url" required>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" id="delete-btn" class="btn btn-danger" style="display: none;">Löschen</button>
-            <button type="submit" class="btn btn-primary">Speichern</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div class="main-layout">
-      <!-- Main Content: Favorites, Projects, & Bookmarks -->
-      <div class="content-area">
-
-        <!-- Favorites -->
-        <section>
-          <h2><span class="material-icons">star</span> Favoriten</h2>
-          <div class="favorites-grid">
-            <!-- Favorites will go here -->
-          </div>
-        </section>
-
-        <!-- Projects (Moved from Sidebar) -->
-        <section>
-          <h2><span class="material-icons">folder</span> Meine Projekte</h2>
-          <div class="project-list">
-            <!-- Projects will go here -->
-          </div>
-        </section>
-
-        <!-- Bookmarks -->
-        <section>
-          <div class="section-header-row">
-            <h2><span class="material-icons">bookmark</span> Lesezeichen</h2>
-            <div class="search-bar">
-              <span class="material-icons">search</span>
-              <input type="text" placeholder="Suche...">
-            </div>
-          </div>
-
-          <div class="bookmarks-grid">
-            <!-- Bookmarks will go here -->
-          </div>
-        </section>
-
-      </div>
-    </div>
-
-    <footer>
-      <a href="https://www.flaticon.com/free-icons/house" title="house icons" target="_blank"
-        rel="noopener noreferrer">House icons created by Freepik - Flaticon</a>
-    </footer>
-  </div>
-
-  <script src="script.js"></script>
-</body>
-
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

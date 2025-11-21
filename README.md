@@ -1,27 +1,20 @@
-# dev0gig.github.io
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-Dies ist eine kleine Übersichtsseite für meine selbstgemachten Projekte. Die Datei `index.html` enthält eine aufgeräumte Liste der Projekte — ein Klick lädt das Projekt direkt im selben Tab.
+# Run and deploy your AI Studio app
 
-Projekte:
+This contains everything you need to run your app locally.
 
-- https://aurimea-257795081067.us-west1.run.app — Aurimea
-- https://cbz-studio-257795081067.us-west1.run.app — CBZ Studio
-- https://journaling-257795081067.us-west1.run.app — Journaling
-- https://my-dashboard-257795081067.us-west1.run.app — My Dashboard
-- https://pdf-zeitbest-tigung-generator-257795081067.us-west1.run.app — PDF Zeitbestätigung Generator
-- https://unicorn-257795081067.us-west1.run.app — Unicorn
+View your app in AI Studio: https://ai.studio/apps/drive/1Pdl75X3qgBIXRZbIglSu7W5yORPuZj3g
 
-Benutzung / Vorschau lokal:
+## Run Locally
 
-1. Öffne die Datei `index.html` in einem Browser, oder
-2. Starte einen einfachen HTTP-Server im Projektordner (empfohlen):
+**Prerequisites:**  Node.js
 
-```bash
-python3 -m http.server 8000
-# Dann im Browser öffnen: http://localhost:8000
-```
 
-Hinweis: Die Links sind so konfiguriert, dass sie im gleichen Tab geöffnet werden. Wenn du stattdessen ein neues Tab möchtest, benutze beim Klicken Strg/Cmd.
-
-Wenn du ein anderes Layout, Icons oder zusätzliche Beschreibungen zu jedem Projekt möchtest, sag Bescheid — ich passe die Übersicht gern an.
-
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
