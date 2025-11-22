@@ -5,6 +5,7 @@ import { BookmarkCard } from './components/BookmarkCard';
 import { Spinner } from './components/Spinner';
 import { EditModal } from './components/EditModal';
 import { NotificationModal } from './components/NotificationModal';
+import { SettingsModal } from './components/SettingsModal';
 import { PROJECTS_DATA, BOOKMARKS_DATA } from './constants';
 import type { Project } from './types';
 
@@ -13,11 +14,13 @@ const App: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<Project | null>(null);
   const [itemType, setItemType] = useState<'project' | 'bookmark' | null>(null);
+  const [isCreditsOpen, setIsCreditsOpen] = useState<boolean>(false);
 
   const [notification, setNotification] = useState<{
     isOpen: boolean;
@@ -245,39 +248,19 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen text-gray-100 p-4 sm:p-6 lg:p-8 relative">
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-        {isEditing && (
-          <>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept=".json"
-              className="hidden"
-            />
-            <button
-              onClick={handleImportClick}
-              className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
-              aria-label="Konfiguration importieren"
-              title="Importieren"
-            >
-              <span className="material-symbols-outlined">upload</span>
-            </button>
-            <button
-              onClick={handleExport}
-              className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
-              aria-label="Konfiguration exportieren"
-              title="Exportieren"
-            >
-              <span className="material-symbols-outlined">download</span>
-            </button>
-          </>
-        )}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".json"
+          className="hidden"
+        />
         <button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => setIsSettingsOpen(true)}
           className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
-          aria-label={isEditing ? 'Bearbeitungsmodus beenden' : 'Bearbeitungsmodus starten'}
+          aria-label="Einstellungen öffnen"
         >
-          <span className="material-symbols-outlined">{isEditing ? 'done' : 'edit'}</span>
+          <span className="material-symbols-outlined">settings</span>
         </button>
       </div>
 
@@ -301,7 +284,7 @@ const App: React.FC = () => {
                   space_dashboard
                 </span>
                 <h2 className="text-2xl font-bold text-slate-300 mb-2">Dein Dashboard ist leer</h2>
-                <p>Klicke oben rechts auf den <span className="font-bold">Bearbeiten-Button</span>, um deine ersten Projekte und Lesezeichen hinzuzufügen.</p>
+                <p>Klicke oben rechts auf das <span className="font-bold">Zahnrad-Symbol</span> und aktiviere den Bearbeitungsmodus, um deine ersten Projekte und Lesezeichen hinzuzufügen.</p>
               </div>
             ) : (
               <>
@@ -409,19 +392,7 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <footer className="mt-12 py-6 text-center border-t border-white/10">
-        <p className="text-slate-400 text-sm">
-          <a
-            href="https://www.flaticon.com/free-icons/house"
-            title="house icons"
-            className="hover:text-cyan-400 transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            House icons created by Freepik - Flaticon
-          </a>
-        </p>
-      </footer>
+
 
       {isModalOpen && (
         <EditModal
@@ -433,6 +404,25 @@ const App: React.FC = () => {
         />
       )}
 
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        isEditing={isEditing}
+        onToggleEditing={() => setIsEditing(!isEditing)}
+        onImport={() => {
+          setIsSettingsOpen(false);
+          handleImportClick();
+        }}
+        onExport={() => {
+          setIsSettingsOpen(false);
+          handleExport();
+        }}
+        onShowCredits={() => {
+          setIsSettingsOpen(false);
+          setIsCreditsOpen(true);
+        }}
+      />
+
       <NotificationModal
         isOpen={notification.isOpen}
         title={notification.title}
@@ -440,6 +430,39 @@ const App: React.FC = () => {
         actions={notification.actions}
       >
         <p>{notification.message}</p>
+      </NotificationModal>
+
+      <NotificationModal
+        isOpen={isCreditsOpen}
+        title="Credits"
+        onClose={() => setIsCreditsOpen(false)}
+        actions={[{ label: 'Schließen', onClick: () => setIsCreditsOpen(false), type: 'primary' }]}
+      >
+        <ul className="space-y-3 text-sm">
+          <li>
+            <div className="font-bold text-slate-200">Favicon/PWA Icon</div>
+            <a
+              href="https://www.flaticon.com/free-icons/house"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              House icons created by Freepik - Flaticon
+            </a>
+          </li>
+          <li>
+            <div className="font-bold text-slate-200">Global Font</div>
+            <div>Ubuntu</div>
+          </li>
+          <li>
+            <div className="font-bold text-slate-200">Icons</div>
+            <div>Google Fonts Icons</div>
+          </li>
+          <li>
+            <div className="font-bold text-slate-200">Website Creation</div>
+            <div>Vibe Coding with Gemini AI</div>
+          </li>
+        </ul>
       </NotificationModal>
     </div>
   );
