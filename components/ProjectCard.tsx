@@ -20,9 +20,10 @@ const stringToColor = (str: string): string => {
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const h = hash % 360;
-  const l = 40 + (hash % 30); // Vary lightness between 40% and 70%
-  return `hsl(0, 0%, ${l}%)`;
+  const h = ((hash % 360) + 360) % 360; // ensure positive hue
+  const s = 70; // saturation
+  const l = 40 + (hash % 30); // lightness
+  return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
 
