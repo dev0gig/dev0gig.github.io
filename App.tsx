@@ -255,9 +255,18 @@ const App: React.FC = () => {
           accept=".json"
           className="hidden"
         />
+        {isEditing && (
+          <button
+            onClick={() => setIsEditing(false)}
+            className="backdrop-blur-md bg-slate-500/20 hover:bg-slate-500/30 text-slate-200 hover:text-slate-100 border border-slate-500/30 rounded-full px-4 py-2 transition-all flex items-center gap-2 text-sm font-medium"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span>Bearbeitungsmodus verlassen</span>
+          </button>
+        )}
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-cyan-400 rounded-full p-2 transition-all"
+          className="backdrop-blur-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white rounded-full w-10 h-10 flex items-center justify-center transition-all"
           aria-label="Einstellungen öffnen"
         >
           <span className="material-symbols-outlined">settings</span>
@@ -329,7 +338,7 @@ const App: React.FC = () => {
                           placeholder="Suchen..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="bg-white/5 border border-white/10 rounded-md py-1.5 pl-8 pr-8 text-sm text-slate-300 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                          className="bg-white/5 border border-white/10 rounded-md py-1.5 pl-8 pr-8 text-sm text-slate-300 placeholder-slate-400 focus:ring-2 focus:ring-slate-500 focus:outline-none"
                         />
                         <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">search</span>
                         {searchTerm && (
@@ -356,7 +365,7 @@ const App: React.FC = () => {
                         />
                       ))}
                       {isEditing && (
-                        <button onClick={onAddNewBookmark} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-cyan-400 hover:border-cyan-400 min-h-[68px]">
+                        <button onClick={onAddNewBookmark} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-slate-200 hover:border-slate-200 min-h-[68px]">
                           <span className="material-symbols-outlined">add_circle</span>
                           <span className="text-sm font-medium">Neu</span>
                         </button>
@@ -378,7 +387,7 @@ const App: React.FC = () => {
                         />
                       ))}
                       {isEditing && (
-                        <button onClick={onAddNewProject} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-cyan-400 hover:border-cyan-400">
+                        <button onClick={onAddNewProject} className="group backdrop-blur-md bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-lg p-3 flex items-center justify-center gap-3 transition-all duration-300 text-slate-400 hover:text-slate-200 hover:border-slate-200">
                           <span className="material-symbols-outlined">add_circle</span>
                           <span className="text-sm font-medium">Neues Projekt</span>
                         </button>
@@ -445,7 +454,7 @@ const App: React.FC = () => {
               href="https://www.flaticon.com/free-icons/house"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="text-slate-400 hover:text-slate-300 transition-colors"
             >
               House icons created by Freepik - Flaticon
             </a>

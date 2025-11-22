@@ -38,11 +38,11 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4"
       onClick={onCancel}
     >
-      <div 
+      <div
         className="w-full max-w-md bg-slate-800/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-6"
         onClick={e => e.stopPropagation()}
       >
@@ -57,7 +57,7 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-slate-500 focus:outline-none"
                 required
               />
             </div>
@@ -69,7 +69,7 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
                 name="url"
                 value={url}
                 onChange={e => setUrl(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-slate-500 focus:outline-none"
                 required
                 disabled={!!item} // Disable editing URL for existing items, as it's the unique ID
               />
@@ -83,11 +83,11 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
                   name="icon"
                   value={formData.icon}
                   onChange={handleInputChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-slate-500 focus:outline-none"
                   placeholder="z.B. 'home' oder 'settings'"
                   required
                 />
-                <p className="text-xs text-slate-400 mt-1">Name eines <a href="https://fonts.google.com/icons" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Google Material Symbols</a>.</p>
+                <p className="text-xs text-slate-400 mt-1">Name eines <a href="https://fonts.google.com/icons" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:underline">Google Material Symbols</a>.</p>
               </div>
             )}
           </div>
@@ -101,7 +101,7 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-md text-white font-semibold transition-colors"
+              className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-md text-white font-semibold transition-colors"
             >
               Speichern
             </button>

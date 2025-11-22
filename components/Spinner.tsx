@@ -5,7 +5,7 @@ export const Spinner: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center" aria-label="Loading content">
       <svg
-        className="animate-spin h-10 w-10 text-cyan-400"
+        className="animate-spin h-10 w-10 text-slate-400"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

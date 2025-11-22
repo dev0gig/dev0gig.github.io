@@ -21,9 +21,8 @@ const stringToColor = (str: string): string => {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = hash % 360;
-  // Wir verwenden HSL für eine bessere Farbverteilung und visuell ansprechendere Farben.
-  // Sättigung (s) und Helligkeit (l) werden in einem angenehmen Bereich gehalten.
-  return `hsl(${h}, 70%, 55%)`;
+  const l = 40 + (hash % 30); // Vary lightness between 40% and 70%
+  return `hsl(0, 0%, ${l}%)`;
 };
 
 
@@ -33,7 +32,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = React.memo(({ project, is
     e.stopPropagation();
     action();
   };
-  
+
   const iconColor = stringToColor(project.name);
 
   return (
@@ -42,13 +41,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = React.memo(({ project, is
         href={project.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="h-full backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 flex items-center gap-3 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cyan-500/10"
+        className="h-full backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 flex items-center gap-3 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-white/5"
       >
-        <div 
+        <div
           className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-md"
           style={{ backgroundColor: iconColor.replace('hsl', 'hsla').replace(')', ', 0.15)') }}
         >
-          <span 
+          <span
             className="material-symbols-outlined text-xl"
             style={{ color: iconColor }}
           >
@@ -60,14 +59,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = React.memo(({ project, is
         </h2>
       </a>
       {isEditing && (
-         <div className="absolute top-1 right-1 flex gap-0.5 z-10">
-          <button onClick={(e) => handleActionClick(e, () => onToggleFavorite(project.url))} className="p-1 rounded-full bg-black/30 hover:bg-yellow-500/50 text-yellow-400 hover:text-white transition-colors" title="Favorit">
+        <div className="absolute top-1 right-1 flex gap-0.5 z-10">
+          <button onClick={(e) => handleActionClick(e, () => onToggleFavorite(project.url))} className="p-1 rounded-full bg-black/30 hover:bg-slate-500/50 text-slate-400 hover:text-white transition-colors" title="Favorit">
             <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: `'FILL' ${project.isFavorite ? 1 : 0}` }}>star</span>
           </button>
-          <button onClick={(e) => handleActionClick(e, () => onEdit(project))} className="p-1 rounded-full bg-black/30 hover:bg-blue-500/50 text-blue-400 hover:text-white transition-colors" title="Bearbeiten">
+          <button onClick={(e) => handleActionClick(e, () => onEdit(project))} className="p-1 rounded-full bg-black/30 hover:bg-slate-500/50 text-slate-400 hover:text-white transition-colors" title="Bearbeiten">
             <span className="material-symbols-outlined text-sm">edit</span>
           </button>
-          <button onClick={(e) => handleActionClick(e, () => onDelete(project.url))} className="p-1 rounded-full bg-black/30 hover:bg-red-500/50 text-red-400 hover:text-white transition-colors" title="Löschen">
+          <button onClick={(e) => handleActionClick(e, () => onDelete(project.url))} className="p-1 rounded-full bg-black/30 hover:bg-slate-500/50 text-slate-400 hover:text-white transition-colors" title="Löschen">
             <span className="material-symbols-outlined text-sm">delete</span>
           </button>
         </div>

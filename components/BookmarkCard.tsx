@@ -19,7 +19,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = React.memo(({ bookmark,
     e.stopPropagation();
     action();
   };
-  
+
   const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${bookmark.url}`;
 
   return (
@@ -29,23 +29,23 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = React.memo(({ bookmark,
         target="_blank"
         rel="noopener noreferrer"
         onClick={onCardClick}
-        className="h-full backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 flex items-center gap-3 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cyan-500/10"
+        className="h-full backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 flex items-center gap-3 transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-white/5"
       >
         {!faviconError ? (
-            <img
+          <img
             src={faviconUrl}
             alt={`Favicon für ${bookmark.name}`}
             aria-hidden="true"
             loading="lazy"
             className="w-8 h-8 flex-shrink-0 rounded-md object-contain"
             onError={() => setFaviconError(true)}
-            />
+          />
         ) : (
-            <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-md bg-white/10">
-                <span className="material-symbols-outlined text-xl text-slate-400">
-                    {bookmark.icon || 'public'}
-                </span>
-            </div>
+          <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-md bg-white/10">
+            <span className="material-symbols-outlined text-xl text-slate-400">
+              {bookmark.icon || 'public'}
+            </span>
+          </div>
         )}
         <h2 className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors truncate">
           {bookmark.name}
@@ -53,13 +53,13 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = React.memo(({ bookmark,
       </a>
       {isEditing && (
         <div className="absolute top-1 right-1 flex gap-0.5 z-10">
-          <button onClick={(e) => handleActionClick(e, () => onToggleFavorite(bookmark.url))} className="p-1 rounded-full bg-black/30 hover:bg-yellow-500/50 text-yellow-400 hover:text-white transition-colors" title="Favorit">
+          <button onClick={(e) => handleActionClick(e, () => onToggleFavorite(bookmark.url))} className="p-1 rounded-full bg-black/30 hover:bg-slate-500/50 text-slate-400 hover:text-white transition-colors" title="Favorit">
             <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: `'FILL' ${bookmark.isFavorite ? 1 : 0}` }}>star</span>
           </button>
-          <button onClick={(e) => handleActionClick(e, () => onEdit(bookmark))} className="p-1 rounded-full bg-black/30 hover:bg-blue-500/50 text-blue-400 hover:text-white transition-colors" title="Bearbeiten">
+          <button onClick={(e) => handleActionClick(e, () => onEdit(bookmark))} className="p-1 rounded-full bg-black/30 hover:bg-slate-500/50 text-slate-400 hover:text-white transition-colors" title="Bearbeiten">
             <span className="material-symbols-outlined text-sm">edit</span>
           </button>
-          <button onClick={(e) => handleActionClick(e, () => onDelete(bookmark.url))} className="p-1 rounded-full bg-black/30 hover:bg-red-500/50 text-red-400 hover:text-white transition-colors" title="Löschen">
+          <button onClick={(e) => handleActionClick(e, () => onDelete(bookmark.url))} className="p-1 rounded-full bg-black/30 hover:bg-slate-500/50 text-slate-400 hover:text-white transition-colors" title="Löschen">
             <span className="material-symbols-outlined text-sm">delete</span>
           </button>
         </div>

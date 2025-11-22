@@ -44,12 +44,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* Edit Mode Toggle */}
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5">
                         <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-cyan-400">edit</span>
+                            <span className="material-symbols-outlined text-slate-400">edit</span>
                             <span className="text-slate-200 font-medium">Bearbeitungsmodus</span>
                         </div>
                         <button
                             onClick={onToggleEditing}
-                            className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${isEditing ? 'bg-cyan-500' : 'bg-slate-600'
+                            className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${isEditing ? 'bg-slate-200' : 'bg-slate-600'
                                 }`}
                         >
                             <div
