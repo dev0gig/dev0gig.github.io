@@ -29,7 +29,7 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // For new items, we use the URL as is. For existing ones, we keep the original URL as the ID.
-    onSave({ ...formData, url: item?.url || url });
+    onSave({ ...formData, url });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +71,6 @@ export const EditModal: React.FC<EditModalProps> = ({ isOpen, item, itemType, on
                 onChange={e => setUrl(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-slate-500 focus:outline-none"
                 required
-                disabled={!!item} // Disable editing URL for existing items, as it's the unique ID
               />
             </div>
             {itemType === 'project' && (
