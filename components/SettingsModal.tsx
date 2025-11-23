@@ -1,4 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -19,6 +24,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onExport,
     onShowCredits,
 }) => {
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const [isInstallable, setIsInstallable] = useState(false);
+
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e: Event) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            setDeferredPrompt(e as BeforeInstallPromptEvent);
+            setIsInstallable(true);
+        };
+
+        const handleAppInstalled = () => {
+            // Clear the deferredPrompt so it can be garbage collected
+            setDeferredPrompt(null);
+            setIsInstallable(false);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('appinstalled', handleAppInstalled);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('appinstalled', handleAppInstalled);
+        };
+    }, []);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) {
+            return;
+        }
+
+        // Show the install prompt
+        deferredPrompt.prompt();
+
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+
+        if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        } else {
+            console.log('User dismissed the install prompt');
+        }
+
+        // Clear the deferredPrompt for next time
+        setDeferredPrompt(null);
+        setIsInstallable(false);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -63,6 +117,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {/* Actions */}
                     <div className="space-y-2">
+                        {/* PWA Install Button - only shown when installable */}
+                        {isInstallable && (
+                            <button
+                                onClick={handleInstallClick}
+                                className="w-full flex items-center gap-3 p-3 bg-slate-600/30 hover:bg-slate-600/50 rounded-lg text-slate-100 transition-colors text-left border border-slate-500/30"
+                            >
+                                <span className="material-symbols-outlined text-slate-300">install_mobile</span>
+                                <span className="font-medium">App installieren</span>
+                            </button>
+                        )}
+
                         <button
                             onClick={onImport}
                             className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg text-slate-200 transition-colors text-left"
