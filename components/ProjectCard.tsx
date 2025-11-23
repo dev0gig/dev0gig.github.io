@@ -22,7 +22,7 @@ const stringToColor = (str: string): string => {
   }
   const h = ((hash % 360) + 360) % 360; // ensure positive hue
   const s = 70; // saturation
-  const l = 40 + (hash % 30); // lightness
+  const l = 55; // fixed lightness for consistent brightness
   return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
