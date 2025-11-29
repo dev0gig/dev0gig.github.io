@@ -1,88 +1,84 @@
-<div align="center">
-  <h1>🏡⭐ My Dashboard</h1>
-  <p>
-    Ein persönliches Dashboard für schnellen Zugriff auf deine Projekte und Lesezeichen.
-    <br />
-    Entwickelt mit React, Vite und Tailwind CSS.
-  </p>
-</div>
+# Journal App
 
-## ✨ Features
+Eine moderne, minimalistische Journal-Anwendung mit Angular.
 
-- **Personalisiertes Dashboard**: Verwalte deine Lieblingsprojekte und Lesezeichen an einem Ort.
-- **Grayscale Dark Mode**: Ein elegantes, ablenkungsfreies dunkles Design in Grautönen (Slate).
-- **PWA Support**: Installiere die App als Progressive Web App (PWA) für ein natives Erlebnis auf Desktop und Mobile.
-- **Lokale Datenspeicherung**: Deine Daten werden sicher im LocalStorage deines Browsers gespeichert.
-- **Import & Export**: Sichere deine Konfiguration als JSON-Datei und stelle sie jederzeit wieder her.
-- **Anpassbar**: Füge benutzerdefinierte Icons (Google Material Symbols) hinzu und organisiere deine Links.
-- **Bearbeitungsmodus**: Einfaches Hinzufügen, Bearbeiten und Löschen von Einträgen direkt über die UI.
+## 🚀 Features
 
-## 🛠️ Tech Stack
+- 📝 Tägliche Journal-Einträge
+- 📅 Kalenderansicht mit Markierungen für Einträge
+- 🔍 Suchfunktion
+- 💾 Import/Export von Daten
+- 🌙 Dark Mode
+- 📱 Responsive Design
+- 🔒 Offline-fähig (PWA)
 
-- **Frontend**: [React](https://react.dev/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Google Material Symbols](https://fonts.google.com/icons)
-- **Deployment**: [GitHub Pages](https://pages.github.com/)
-
-## 🚀 Installation & Nutzung
+## 🛠️ Entwicklung
 
 ### Voraussetzungen
 
-- [Node.js](https://nodejs.org/) (Version 16 oder höher empfohlen)
-- npm (wird mit Node.js installiert)
+- Node.js (Version 20 oder höher)
+- npm
 
-### Lokal ausführen
+### Installation
 
-1. **Repository klonen:**
-   ```bash
-   git clone https://github.com/dev0gig/dev0gig.github.io.git
-   cd dev0gig.github.io
-   ```
+```bash
+npm install
+```
 
-2. **Abhängigkeiten installieren:**
-   ```bash
-   npm install
-   ```
+### Development Server
 
-3. **Entwicklungsserver starten:**
-   ```bash
-   npm run dev
-   ```
-   Die App ist nun unter `http://localhost:5173` (oder einem ähnlichen Port) erreichbar.
+```bash
+npm start
+```
 
-### Build & Deployment
+Die Anwendung ist dann unter `http://localhost:4200/` erreichbar.
 
-Das Projekt ist für das Deployment auf **GitHub Pages** konfiguriert.
+### Build
 
-1. **Produktions-Build erstellen:**
-   ```bash
-   npm run build
-   ```
+```bash
+npm run build:prod
+```
 
-2. **Auf GitHub Pages deployen:**
-   ```bash
-   npm run deploy
-   ```
-   Dies erstellt den Build und pusht den Inhalt des `dist`-Ordners in den `gh-pages`-Branch.
+Die Build-Artefakte werden im `dist/` Verzeichnis gespeichert.
 
-## ⚙️ Konfiguration
+## 📦 Deployment
 
-Die Anwendung nutzt `localStorage` zur Speicherung der Daten:
-- `dashboard_projects`: Liste der Projekte
-- `dashboard_bookmarks`: Liste der Lesezeichen
+### GitHub Pages
 
-Du kannst deine Daten über das **Einstellungen-Menü** (Zahnrad-Icon) exportieren und importieren.
+Das Projekt ist für automatisches Deployment auf GitHub Pages konfiguriert.
 
-## 🎨 Credits
+#### Einrichtung
 
-- **Favicon/PWA Icon**: [House icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/house)
-- **Icons**: [Google Material Symbols](https://fonts.google.com/icons)
-- **Font**: [Ubuntu](https://fonts.google.com/specimen/Ubuntu)
-- **Development**: Vibe Coding with Gemini AI
+1. **Repository Settings**:
+   - Gehe zu deinem Repository auf GitHub
+   - Navigiere zu `Settings` → `Pages`
+   - Unter "Build and deployment":
+     - Source: `GitHub Actions`
 
----
+2. **Automatisches Deployment**:
+   - Bei jedem Push auf den `main` Branch wird automatisch ein Deployment ausgelöst
+   - Der GitHub Actions Workflow baut die Anwendung und deployed sie auf GitHub Pages
+   - Die App ist dann unter `https://dev0gig.github.io/` erreichbar
 
-<div align="center">
-  Erstellt mit ❤️ und 🤖
-</div>
+#### Manuelles Deployment
+
+Falls du manuell deployen möchtest:
+
+```bash
+# Build erstellen
+npm run build:prod
+
+# Die Dateien aus dem dist/ Ordner müssen dann auf den gh-pages Branch gepusht werden
+```
+
+## 📝 Technologie-Stack
+
+- **Framework**: Angular 21
+- **Styling**: Tailwind CSS
+- **Icons**: Google Material Symbols
+- **Build Tool**: Angular CLI
+- **Deployment**: GitHub Pages
+
+## 📄 Lizenz
+
+Dieses Projekt ist privat.
