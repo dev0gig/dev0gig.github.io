@@ -1,0 +1,161 @@
+<div class="min-h-screen bg-dash-bg text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 grid-rows-[auto_1fr] gap-4 h-[calc(100vh-4rem)]">
+
+        <!-- Header -->
+        <header
+            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-4 rounded-sm">
+            <div class="flex items-center gap-4">
+                <!-- Apps Launcher -->
+                <div class="relative">
+                    <button (click)="toggleAppsModal()"
+                        class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                        title="Apps">
+                        <span class="material-symbols-sharp text-xl">apps</span>
+                    </button>
+
+                    <!-- Apps Modal -->
+                    <div *ngIf="showAppsModal()"
+                        class="absolute top-12 left-0 z-50 bg-dash-card border border-dash-border p-4 rounded-sm shadow-2xl grid grid-cols-3 gap-4 w-64">
+                        <!-- YouTube -->
+                        <a href="https://youtube.com" target="_blank"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="YouTube">
+                            <span class="material-symbols-sharp text-2xl">smart_display</span>
+                            <span class="text-[10px] font-medium">YouTube</span>
+                        </a>
+                        <!-- Google Keep -->
+                        <a href="https://keep.google.com" target="_blank"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Google Keep">
+                            <span class="material-symbols-sharp text-2xl">lightbulb</span>
+                            <span class="text-[10px] font-medium">Keep</span>
+                        </a>
+                        <!-- Outlook -->
+                        <a href="https://outlook.live.com" target="_blank"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Outlook">
+                            <span class="material-symbols-sharp text-2xl">alternate_email</span>
+                            <span class="text-[10px] font-medium">Outlook</span>
+                        </a>
+                        <!-- Gmail -->
+                        <a href="https://mail.google.com" target="_blank"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Gmail">
+                            <span class="material-symbols-sharp text-2xl">mail</span>
+                            <span class="text-[10px] font-medium">Gmail</span>
+                        </a>
+                        <!-- Google Drive -->
+                        <a href="https://drive.google.com" target="_blank"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Google Drive">
+                            <span class="material-symbols-sharp text-2xl">add_to_drive</span>
+                            <span class="text-[10px] font-medium">Drive</span>
+                        </a>
+                        <!-- Google Calendar -->
+                        <a href="https://calendar.google.com" target="_blank"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Google Calendar">
+                            <span class="material-symbols-sharp text-2xl">calendar_month</span>
+                            <span class="text-[10px] font-medium">Kalender</span>
+                        </a>
+                        <!-- Settings -->
+                        <button (click)="toggleSettingsModal()"
+                            class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Settings">
+                            <span class="material-symbols-sharp text-2xl">settings</span>
+                            <span class="text-[10px] font-medium">Settings</span>
+                        </button>
+
+                        <!-- Install PWA -->
+                        <button *ngIf="canInstall()" (click)="installPwa()"
+                            class="aspect-square bg-dash-bg/50 hover:bg-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                            title="Install App">
+                            <span class="material-symbols-sharp text-2xl">download</span>
+                            <span class="text-[10px] font-medium">Install</span>
+                        </button>
+                    </div>
+
+                    <!-- Backdrop -->
+                    <div *ngIf="showAppsModal()" (click)="toggleAppsModal()" class="fixed inset-0 z-40"></div>
+
+                    <!-- Settings Modal -->
+                    <div *ngIf="showSettingsModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleSettingsModal()">
+                        </div>
+                        <div
+                            class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-bold text-dash-text">Settings</h2>
+                                <button (click)="toggleSettingsModal()"
+                                    class="text-dash-text-dim hover:text-white transition-colors">
+                                    <span class="material-symbols-sharp">close</span>
+                                </button>
+                            </div>
+
+                            <div class="flex flex-col gap-3">
+                                <button (click)="onExport()"
+                                    class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                                    <span class="material-symbols-sharp">download</span>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm">Export Data</span>
+                                        <span class="text-xs opacity-70">Download backup as ZIP</span>
+                                    </div>
+                                </button>
+
+                                <button (click)="fileInput.click()"
+                                    class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                                    <span class="material-symbols-sharp">upload</span>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm">Import Data</span>
+                                        <span class="text-xs opacity-70">Restore from ZIP backup</span>
+                                    </div>
+                                </button>
+                                <input #fileInput type="file" accept=".zip" class="hidden" (change)="onImport($event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Journal Dashboard</h1>
+            </div>
+            <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
+                <div>STATUS
+                    <span [class.text-dash-accent]="isOnline()" [class.text-red-500]="!isOnline()">
+                        {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
+                    </span>
+                </div>
+                <div>ENTRIES <span class="text-white">{{ journal.entries().length }}</span></div>
+            </div>
+        </header>
+
+        <!-- Sidebar / Left Column (Calendar & Stats) -->
+        <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4">
+            <!-- Calendar Widget -->
+            <div class="bg-dash-card border border-dash-border p-6 rounded-sm flex flex-col aspect-square w-full">
+                <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-4 tracking-wider">Calendar</h2>
+                <app-calendar class="flex-1"></app-calendar>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="md:col-span-8 lg:col-span-9 flex flex-col gap-4 h-full overflow-hidden">
+            <!-- Search & Filter Bar -->
+            <div class="bg-dash-card border border-dash-border p-4 rounded-sm flex items-center gap-4">
+                <app-search class="flex-1"></app-search>
+            </div>
+
+            <!-- Entry List -->
+            <div
+                class="bg-dash-card border border-dash-border p-0 rounded-sm flex-1 overflow-hidden flex flex-col relative">
+                <div class="absolute top-0 right-0 p-4 z-10">
+                    <div class="flex gap-2">
+                        <span class="w-2 h-2 rounded-full bg-red-500/20"></span>
+                        <span class="w-2 h-2 rounded-full bg-yellow-500/20"></span>
+                        <span class="w-2 h-2 rounded-full bg-green-500/20"></span>
+                    </div>
+                </div>
+                <app-entry-list class="h-full"></app-entry-list>
+            </div>
+        </main>
+
+    </div>
+</div>

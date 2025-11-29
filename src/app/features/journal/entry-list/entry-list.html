@@ -1,0 +1,49 @@
+<div class="flex flex-col h-full">
+    <!-- Input Area (Fixed at top) -->
+    <div class="p-6 border-b border-dash-border bg-dash-card z-10">
+        <div class="relative">
+            <textarea [(ngModel)]="newEntryText" (keydown)="onKeyDown($event)"
+                class="w-full bg-dash-bg/50 border border-dash-border rounded-sm p-4 text-dash-text placeholder-dash-text-dim/50 h-24 resize-none focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none"
+                placeholder="What's on your mind today?" autofocus></textarea>
+            <div class="absolute bottom-3 right-3 text-[10px] text-dash-text-dim bg-dash-bg/80 px-2 py-1 rounded">
+                CTRL+ENTER to save
+            </div>
+        </div>
+    </div>
+
+    <!-- Entries (Scrollable) -->
+    <div class="flex-1 overflow-y-auto flex flex-col custom-scrollbar">
+        <div class="p-6 flex flex-col gap-4">
+            @for (entry of filteredEntries(); track entry.id) {
+            <div
+                class="bg-dash-bg/30 border border-dash-border/50 rounded-sm p-4 hover:border-dash-accent/50 transition-all group relative">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy •
+                        HH:mm':'Europe/Vienna' }}</span>
+                    <button class="text-dash-text-dim hover:text-red-400 transition-opacity"
+                        (click)="deleteEntry(entry.id)" title="Delete">
+                        <span class="material-symbols-sharp text-sm">delete</span>
+                    </button>
+                </div>
+
+                @if (editingEntryId === entry.id) {
+                <textarea [(ngModel)]="editEntryText" (keydown)="onEditKeyDown($event)"
+                    class="w-full bg-dash-bg/50 border border-dash-border rounded-sm p-2 text-sm text-dash-text h-72 resize-none focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none"
+                    autofocus></textarea>
+                <div class="text-[10px] text-dash-text-dim mt-1">CTRL+ENTER to save, ESC to cancel</div>
+                } @else {
+                <div (click)="startEditing(entry)"
+                    class="whitespace-pre-wrap text-sm text-dash-text/90 leading-relaxed cursor-pointer hover:text-dash-text transition-colors">
+                    {{ entry.text }}
+                </div>
+                }
+            </div>
+            } @empty {
+            <div class="flex flex-col items-center justify-center h-full text-dash-text-dim opacity-50 py-12">
+                <span class="material-symbols-sharp text-4xl mb-2">inbox</span>
+                <span>No entries found</span>
+            </div>
+            }
+        </div>
+    </div>
+</div>
