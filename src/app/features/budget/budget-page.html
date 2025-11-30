@@ -242,226 +242,353 @@
                         class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent text-sm">
                 </div>
 
+                <!-- View Toggle -->
+                <div class="flex bg-dash-bg p-1 rounded-sm border border-dash-border">
+                    <button (click)="toggleViewMode('transactions')"
+                        [class]="viewMode() === 'transactions' ? 'bg-dash-card text-white shadow-sm' : 'text-dash-text-dim hover:text-white'"
+                        class="px-3 py-1.5 rounded-sm text-xs font-medium transition-all flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">list</span>
+                        Liste
+                    </button>
+                    <button (click)="toggleViewMode('statistics')"
+                        [class]="viewMode() === 'statistics' ? 'bg-dash-card text-white shadow-sm' : 'text-dash-text-dim hover:text-white'"
+                        class="px-3 py-1.5 rounded-sm text-xs font-medium transition-all flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">pie_chart</span>
+                        Statistik
+                    </button>
+                </div>
+
                 <div class="flex-1 flex gap-4 w-full justify-end">
                     <button (click)="toggleTransactionModal()"
                         class="bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors flex items-center justify-center gap-2 flex-1 md:flex-none">
                         <span class="material-symbols-sharp text-lg">add</span>
                         <span class="hidden sm:inline">Transaktion</span>
                     </button>
-                    <!-- Account and Category buttons removed from here -->
                 </div>
             </div>
 
-            <!-- Transactions List -->
-            <div
-                class="bg-dash-card border border-dash-border p-0 rounded-sm flex-1 overflow-hidden flex flex-col relative">
+            <!-- Content Area -->
+            <div class="flex-1 overflow-hidden flex flex-col relative">
 
-                <!-- List Header -->
+                <!-- Transactions View -->
+                @if (viewMode() === 'transactions') {
                 <div
-                    class="grid grid-cols-12 gap-4 p-4 border-b border-dash-border text-xs font-bold text-dash-text-dim uppercase tracking-wider">
-                    <div class="col-span-2">Datum</div>
-                    <div class="col-span-4">Titel</div>
-                    <div class="col-span-2">Konto</div>
-                    <div class="col-span-2">Kategorie</div>
-                    <div class="col-span-2 text-right">Betrag</div>
-                </div>
+                    class="bg-dash-card border border-dash-border p-0 rounded-sm flex-1 overflow-hidden flex flex-col h-full">
+                    <!-- List Header -->
+                    <div
+                        class="grid grid-cols-12 gap-4 p-4 border-b border-dash-border text-xs font-bold text-dash-text-dim uppercase tracking-wider">
+                        <div class="col-span-2">Datum</div>
+                        <div class="col-span-4">Titel</div>
+                        <div class="col-span-2">Konto</div>
+                        <div class="col-span-2">Kategorie</div>
+                        <div class="col-span-2 text-right">Betrag</div>
+                    </div>
 
-                <div class="h-full overflow-y-auto">
-                    <div class="divide-y divide-dash-border">
-                        @if (getSortedTransactions().length === 0) {
-                        <div class="text-center py-12 text-dash-text-dim">
-                            <span class="material-symbols-sharp text-4xl opacity-50 block mb-2">receipt_long</span>
-                            <p>Keine Transaktionen vorhanden</p>
-                        </div>
-                        } @else {
-                        @for (transaction of getSortedTransactions(); track transaction.id) {
-                        <div class="flex flex-col border-b border-dash-border last:border-0">
-                            <div (click)="toggleExpansion(transaction.id)"
-                                class="grid grid-cols-12 gap-4 p-4 hover:bg-dash-card-hover transition-colors items-center text-sm cursor-pointer"
-                                [class.bg-dash-card-hover]="expandedTransactionId() === transaction.id">
-                                <!-- Date -->
-                                <div class="col-span-2 text-dash-text-dim font-mono text-xs">
-                                    {{ formatDate(transaction.date) }}
-                                </div>
-
-                                <!-- Title -->
-                                <div class="col-span-4 font-medium text-dash-text truncate"
-                                    title="{{ transaction.description }}">
-                                    {{ transaction.description }}
-                                </div>
-
-                                <!-- Account -->
-                                <div class="col-span-2 text-dash-text-dim truncate">
-                                    {{ getAccountById(transaction.account)?.name || 'Unbekannt' }}
-                                    <span *ngIf="transaction.type === 'transfer'" class="text-xs text-dash-accent">
-                                        → {{ getAccountById(transaction.toAccount!)?.name }}
-                                    </span>
-                                </div>
-
-                                <!-- Category -->
-                                <div class="col-span-2 flex items-center gap-2 text-dash-text-dim truncate">
-                                    <span class="truncate">{{ getCategoryById(transaction.category)?.name ||
-                                        'Unbekannt'
-                                        }}</span>
-                                </div>
-
-                                <!-- Amount -->
-                                <div class="col-span-2 text-right font-mono font-bold"
-                                    [class.text-green-500]="transaction.type === 'income'"
-                                    [class.text-red-500]="transaction.type === 'expense'"
-                                    [class.text-blue-400]="transaction.type === 'transfer'">
-                                    <span *ngIf="transaction.type === 'transfer'"
-                                        class="material-symbols-sharp text-base align-middle mr-1">sync_alt</span>
-                                    {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense'
-                                    ? '-' : '')
-                                    }}{{ formatCurrency(transaction.amount) }}
-                                </div>
+                    <div class="h-full overflow-y-auto">
+                        <div class="divide-y divide-dash-border">
+                            @if (getSortedTransactions().length === 0) {
+                            <div class="text-center py-12 text-dash-text-dim">
+                                <span class="material-symbols-sharp text-4xl opacity-50 block mb-2">receipt_long</span>
+                                <p>Keine Transaktionen vorhanden</p>
                             </div>
-
-                            <!-- Expanded Edit Form -->
-                            <div *ngIf="expandedTransactionId() === transaction.id"
-                                class="px-4 pb-4 bg-dash-card-hover">
-                                <form (submit)="onInlineTransactionEdit($event, transaction.id)" class="space-y-4">
-                                    <!-- Type Selection -->
-                                    <div>
-                                        <label
-                                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
-                                        <div class="flex gap-2">
-                                            <button type="button"
-                                                (click)="setInlineTransactionType(transaction.id, 'expense')"
-                                                [disabled]="!isEditingInline(transaction.id)"
-                                                [class]="getInlineTransactionType(transaction.id) === 'expense' ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
-                                                Ausgabe
-                                            </button>
-                                            <button type="button"
-                                                (click)="setInlineTransactionType(transaction.id, 'income')"
-                                                [disabled]="!isEditingInline(transaction.id)"
-                                                [class]="getInlineTransactionType(transaction.id) === 'income' ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
-                                                Einnahme
-                                            </button>
-                                            <button type="button"
-                                                (click)="setInlineTransactionType(transaction.id, 'transfer')"
-                                                [disabled]="!isEditingInline(transaction.id)"
-                                                [class]="getInlineTransactionType(transaction.id) === 'transfer' ? 'flex-1 bg-blue-500/20 text-blue-500 border border-blue-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
-                                                Transfer
-                                            </button>
-                                        </div>
+                            } @else {
+                            @for (transaction of getSortedTransactions(); track transaction.id) {
+                            <div class="flex flex-col border-b border-dash-border last:border-0">
+                                <div (click)="toggleExpansion(transaction.id)"
+                                    class="grid grid-cols-12 gap-4 p-4 hover:bg-dash-card-hover transition-colors items-center text-sm cursor-pointer"
+                                    [class.bg-dash-card-hover]="expandedTransactionId() === transaction.id">
+                                    <!-- Date -->
+                                    <div class="col-span-2 text-dash-text-dim font-mono text-xs">
+                                        {{ formatDate(transaction.date) }}
                                     </div>
 
-                                    <!-- Amount and Description -->
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label
-                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
-                                                (€)</label>
-                                            <input type="number" name="amount" step="0.01" required
-                                                [value]="transaction.amount"
-                                                [disabled]="!isEditingInline(transaction.id)"
-                                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                                                placeholder="0,00">
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Datum</label>
-                                            <input type="date" name="date" required [value]="transaction.date"
-                                                [disabled]="!isEditingInline(transaction.id)"
-                                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
-                                        </div>
+                                    <!-- Title -->
+                                    <div class="col-span-4 font-medium text-dash-text truncate"
+                                        title="{{ transaction.description }}">
+                                        {{ transaction.description }}
                                     </div>
 
-                                    <div>
-                                        <label
-                                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Beschreibung</label>
-                                        <input type="text" name="description" required [value]="transaction.description"
-                                            [disabled]="!isEditingInline(transaction.id)"
-                                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                                            placeholder="z.B. Einkauf bei Supermarkt">
+                                    <!-- Account -->
+                                    <div class="col-span-2 text-dash-text-dim truncate">
+                                        {{ getAccountById(transaction.account)?.name || 'Unbekannt' }}
+                                        <span *ngIf="transaction.type === 'transfer'" class="text-xs text-dash-accent">
+                                            → {{ getAccountById(transaction.toAccount!)?.name }}
+                                        </span>
                                     </div>
 
                                     <!-- Category -->
-                                    <div>
-                                        <label
-                                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
-                                        <select name="category" required [value]="transaction.category"
-                                            [disabled]="!isEditingInline(transaction.id)"
-                                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
-                                            <option value="">Kategorie wählen</option>
-                                            @for (category of categories(); track category.id) {
-                                            <option [value]="category.id">{{ category.name }}</option>
-                                            }
-                                        </select>
+                                    <div class="col-span-2 flex items-center gap-2 text-dash-text-dim truncate">
+                                        <span class="truncate">{{ getCategoryById(transaction.category)?.name ||
+                                            'Unbekannt'
+                                            }}</span>
                                     </div>
 
-                                    <!-- Account(s) -->
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <!-- Amount -->
+                                    <div class="col-span-2 text-right font-mono font-bold"
+                                        [class.text-green-500]="transaction.type === 'income'"
+                                        [class.text-red-500]="transaction.type === 'expense'"
+                                        [class.text-blue-400]="transaction.type === 'transfer'">
+                                        <span *ngIf="transaction.type === 'transfer'"
+                                            class="material-symbols-sharp text-base align-middle mr-1">sync_alt</span>
+                                        {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense'
+                                        ? '-' : '')
+                                        }}{{ formatCurrency(transaction.amount) }}
+                                    </div>
+                                </div>
+
+                                <!-- Expanded Edit Form -->
+                                <div *ngIf="expandedTransactionId() === transaction.id"
+                                    class="px-4 pb-4 bg-dash-card-hover">
+                                    <form (submit)="onInlineTransactionEdit($event, transaction.id)" class="space-y-4">
+                                        <!-- Type Selection -->
                                         <div>
                                             <label
-                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
-                                                {{ getInlineTransactionType(transaction.id) === 'transfer' ?
-                                                'Von Konto'
-                                                : 'Konto' }}
-                                            </label>
-                                            <select name="account" required [value]="transaction.account"
-                                                [disabled]="!isEditingInline(transaction.id)"
-                                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <option value="">Wählen</option>
-                                                @for (account of accounts(); track account.id) {
-                                                <option [value]="account.id">{{ account.name }}</option>
-                                                }
-                                            </select>
+                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                                            <div class="flex gap-2">
+                                                <button type="button"
+                                                    (click)="setInlineTransactionType(transaction.id, 'expense')"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    [class]="getInlineTransactionType(transaction.id) === 'expense' ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                                    Ausgabe
+                                                </button>
+                                                <button type="button"
+                                                    (click)="setInlineTransactionType(transaction.id, 'income')"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    [class]="getInlineTransactionType(transaction.id) === 'income' ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                                    Einnahme
+                                                </button>
+                                                <button type="button"
+                                                    (click)="setInlineTransactionType(transaction.id, 'transfer')"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    [class]="getInlineTransactionType(transaction.id) === 'transfer' ? 'flex-1 bg-blue-500/20 text-blue-500 border border-blue-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                                    Transfer
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <div *ngIf="getInlineTransactionType(transaction.id) === 'transfer'">
+                                        <!-- Amount and Description -->
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
+                                                    (€)</label>
+                                                <input type="number" name="amount" step="0.01" required
+                                                    [value]="transaction.amount"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    placeholder="0,00">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Datum</label>
+                                                <input type="date" name="date" required [value]="transaction.date"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                            </div>
+                                        </div>
+
+                                        <div>
                                             <label
-                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
-                                                Konto</label>
-                                            <select name="toAccount" required [value]="transaction.toAccount"
+                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Beschreibung</label>
+                                            <input type="text" name="description" required
+                                                [value]="transaction.description"
+                                                [disabled]="!isEditingInline(transaction.id)"
+                                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                                                placeholder="z.B. Einkauf bei Supermarkt">
+                                        </div>
+
+                                        <!-- Category -->
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
+                                            <select name="category" required [value]="transaction.category"
                                                 [disabled]="!isEditingInline(transaction.id)"
                                                 class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <option value="">Wählen</option>
-                                                @for (account of accounts(); track account.id) {
-                                                <option [value]="account.id">{{ account.name }}</option>
+                                                <option value="">Kategorie wählen</option>
+                                                @for (category of categories(); track category.id) {
+                                                <option [value]="category.id">{{ category.name }}</option>
                                                 }
                                             </select>
                                         </div>
-                                    </div>
 
-                                    <!-- Action Buttons -->
-                                    <div class="flex justify-end gap-2 pt-2">
-                                        <button type="button" *ngIf="!isEditingInline(transaction.id)"
-                                            (click)="toggleInlineEdit(transaction.id); $event.stopPropagation()"
-                                            class="px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
-                                            <span class="material-symbols-sharp text-sm">edit</span>
-                                            Bearbeiten
-                                        </button>
+                                        <!-- Account(s) -->
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
+                                                    {{ getInlineTransactionType(transaction.id) === 'transfer' ?
+                                                    'Von Konto'
+                                                    : 'Konto' }}
+                                                </label>
+                                                <select name="account" required [value]="transaction.account"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    <option value="">Wählen</option>
+                                                    @for (account of accounts(); track account.id) {
+                                                    <option [value]="account.id">{{ account.name }}</option>
+                                                    }
+                                                </select>
+                                            </div>
 
-                                        <button type="button" *ngIf="isEditingInline(transaction.id)"
-                                            (click)="cancelInlineEdit(transaction.id); $event.stopPropagation()"
-                                            class="px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text-dim hover:text-white text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
-                                            <span class="material-symbols-sharp text-sm">close</span>
-                                            Abbrechen
-                                        </button>
+                                            <div *ngIf="getInlineTransactionType(transaction.id) === 'transfer'">
+                                                <label
+                                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
+                                                    Konto</label>
+                                                <select name="toAccount" required [value]="transaction.toAccount"
+                                                    [disabled]="!isEditingInline(transaction.id)"
+                                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    <option value="">Wählen</option>
+                                                    @for (account of accounts(); track account.id) {
+                                                    <option [value]="account.id">{{ account.name }}</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                        <button type="submit" *ngIf="isEditingInline(transaction.id)"
-                                            class="px-3 py-1 bg-dash-accent hover:bg-dash-accent-hover text-white text-xs rounded-sm transition-colors flex items-center gap-1">
-                                            <span class="material-symbols-sharp text-sm">save</span>
-                                            Speichern
-                                        </button>
+                                        <!-- Action Buttons -->
+                                        <div class="flex justify-end gap-2 pt-2">
+                                            <button type="button" *ngIf="!isEditingInline(transaction.id)"
+                                                (click)="toggleInlineEdit(transaction.id); $event.stopPropagation()"
+                                                class="px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                                                <span class="material-symbols-sharp text-sm">edit</span>
+                                                Bearbeiten
+                                            </button>
 
-                                        <button type="button"
-                                            (click)="deleteTransaction(transaction.id); $event.stopPropagation()"
-                                            class="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs rounded-sm border border-red-500/30 transition-colors flex items-center gap-1">
-                                            <span class="material-symbols-sharp text-sm">delete</span>
-                                            Löschen
-                                        </button>
-                                    </div>
-                                </form>
+                                            <button type="button" *ngIf="isEditingInline(transaction.id)"
+                                                (click)="cancelInlineEdit(transaction.id); $event.stopPropagation()"
+                                                class="px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text-dim hover:text-white text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                                                <span class="material-symbols-sharp text-sm">close</span>
+                                                Abbrechen
+                                            </button>
+
+                                            <button type="submit" *ngIf="isEditingInline(transaction.id)"
+                                                class="px-3 py-1 bg-dash-accent hover:bg-dash-accent-hover text-white text-xs rounded-sm transition-colors flex items-center gap-1">
+                                                <span class="material-symbols-sharp text-sm">save</span>
+                                                Speichern
+                                            </button>
+
+                                            <button type="button"
+                                                (click)="deleteTransaction(transaction.id); $event.stopPropagation()"
+                                                class="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs rounded-sm border border-red-500/30 transition-colors flex items-center gap-1">
+                                                <span class="material-symbols-sharp text-sm">delete</span>
+                                                Löschen
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
+                            }
+                            }
                         </div>
-                        }
-                        }
                     </div>
                 </div>
+                }
+
+                <!-- Statistics View -->
+                @if (viewMode() === 'statistics') {
+                <div class="flex flex-col gap-6 h-full overflow-y-auto p-1">
+
+                    <!-- Top Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-dash-card border border-dash-border p-6 rounded-sm">
+                            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2">
+                                Gesamteinnahmen</h3>
+                            <div class="text-2xl font-bold text-green-500">{{ formatCurrency(getStats().income) }}</div>
+                        </div>
+                        <div class="bg-dash-card border border-dash-border p-6 rounded-sm">
+                            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2">
+                                Gesamtausgaben</h3>
+                            <div class="text-2xl font-bold text-red-500">{{ formatCurrency(getStats().expenses) }}</div>
+                        </div>
+                        <div class="bg-dash-card border border-dash-border p-6 rounded-sm">
+                            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2">Bilanz</h3>
+                            <div class="text-2xl font-bold"
+                                [class.text-green-500]="getStats().income - getStats().expenses >= 0"
+                                [class.text-red-500]="getStats().income - getStats().expenses < 0">
+                                {{ formatCurrency(getStats().income - getStats().expenses) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <!-- Expenses by Category (Pie) -->
+                        <div class="bg-dash-card border border-dash-border p-6 rounded-sm flex flex-col">
+                            <h3 class="text-sm font-bold text-dash-text mb-6">Ausgaben nach Kategorie</h3>
+
+                            <div class="flex flex-col md:flex-row items-center gap-8">
+                                <!-- Pie Chart -->
+                                <div class="relative w-48 h-48 rounded-full shrink-0"
+                                    [style.background]="getPieChartGradient()">
+                                    <div class="absolute inset-4 bg-dash-card rounded-full"></div>
+                                </div>
+
+                                <!-- Legend -->
+                                <div class="flex-1 w-full">
+                                    <div class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-2">
+                                        @for (stat of getCategoryStats(); track stat.name) {
+                                        <div class="flex items-center justify-between text-sm">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-3 h-3 rounded-full" [style.background-color]="stat.color">
+                                                </div>
+                                                <span class="text-dash-text">{{ stat.name }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <span class="text-dash-text font-mono">{{ formatCurrency(stat.amount)
+                                                    }}</span>
+                                                <span class="text-dash-text-dim text-xs w-12 text-right">{{
+                                                    stat.percentage | number:'1.0-1' }}%</span>
+                                            </div>
+                                        </div>
+                                        }
+                                        @if (getCategoryStats().length === 0) {
+                                        <div class="text-dash-text-dim text-sm italic">Keine Ausgaben in diesem
+                                            Zeitraum.</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trend (Line) -->
+                        <div class="bg-dash-card border border-dash-border p-6 rounded-sm flex flex-col">
+                            <h3 class="text-sm font-bold text-dash-text mb-6">Trend des Geldes (Monat)</h3>
+
+                            <div class="flex-1 min-h-[200px] relative flex items-end">
+                                @if (getDailyTrend().length > 0) {
+                                <svg class="w-full h-full overflow-visible" viewBox="0 0 100 50"
+                                    preserveAspectRatio="none">
+                                    <!-- Grid lines (optional) -->
+                                    <line x1="0" y1="0" x2="100" y2="0" stroke="#333" stroke-width="0.1"
+                                        stroke-dasharray="2" />
+                                    <line x1="0" y1="25" x2="100" y2="25" stroke="#333" stroke-width="0.1"
+                                        stroke-dasharray="2" />
+                                    <line x1="0" y1="50" x2="100" y2="50" stroke="#333" stroke-width="0.1"
+                                        stroke-dasharray="2" />
+
+                                    <!-- Trend Line -->
+                                    <polyline [attr.points]="getTrendPoints()" fill="none" stroke="#3b82f6"
+                                        stroke-width="1" vector-effect="non-scaling-stroke" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                } @else {
+                                <div
+                                    class="w-full h-full flex items-center justify-center text-dash-text-dim text-sm italic">
+                                    Keine Daten für Trend verfügbar.
+                                </div>
+                                }
+                            </div>
+                            <div class="flex justify-between mt-2 text-xs text-dash-text-dim font-mono">
+                                <span>Start</span>
+                                <span>Ende</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                }
+
             </div>
         </main>
 

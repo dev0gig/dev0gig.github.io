@@ -669,4 +669,126 @@ export class BudgetPage {
         // Exit edit mode
         this.cancelInlineEdit(transactionId);
     }
+
+    viewMode = signal<'transactions' | 'statistics'>('transactions');
+
+    toggleViewMode(mode: 'transactions' | 'statistics') {
+        this.viewMode.set(mode);
+    }
+
+    getCategoryStats() {
+        const transactions = this.getSortedTransactions().filter(t => t.type === 'expense');
+        const total = transactions.reduce((sum, t) => sum + t.amount, 0);
+
+        const stats = new Map<string, number>();
+        transactions.forEach(t => {
+            const current = stats.get(t.category) || 0;
+            stats.set(t.category, current + t.amount);
+        });
+
+        return Array.from(stats.entries())
+            .map(([id, amount]) => ({
+                name: this.getCategoryById(id)?.name || 'Unbekannt',
+                amount,
+                percentage: total > 0 ? (amount / total) * 100 : 0,
+                color: this.getCategoryColor(id)
+            }))
+            .sort((a, b) => b.amount - a.amount);
+    }
+
+    getDailyTrend() {
+        const transactions = this.getSortedTransactions();
+        const daysInMonth = new Date(this.selectedMonth().getFullYear(), this.selectedMonth().getMonth() + 1, 0).getDate();
+        const dailyBalances: { day: number, balance: number, income: number, expense: number }[] = [];
+
+        let currentBalance = 0;
+        const transactionsByDay = new Map<number, Transaction[]>();
+
+        transactions.forEach(t => {
+            const day = new Date(t.date).getDate();
+            const list = transactionsByDay.get(day) || [];
+            list.push(t);
+            transactionsByDay.set(day, list);
+        });
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayTransactions = transactionsByDay.get(i) || [];
+            let dayIncome = 0;
+            let dayExpense = 0;
+
+            dayTransactions.forEach(t => {
+                if (t.type === 'income') {
+                    dayIncome += t.amount;
+                    currentBalance += t.amount;
+                } else if (t.type === 'expense') {
+                    dayExpense += t.amount;
+                    currentBalance -= t.amount;
+                } else if (t.type === 'transfer' && t.toAccount) {
+                    if (this.selectedAccountId()) {
+                        if (t.account === this.selectedAccountId()) {
+                            currentBalance -= t.amount;
+                        } else if (t.toAccount === this.selectedAccountId()) {
+                            currentBalance += t.amount;
+                        }
+                    }
+                }
+            });
+
+            dailyBalances.push({
+                day: i,
+                balance: currentBalance,
+                income: dayIncome,
+                expense: dayExpense
+            });
+        }
+
+        return dailyBalances;
+    }
+
+    private getCategoryColor(id: string): string {
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const h = hash % 360;
+        return `hsl(${h}, 70%, 50%)`;
+    }
+
+    getPieChartGradient(): string {
+        const stats = this.getCategoryStats();
+        if (stats.length === 0) return 'conic-gradient(#333 0% 100%)';
+
+        let gradient = 'conic-gradient(';
+        let currentPercent = 0;
+
+        stats.forEach((stat, index) => {
+            const nextPercent = currentPercent + stat.percentage;
+            gradient += `${stat.color} ${currentPercent}% ${nextPercent}%${index < stats.length - 1 ? ', ' : ''}`;
+            currentPercent = nextPercent;
+        });
+
+        gradient += ')';
+        return gradient;
+    }
+
+    getTrendPoints(): string {
+        const data = this.getDailyTrend();
+        if (data.length === 0) return '';
+
+        const maxBalance = Math.max(...data.map(d => d.balance), 100); // Avoid div by 0
+        const minBalance = Math.min(...data.map(d => d.balance), 0);
+        const range = maxBalance - minBalance || 1; // Avoid div by 0
+
+        const width = 100;
+        const height = 50;
+
+        const points = data.map((d, i) => {
+            const x = (i / (data.length - 1)) * width;
+            const normalizedBalance = (d.balance - minBalance) / range;
+            const y = height - (normalizedBalance * height);
+            return `${x},${y}`;
+        }).join(' ');
+
+        return points;
+    }
 }
