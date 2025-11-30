@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
+import { BudgetCalendar } from './calendar/calendar';
 
 interface Transaction {
     id: string;
@@ -31,7 +32,7 @@ interface Category {
 @Component({
     selector: 'app-budget-page',
     standalone: true,
-    imports: [CommonModule, RouterLink, FormsModule, AppsLauncher],
+    imports: [CommonModule, RouterLink, FormsModule, AppsLauncher, BudgetCalendar],
     templateUrl: './budget-page.html',
     styleUrls: ['./budget-page.css']
 })
@@ -48,6 +49,8 @@ export class BudgetPage {
     showCategoryModal = signal(false);
     showSettingsModal = signal(false);
     settingsView = signal<'main' | 'accounts' | 'categories'>('main');
+
+    selectedMonth = signal(new Date());
 
     toggleSettingsModal() {
         this.showSettingsModal.update(v => !v);
@@ -314,8 +317,11 @@ export class BudgetPage {
 
     getStats() {
         const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        // Use selectedMonth for stats or keep it current month?
+        // The user said "pro seite sollen transaktionen von diesem monat angezeigt werden" (per page transactions of THIS month should be displayed).
+        // Usually stats follow the view. Let's use selectedMonth for stats too.
+        const currentMonth = this.selectedMonth().getMonth();
+        const currentYear = this.selectedMonth().getFullYear();
 
         // 1. Calculate Balance (Account Filter Only)
         let balance = 0;
@@ -364,7 +370,7 @@ export class BudgetPage {
         return { balance, income, expenses };
     }
 
-    getSortedTransactions() {
+    getFilteredTransactions() {
         let filtered = this.transactions();
 
         // Filter by Account
@@ -384,10 +390,28 @@ export class BudgetPage {
                 this.getCategoryById(t.category)?.name.toLowerCase().includes(query)
             );
         }
+        return filtered;
+    }
+
+    getSortedTransactions() {
+        let filtered = this.getFilteredTransactions();
+
+        // Filter by Month
+        const currentMonth = this.selectedMonth().getMonth();
+        const currentYear = this.selectedMonth().getFullYear();
+
+        filtered = filtered.filter(t => {
+            const date = new Date(t.date);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        });
 
         return filtered.sort((a, b) =>
             new Date(b.date).getTime() - new Date(a.date).getTime()
         );
+    }
+
+    onMonthChange(date: Date) {
+        this.selectedMonth.set(date);
     }
 
     getCategoryById(id: string): Category | undefined {

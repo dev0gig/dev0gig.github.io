@@ -97,7 +97,7 @@
                                         <span class="text-xs text-dash-text-dim font-mono">{{
                                             formatCurrency(account.balance) }}</span>
                                     </div>
-                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="flex gap-1">
                                         <button (click)="openEditAccountModal(account)"
                                             class="p-2 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors"
                                             title="Bearbeiten">
@@ -148,7 +148,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="flex gap-1">
                                         <button (click)="openEditCategoryModal(category)"
                                             class="p-2 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors"
                                             title="Bearbeiten">
@@ -169,12 +169,19 @@
                         </div>
 
                     </div>
+
                 </div>
             </div>
         </div>
 
         <!-- Sidebar / Left Column (Stats) -->
         <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4">
+            <!-- Calendar -->
+            <div class="h-auto">
+                <app-budget-calendar [transactions]="getFilteredTransactions()" (monthChange)="onMonthChange($event)">
+                </app-budget-calendar>
+            </div>
+
             <!-- Balance Card -->
             <div class="bg-dash-card border border-dash-border p-6 rounded-sm">
                 <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-4 tracking-wider">Gesamtbilanz</h2>
@@ -211,7 +218,9 @@
                         [class.bg-dash-card-hover]="selectedAccountId() === account.id"
                         [class.border-dash-accent]="selectedAccountId() === account.id"
                         [class.hover:bg-dash-bg]="selectedAccountId() !== account.id">
-                        }}</span>
+                        <span class="text-dash-text font-medium">{{ account.name }}</span>
+                        <span class="text-xs text-dash-text-dim font-mono">{{ formatCurrency(account.balance)
+                            }}</span>
                     </div>
                     <div *ngIf="accounts().length === 0" class="text-dash-text-dim text-xs italic">
                         Keine Konten erstellt.
@@ -293,7 +302,8 @@
                                 <div class="col-span-2 flex items-center gap-2 text-dash-text-dim truncate">
                                     <span class="material-symbols-sharp text-base">{{
                                         getCategoryById(transaction.category)?.icon || 'category' }}</span>
-                                    <span class="truncate">{{ getCategoryById(transaction.category)?.name || 'Unbekannt'
+                                    <span class="truncate">{{ getCategoryById(transaction.category)?.name ||
+                                        'Unbekannt'
                                         }}</span>
                                 </div>
 
@@ -304,7 +314,8 @@
                                     [class.text-blue-400]="transaction.type === 'transfer'">
                                     <span *ngIf="transaction.type === 'transfer'"
                                         class="material-symbols-sharp text-base align-middle mr-1">sync_alt</span>
-                                    {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense' ? '-' : '')
+                                    {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense'
+                                    ? '-' : '')
                                     }}{{ formatCurrency(transaction.amount) }}
                                 </div>
                             </div>
@@ -388,7 +399,8 @@
                                         <div>
                                             <label
                                                 class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
-                                                {{ getInlineTransactionType(transaction.id) === 'transfer' ? 'Von Konto'
+                                                {{ getInlineTransactionType(transaction.id) === 'transfer' ?
+                                                'Von Konto'
                                                 : 'Konto' }}
                                             </label>
                                             <select name="account" required [value]="transaction.account"
@@ -465,7 +477,8 @@
         (click)="toggleTransactionModal(); editingTransaction.set(null)"></div>
     <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-bold text-dash-text">{{ editingTransaction() ? 'Transaktion bearbeiten' : 'Neue
+            <h2 class="text-lg font-bold text-dash-text">{{ editingTransaction() ? 'Transaktion bearbeiten'
+                : 'Neue
                 Transaktion' }}</h2>
             <button (click)="toggleTransactionModal(); editingTransaction.set(null)"
                 class="text-dash-text-dim hover:text-white transition-colors">
@@ -570,7 +583,8 @@
     </div>
     <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-bold text-dash-text">{{ editingAccount() ? 'Konto bearbeiten' : 'Neues Konto' }}
+            <h2 class="text-lg font-bold text-dash-text">{{ editingAccount() ? 'Konto bearbeiten' : 'Neues
+                Konto' }}
             </h2>
             <button (click)="toggleAccountModal(); editingAccount.set(null)"
                 class="text-dash-text-dim hover:text-white transition-colors">
@@ -613,7 +627,8 @@
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleCategoryModal()"></div>
     <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-bold text-dash-text">{{ editingCategory() ? 'Kategorie bearbeiten' : 'Neue
+            <h2 class="text-lg font-bold text-dash-text">{{ editingCategory() ? 'Kategorie bearbeiten' :
+                'Neue
                 Kategorie' }}</h2>
             <button (click)="toggleCategoryModal(); editingCategory.set(null)"
                 class="text-dash-text-dim hover:text-white transition-colors">
@@ -628,7 +643,8 @@
                     placeholder="z.B. Kleidung">
             </div>
             <div>
-                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Icon (Google
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Icon
+                    (Google
                     Material Symbol)</label>
                 <input type="text" name="categoryIcon" required [value]="editingCategory()?.icon || ''"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
