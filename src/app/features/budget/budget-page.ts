@@ -25,6 +25,7 @@ interface Category {
     id: string;
     name: string;
     icon: string;
+    type: 'income' | 'expense' | 'both';
 }
 
 @Component({
@@ -37,15 +38,22 @@ interface Category {
 export class BudgetPage {
     transactions = signal<Transaction[]>([]);
     accounts = signal<Account[]>([]);
+
     categories = signal<Category[]>([]);
+
+    editingCategory = signal<Category | null>(null);
 
     showTransactionModal = signal(false);
     showAccountModal = signal(false);
     showCategoryModal = signal(false);
     showSettingsModal = signal(false);
+    settingsView = signal<'main' | 'accounts' | 'categories'>('main');
 
     toggleSettingsModal() {
         this.showSettingsModal.update(v => !v);
+        if (!this.showSettingsModal()) {
+            this.settingsView.set('main'); // Reset view when closing
+        }
     }
 
     currentTransactionType = signal<'income' | 'expense' | 'transfer'>('expense');
@@ -69,14 +77,14 @@ export class BudgetPage {
     private initializeDefaultCategories() {
         if (this.categories().length === 0) {
             const defaultCategories: Category[] = [
-                { id: this.generateId(), name: 'Lebensmittel', icon: 'shopping_cart' },
-                { id: this.generateId(), name: 'Transport', icon: 'directions_car' },
-                { id: this.generateId(), name: 'Wohnung', icon: 'home' },
-                { id: this.generateId(), name: 'Unterhaltung', icon: 'movie' },
-                { id: this.generateId(), name: 'Gesundheit', icon: 'health_and_safety' },
-                { id: this.generateId(), name: 'Gehalt', icon: 'payments' },
-                { id: this.generateId(), name: 'Sonstiges', icon: 'more_horiz' },
-                { id: this.generateId(), name: 'Haushalt', icon: 'cottage' }
+                { id: this.generateId(), name: 'Lebensmittel', icon: 'shopping_cart', type: 'expense' },
+                { id: this.generateId(), name: 'Transport', icon: 'directions_car', type: 'expense' },
+                { id: this.generateId(), name: 'Wohnung', icon: 'home', type: 'expense' },
+                { id: this.generateId(), name: 'Unterhaltung', icon: 'movie', type: 'expense' },
+                { id: this.generateId(), name: 'Gesundheit', icon: 'health_and_safety', type: 'expense' },
+                { id: this.generateId(), name: 'Gehalt', icon: 'payments', type: 'income' },
+                { id: this.generateId(), name: 'Sonstiges', icon: 'more_horiz', type: 'both' },
+                { id: this.generateId(), name: 'Haushalt', icon: 'cottage', type: 'expense' }
             ];
             this.categories.set(defaultCategories);
             this.saveCategories();
@@ -103,6 +111,7 @@ export class BudgetPage {
 
     expandedTransactionId = signal<string | null>(null);
     editingTransaction = signal<Transaction | null>(null);
+    editingAccount = signal<Account | null>(null);
     inlineEditingTransactionId = signal<string | null>(null);
     inlineTransactionTypes = signal<Map<string, 'income' | 'expense' | 'transfer'>>(new Map());
 
@@ -202,38 +211,89 @@ export class BudgetPage {
         }
     }
 
-    addAccount(event: Event) {
+    openEditAccountModal(account: Account) {
+        this.editingAccount.set(account);
+        this.showAccountModal.set(true);
+    }
+
+    deleteAccount(id: string) {
+        if (confirm('Möchten Sie dieses Konto wirklich löschen?')) {
+            this.accounts.update(a => a.filter(account => account.id !== id));
+            this.saveAccounts();
+            if (this.selectedAccountId() === id) {
+                this.selectAccount(null);
+            }
+        }
+    }
+
+    onAccountSubmit(event: Event) {
         event.preventDefault();
         const form = event.target as HTMLFormElement;
         const formData = new FormData(form);
 
-        const account: Account = {
-            id: this.generateId(),
-            name: formData.get('accountName') as string,
-            balance: parseFloat(formData.get('accountBalance') as string)
-        };
+        const name = formData.get('accountName') as string;
+        const balance = parseFloat(formData.get('accountBalance') as string);
 
-        this.accounts.update(a => [...a, account]);
+        if (this.editingAccount()) {
+            const updatedAccount = { ...this.editingAccount()!, name, balance };
+            this.accounts.update(accounts =>
+                accounts.map(a => a.id === updatedAccount.id ? updatedAccount : a)
+            );
+        } else {
+            const account: Account = {
+                id: this.generateId(),
+                name,
+                balance
+            };
+            this.accounts.update(a => [...a, account]);
+        }
+
         this.saveAccounts();
         this.toggleAccountModal();
+        this.editingAccount.set(null);
         form.reset();
     }
 
-    addCategory(event: Event) {
+    onCategorySubmit(event: Event) {
         event.preventDefault();
         const form = event.target as HTMLFormElement;
         const formData = new FormData(form);
 
-        const category: Category = {
-            id: this.generateId(),
-            name: formData.get('categoryName') as string,
-            icon: formData.get('categoryIcon') as string
-        };
+        const name = formData.get('categoryName') as string;
+        const icon = formData.get('categoryIcon') as string;
+        const type = (formData.get('categoryType') as 'income' | 'expense' | 'both') || 'both';
 
-        this.categories.update(c => [...c, category]);
+        if (this.editingCategory()) {
+            const updatedCategory = { ...this.editingCategory()!, name, icon, type };
+            this.categories.update(categories =>
+                categories.map(c => c.id === updatedCategory.id ? updatedCategory : c)
+            );
+        } else {
+            const category: Category = {
+                id: this.generateId(),
+                name,
+                icon,
+                type
+            };
+            this.categories.update(c => [...c, category]);
+        }
+
         this.saveCategories();
         this.toggleCategoryModal();
+        this.editingCategory.set(null);
         form.reset();
+    }
+
+    deleteCategory(id: string) {
+        if (confirm('Möchten Sie diese Kategorie wirklich löschen?')) {
+            this.categories.update(c => c.filter(category => category.id !== id));
+            this.saveCategories();
+        }
+    }
+
+    openEditCategoryModal(category: Category) {
+        this.editingCategory.set(category);
+        this.showCategoryModal.set(true);
     }
 
     selectedAccountId = signal<string | null>(null);
@@ -423,7 +483,8 @@ export class BudgetPage {
                 category = {
                     id: this.generateId(),
                     name: categoryName,
-                    icon: 'category'
+                    icon: 'category',
+                    type: 'both' // Default type for imported categories
                 };
                 categoriesMap.set(categoryName, category);
             }

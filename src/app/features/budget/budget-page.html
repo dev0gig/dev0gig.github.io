@@ -19,8 +19,10 @@
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleSettingsModal()">
             </div>
             <div
-                class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4">
-                <div class="flex items-center justify-between">
+                class="relative bg-dash-card border border-dash-border rounded-sm shadow-2xl w-full max-w-4xl flex flex-col h-[80vh] overflow-hidden">
+
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-dash-border bg-dash-card">
                     <h2 class="text-lg font-bold text-dash-text">Settings</h2>
                     <button (click)="toggleSettingsModal()"
                         class="text-dash-text-dim hover:text-white transition-colors">
@@ -28,15 +30,145 @@
                     </button>
                 </div>
 
-                <div class="flex flex-col gap-3">
-                    <button (click)="triggerImport()"
-                        class="flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm w-full">
-                        <span class="material-symbols-sharp">upload</span>
-                        CSV Importieren
-                    </button>
-                    <p class="text-xs text-dash-text-dim">
-                        Format: ID, Amount, Date, Title, Empty, Account, Currency, Category
-                    </p>
+                <!-- Modal Body (Split View) -->
+                <div class="flex flex-1 overflow-hidden">
+                    <!-- Sidebar (Menu) -->
+                    <div
+                        class="w-1/3 border-r border-dash-border bg-dash-bg/50 p-4 flex flex-col gap-2 overflow-y-auto">
+                        <button (click)="settingsView.set('main')"
+                            [class]="settingsView() === 'main' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                            class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                            <span class="material-symbols-sharp">database</span>
+                            Daten
+                        </button>
+                        <button (click)="settingsView.set('accounts')"
+                            [class]="settingsView() === 'accounts' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                            class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                            <span class="material-symbols-sharp">account_balance</span>
+                            Konten
+                        </button>
+                        <button (click)="settingsView.set('categories')"
+                            [class]="settingsView() === 'categories' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                            class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                            <span class="material-symbols-sharp">category</span>
+                            Kategorien
+                        </button>
+                    </div>
+
+                    <!-- Content Area -->
+                    <div class="w-2/3 p-6 overflow-y-auto bg-dash-card">
+
+                        <!-- Main / Data View -->
+                        <div *ngIf="settingsView() === 'main'" class="flex flex-col gap-6">
+                            <div class="flex flex-col gap-3">
+                                <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Daten Import
+                                </h3>
+                                <p class="text-sm text-dash-text-dim">Importieren Sie Ihre Transaktionen aus einer
+                                    CSV-Datei.</p>
+                                <button (click)="triggerImport()"
+                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm w-full">
+                                    <span class="material-symbols-sharp">upload</span>
+                                    CSV Importieren
+                                </button>
+                                <div class="bg-dash-bg p-4 rounded-sm border border-dash-border">
+                                    <p class="text-xs text-dash-text-dim font-mono">
+                                        Format: ID, Amount, Date, Title, Empty, Account, Currency, Category
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accounts View -->
+                        <div *ngIf="settingsView() === 'accounts'" class="flex flex-col gap-6">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-base font-bold text-dash-text">Konten verwalten</h3>
+                                <button (click)="toggleAccountModal()"
+                                    class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
+                                    <span class="material-symbols-sharp text-sm">add</span>
+                                    Neues Konto
+                                </button>
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <div *ngFor="let account of accounts()"
+                                    class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-dash-text">{{ account.name }}</span>
+                                        <span class="text-xs text-dash-text-dim font-mono">{{
+                                            formatCurrency(account.balance) }}</span>
+                                    </div>
+                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button (click)="openEditAccountModal(account)"
+                                            class="p-2 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors"
+                                            title="Bearbeiten">
+                                            <span class="material-symbols-sharp text-sm">edit</span>
+                                        </button>
+                                        <button (click)="deleteAccount(account.id)"
+                                            class="p-2 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors"
+                                            title="Löschen">
+                                            <span class="material-symbols-sharp text-sm">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div *ngIf="accounts().length === 0"
+                                    class="text-center py-8 text-dash-text-dim text-sm italic">
+                                    Keine Konten erstellt.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Categories View -->
+                        <div *ngIf="settingsView() === 'categories'" class="flex flex-col gap-6">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-base font-bold text-dash-text">Kategorien verwalten</h3>
+                                <button (click)="toggleCategoryModal()"
+                                    class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
+                                    <span class="material-symbols-sharp text-sm">add</span>
+                                    Neue Kategorie
+                                </button>
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <div *ngFor="let category of categories()"
+                                    class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
+                                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-dash-card flex items-center justify-center border border-dash-border text-dash-text-dim">
+                                            <span class="material-symbols-sharp text-lg">{{ category.icon }}</span>
+                                        </div>
+                                        <div class="flex flex-col overflow-hidden">
+                                            <span class="text-sm font-medium text-dash-text truncate">{{ category.name
+                                                }}</span>
+                                            <span class="text-[10px] uppercase tracking-wider font-bold"
+                                                [class.text-green-500]="category.type === 'income'"
+                                                [class.text-red-500]="category.type === 'expense'"
+                                                [class.text-dash-text-dim]="category.type === 'both'">
+                                                {{ category.type === 'income' ? 'Einnahme' : (category.type ===
+                                                'expense' ? 'Ausgabe' : 'Beides') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button (click)="openEditCategoryModal(category)"
+                                            class="p-2 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors"
+                                            title="Bearbeiten">
+                                            <span class="material-symbols-sharp text-sm">edit</span>
+                                        </button>
+                                        <button (click)="deleteCategory(category.id)"
+                                            class="p-2 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors"
+                                            title="Löschen">
+                                            <span class="material-symbols-sharp text-sm">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div *ngIf="categories().length === 0"
+                                    class="text-center py-8 text-dash-text-dim text-sm italic">
+                                    Keine Kategorien erstellt.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -75,13 +207,34 @@
                 </div>
                 <div class="flex flex-col gap-2">
                     <div *ngFor="let account of accounts()" (click)="selectAccount(account.id)"
-                        class="flex justify-between items-center text-sm p-2 rounded-sm cursor-pointer transition-colors border border-transparent"
+                        class="group flex flex-col gap-1 text-sm p-3 rounded-sm cursor-pointer transition-colors border border-transparent"
                         [class.bg-dash-card-hover]="selectedAccountId() === account.id"
                         [class.border-dash-accent]="selectedAccountId() === account.id"
                         [class.hover:bg-dash-bg]="selectedAccountId() !== account.id">
-                        <span class="text-dash-text font-medium">{{ account.name }}</span>
-                        <span class="font-mono" [class.text-red-500]="account.balance < 0"
-                            [class.text-green-500]="account.balance > 0">{{ formatCurrency(account.balance) }}</span>
+
+                        <!-- Line 1: Name and Actions -->
+                        <div class="flex justify-between items-center w-full">
+                            <span class="text-dash-text font-medium truncate">{{ account.name }}</span>
+
+                            <!-- Actions -->
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button (click)="openEditAccountModal(account); $event.stopPropagation()"
+                                    class="p-1 hover:bg-dash-border rounded-sm text-dash-text-dim hover:text-white transition-colors"
+                                    title="Bearbeiten">
+                                    <span class="material-symbols-sharp text-xs">edit</span>
+                                </button>
+                                <button (click)="deleteAccount(account.id); $event.stopPropagation()"
+                                    class="p-1 hover:bg-red-500/20 rounded-sm text-dash-text-dim hover:text-red-500 transition-colors"
+                                    title="Löschen">
+                                    <span class="material-symbols-sharp text-xs">delete</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Line 2: Balance -->
+                        <span class="font-mono text-xs" [class.text-red-500]="account.balance < 0"
+                            [class.text-green-500]="account.balance > 0">{{ formatCurrency(account.balance)
+                            }}</span>
                     </div>
                     <div *ngIf="accounts().length === 0" class="text-dash-text-dim text-xs italic">
                         Keine Konten erstellt.
@@ -109,16 +262,7 @@
                         <span class="material-symbols-sharp text-lg">add</span>
                         <span class="hidden sm:inline">Transaktion</span>
                     </button>
-                    <button (click)="toggleAccountModal()"
-                        class="bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border flex items-center justify-center gap-2 flex-1 md:flex-none">
-                        <span class="material-symbols-sharp text-lg">account_balance</span>
-                        <span class="hidden sm:inline">Konto</span>
-                    </button>
-                    <button (click)="toggleCategoryModal()"
-                        class="bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border flex items-center justify-center gap-2 flex-1 md:flex-none">
-                        <span class="material-symbols-sharp text-lg">category</span>
-                        <span class="hidden sm:inline">Kategorie</span>
-                    </button>
+                    <!-- Account and Category buttons removed from here -->
                 </div>
             </div>
 
@@ -445,30 +589,34 @@
 <!-- Account Modal -->
 @if (showAccountModal()) {
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleAccountModal()"></div>
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleAccountModal(); editingAccount.set(null)">
+    </div>
     <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-bold text-dash-text">Neues Konto</h2>
-            <button (click)="toggleAccountModal()" class="text-dash-text-dim hover:text-white transition-colors">
+            <h2 class="text-lg font-bold text-dash-text">{{ editingAccount() ? 'Konto bearbeiten' : 'Neues Konto' }}
+            </h2>
+            <button (click)="toggleAccountModal(); editingAccount.set(null)"
+                class="text-dash-text-dim hover:text-white transition-colors">
                 <span class="material-symbols-sharp">close</span>
             </button>
         </div>
-        <form (submit)="addAccount($event)" class="space-y-4">
+        <form (submit)="onAccountSubmit($event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Name</label>
-                <input type="text" name="accountName" required
+                <input type="text" name="accountName" required [value]="editingAccount()?.name || ''"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="z.B. Girokonto">
             </div>
             <div>
-                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Startguthaben
-                    (€)</label>
-                <input type="number" name="accountBalance" step="0.01" required
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
+                    {{ editingAccount() ? 'Aktueller Kontostand (€)' : 'Startguthaben (€)' }}
+                </label>
+                <input type="number" name="accountBalance" step="0.01" required [value]="editingAccount()?.balance"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="0,00">
             </div>
             <div class="flex gap-2 pt-4">
-                <button type="button" (click)="toggleAccountModal()"
+                <button type="button" (click)="toggleAccountModal(); editingAccount.set(null)"
                     class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
                     Abbrechen
                 </button>
@@ -488,29 +636,57 @@
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleCategoryModal()"></div>
     <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-bold text-dash-text">Neue Kategorie</h2>
-            <button (click)="toggleCategoryModal()" class="text-dash-text-dim hover:text-white transition-colors">
+            <h2 class="text-lg font-bold text-dash-text">{{ editingCategory() ? 'Kategorie bearbeiten' : 'Neue
+                Kategorie' }}</h2>
+            <button (click)="toggleCategoryModal(); editingCategory.set(null)"
+                class="text-dash-text-dim hover:text-white transition-colors">
                 <span class="material-symbols-sharp">close</span>
             </button>
         </div>
-        <form (submit)="addCategory($event)" class="space-y-4">
+        <form (submit)="onCategorySubmit($event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Name</label>
-                <input type="text" name="categoryName" required
+                <input type="text" name="categoryName" required [value]="editingCategory()?.name || ''"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="z.B. Kleidung">
             </div>
             <div>
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Icon (Google
                     Material Symbol)</label>
-                <input type="text" name="categoryIcon" required
+                <input type="text" name="categoryIcon" required [value]="editingCategory()?.icon || ''"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="z.B. checkroom">
                 <p class="text-xs text-dash-text-dim mt-1">Siehe <a href="https://fonts.google.com/icons"
                         target="_blank" class="text-dash-accent hover:underline">Google Fonts Icons</a></p>
             </div>
+
+            <!-- Category Type Selection -->
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="categoryType" value="expense"
+                            [checked]="!editingCategory() || editingCategory()?.type === 'expense'"
+                            class="text-dash-accent focus:ring-dash-accent bg-dash-bg border-dash-border">
+                        <span class="text-sm text-dash-text">Ausgabe</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="categoryType" value="income"
+                            [checked]="editingCategory()?.type === 'income'"
+                            class="text-dash-accent focus:ring-dash-accent bg-dash-bg border-dash-border">
+                        <span class="text-sm text-dash-text">Einnahme</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="categoryType" value="both"
+                            [checked]="editingCategory()?.type === 'both'"
+                            class="text-dash-accent focus:ring-dash-accent bg-dash-bg border-dash-border">
+                        <span class="text-sm text-dash-text">Beides</span>
+                    </label>
+                </div>
+            </div>
+
             <div class="flex gap-2 pt-4">
-                <button type="button" (click)="toggleCategoryModal()"
+                <button type="button" (click)="toggleCategoryModal(); editingCategory.set(null)"
                     class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
                     Abbrechen
                 </button>
