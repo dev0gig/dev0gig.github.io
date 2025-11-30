@@ -25,8 +25,8 @@
                 <div class="flex items-center justify-between p-6 border-b border-dash-border bg-dash-card">
                     <h2 class="text-lg font-bold text-dash-text">Settings</h2>
                     <button (click)="toggleSettingsModal()"
-                        class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
+                        class="text-dash-text-dim hover:text-white transition-colors font-bold px-2">
+                        X
                     </button>
                 </div>
 
@@ -38,19 +38,16 @@
                         <button (click)="settingsView.set('main')"
                             [class]="settingsView() === 'main' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
                             class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
-                            <span class="material-symbols-sharp">database</span>
                             Daten
                         </button>
                         <button (click)="settingsView.set('accounts')"
                             [class]="settingsView() === 'accounts' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
                             class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
-                            <span class="material-symbols-sharp">account_balance</span>
                             Konten
                         </button>
                         <button (click)="settingsView.set('categories')"
                             [class]="settingsView() === 'categories' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
                             class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
-                            <span class="material-symbols-sharp">category</span>
                             Kategorien
                         </button>
                     </div>
@@ -67,7 +64,6 @@
                                     CSV-Datei.</p>
                                 <button (click)="triggerImport()"
                                     class="flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm w-full">
-                                    <span class="material-symbols-sharp">upload</span>
                                     CSV Importieren
                                 </button>
                                 <div class="bg-dash-bg p-4 rounded-sm border border-dash-border">
@@ -75,6 +71,16 @@
                                         Format: ID, Amount, Date, Title, Empty, Account, Currency, Category
                                     </p>
                                 </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 pt-6 border-t border-dash-border">
+                                <h3 class="text-xs font-bold text-red-500 uppercase tracking-wider">Gefahrenzone</h3>
+                                <p class="text-sm text-dash-text-dim">Hier können Sie alle Ihre Transaktionsdaten
+                                    unwiderruflich löschen.</p>
+                                <button (click)="deleteAllTransactions()"
+                                    class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-sm transition-colors text-sm w-full">
+                                    Alle Transaktionen löschen
+                                </button>
                             </div>
                         </div>
 
@@ -84,7 +90,6 @@
                                 <h3 class="text-base font-bold text-dash-text">Konten verwalten</h3>
                                 <button (click)="toggleAccountModal()"
                                     class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
-                                    <span class="material-symbols-sharp text-sm">add</span>
                                     Neues Konto
                                 </button>
                             </div>
@@ -99,14 +104,14 @@
                                     </div>
                                     <div class="flex gap-1">
                                         <button (click)="openEditAccountModal(account)"
-                                            class="p-2 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors"
+                                            class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
                                             title="Bearbeiten">
-                                            <span class="material-symbols-sharp text-sm">edit</span>
+                                            Bearbeiten
                                         </button>
                                         <button (click)="deleteAccount(account.id)"
-                                            class="p-2 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors"
+                                            class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
                                             title="Löschen">
-                                            <span class="material-symbols-sharp text-sm">delete</span>
+                                            Löschen
                                         </button>
                                     </div>
                                 </div>
@@ -123,7 +128,6 @@
                                 <h3 class="text-base font-bold text-dash-text">Kategorien verwalten</h3>
                                 <button (click)="toggleCategoryModal()"
                                     class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
-                                    <span class="material-symbols-sharp text-sm">add</span>
                                     Neue Kategorie
                                 </button>
                             </div>
@@ -132,10 +136,6 @@
                                 <div *ngFor="let category of categories()"
                                     class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
                                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-dash-card flex items-center justify-center border border-dash-border text-dash-text-dim">
-                                            <span class="material-symbols-sharp text-lg">{{ category.icon }}</span>
-                                        </div>
                                         <div class="flex flex-col overflow-hidden">
                                             <span class="text-sm font-medium text-dash-text truncate">{{ category.name
                                                 }}</span>
@@ -150,14 +150,14 @@
                                     </div>
                                     <div class="flex gap-1">
                                         <button (click)="openEditCategoryModal(category)"
-                                            class="p-2 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors"
+                                            class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
                                             title="Bearbeiten">
-                                            <span class="material-symbols-sharp text-sm">edit</span>
+                                            Bearbeiten
                                         </button>
                                         <button (click)="deleteCategory(category.id)"
-                                            class="p-2 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors"
+                                            class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
                                             title="Löschen">
-                                            <span class="material-symbols-sharp text-sm">delete</span>
+                                            Löschen
                                         </button>
                                     </div>
                                 </div>
@@ -300,8 +300,6 @@
 
                                 <!-- Category -->
                                 <div class="col-span-2 flex items-center gap-2 text-dash-text-dim truncate">
-                                    <span class="material-symbols-sharp text-base">{{
-                                        getCategoryById(transaction.category)?.icon || 'category' }}</span>
                                     <span class="truncate">{{ getCategoryById(transaction.category)?.name ||
                                         'Unbekannt'
                                         }}</span>
@@ -641,16 +639,6 @@
                 <input type="text" name="categoryName" required [value]="editingCategory()?.name || ''"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="z.B. Kleidung">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Icon
-                    (Google
-                    Material Symbol)</label>
-                <input type="text" name="categoryIcon" required [value]="editingCategory()?.icon || ''"
-                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
-                    placeholder="z.B. checkroom">
-                <p class="text-xs text-dash-text-dim mt-1">Siehe <a href="https://fonts.google.com/icons"
-                        target="_blank" class="text-dash-accent hover:underline">Google Fonts Icons</a></p>
             </div>
 
             <!-- Category Type Selection -->

@@ -25,7 +25,6 @@ interface Account {
 interface Category {
     id: string;
     name: string;
-    icon: string;
     type: 'income' | 'expense' | 'both';
 }
 
@@ -80,14 +79,14 @@ export class BudgetPage {
     private initializeDefaultCategories() {
         if (this.categories().length === 0) {
             const defaultCategories: Category[] = [
-                { id: this.generateId(), name: 'Lebensmittel', icon: 'shopping_cart', type: 'expense' },
-                { id: this.generateId(), name: 'Transport', icon: 'directions_car', type: 'expense' },
-                { id: this.generateId(), name: 'Wohnung', icon: 'home', type: 'expense' },
-                { id: this.generateId(), name: 'Unterhaltung', icon: 'movie', type: 'expense' },
-                { id: this.generateId(), name: 'Gesundheit', icon: 'health_and_safety', type: 'expense' },
-                { id: this.generateId(), name: 'Gehalt', icon: 'payments', type: 'income' },
-                { id: this.generateId(), name: 'Sonstiges', icon: 'more_horiz', type: 'both' },
-                { id: this.generateId(), name: 'Haushalt', icon: 'cottage', type: 'expense' }
+                { id: this.generateId(), name: 'Lebensmittel', type: 'expense' },
+                { id: this.generateId(), name: 'Transport', type: 'expense' },
+                { id: this.generateId(), name: 'Wohnung', type: 'expense' },
+                { id: this.generateId(), name: 'Unterhaltung', type: 'expense' },
+                { id: this.generateId(), name: 'Gesundheit', type: 'expense' },
+                { id: this.generateId(), name: 'Gehalt', type: 'income' },
+                { id: this.generateId(), name: 'Sonstiges', type: 'both' },
+                { id: this.generateId(), name: 'Haushalt', type: 'expense' }
             ];
             this.categories.set(defaultCategories);
             this.saveCategories();
@@ -133,6 +132,20 @@ export class BudgetPage {
         if (confirm('Möchten Sie diese Transaktion wirklich löschen?')) {
             this.revertTransactionBalance(transaction);
             this.transactions.update(t => t.filter(item => item.id !== id));
+            this.saveTransactions();
+            this.saveAccounts();
+        }
+    }
+
+    deleteAllTransactions() {
+        if (confirm('Sind Sie sicher, dass Sie ALLE Transaktionen löschen möchten? Dies kann nicht rückgängig gemacht werden.')) {
+            // Revert balances for all transactions
+            this.transactions().forEach(t => this.revertTransactionBalance(t));
+
+            // Clear transactions
+            this.transactions.set([]);
+
+            // Save changes
             this.saveTransactions();
             this.saveAccounts();
         }
@@ -263,11 +276,10 @@ export class BudgetPage {
         const formData = new FormData(form);
 
         const name = formData.get('categoryName') as string;
-        const icon = formData.get('categoryIcon') as string;
         const type = (formData.get('categoryType') as 'income' | 'expense' | 'both') || 'both';
 
         if (this.editingCategory()) {
-            const updatedCategory = { ...this.editingCategory()!, name, icon, type };
+            const updatedCategory = { ...this.editingCategory()!, name, type };
             this.categories.update(categories =>
                 categories.map(c => c.id === updatedCategory.id ? updatedCategory : c)
             );
@@ -275,7 +287,6 @@ export class BudgetPage {
             const category: Category = {
                 id: this.generateId(),
                 name,
-                icon,
                 type
             };
             this.categories.update(c => [...c, category]);
@@ -507,7 +518,6 @@ export class BudgetPage {
                 category = {
                     id: this.generateId(),
                     name: categoryName,
-                    icon: 'category',
                     type: 'both' // Default type for imported categories
                 };
                 categoriesMap.set(categoryName, category);
