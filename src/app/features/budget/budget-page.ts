@@ -53,7 +53,7 @@ export class BudgetPage {
     constructor() {
         this.loadData();
         this.initializeDefaultCategories();
-        this.initializeSeedData();
+
     }
 
     private loadData() {
@@ -83,15 +83,7 @@ export class BudgetPage {
         }
     }
 
-    private initializeSeedData() {
-        // Only seed if no transactions exist
-        if (this.transactions().length === 0) {
-            const seedCSV = `100e2846-504e-43e1-af0d-797ba5b5a379,-18.42,2025-12-27 00:00:00,A1 Patrick Sim,,Erste Bank,EUR,Haushalt
-5993f7b2-ebfb-4f92-b503-d80bb7a12227,-11.89,2025-12-24 00:00:00,A1 Varinia Sim,,Erste Bank,EUR,Haushalt
-29f7aaa3-99dc-4b8c-a9a2-cae90c6a0459,-100.00,2025-12-14 00:00:00,FW TB,,Erste Bank,EUR,Haushalt`;
-            this.parseAndImportCSV(seedCSV);
-        }
-    }
+
 
     toggleTransactionModal() {
         this.showTransactionModal.set(!this.showTransactionModal());

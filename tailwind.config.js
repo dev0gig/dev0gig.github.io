@@ -16,7 +16,7 @@ module.exports = {
                 'dash-accent-hover': '#2563eb',
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                sans: ['Ubuntu', 'system-ui', 'sans-serif'],
                 mono: ['"JetBrains Mono"', 'monospace'], // Keep a mono option for code/data
             },
         },
