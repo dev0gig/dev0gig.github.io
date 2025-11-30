@@ -211,30 +211,7 @@
                         [class.bg-dash-card-hover]="selectedAccountId() === account.id"
                         [class.border-dash-accent]="selectedAccountId() === account.id"
                         [class.hover:bg-dash-bg]="selectedAccountId() !== account.id">
-
-                        <!-- Line 1: Name and Actions -->
-                        <div class="flex justify-between items-center w-full">
-                            <span class="text-dash-text font-medium truncate">{{ account.name }}</span>
-
-                            <!-- Actions -->
-                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button (click)="openEditAccountModal(account); $event.stopPropagation()"
-                                    class="p-1 hover:bg-dash-border rounded-sm text-dash-text-dim hover:text-white transition-colors"
-                                    title="Bearbeiten">
-                                    <span class="material-symbols-sharp text-xs">edit</span>
-                                </button>
-                                <button (click)="deleteAccount(account.id); $event.stopPropagation()"
-                                    class="p-1 hover:bg-red-500/20 rounded-sm text-dash-text-dim hover:text-red-500 transition-colors"
-                                    title="Löschen">
-                                    <span class="material-symbols-sharp text-xs">delete</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Line 2: Balance -->
-                        <span class="font-mono text-xs" [class.text-red-500]="account.balance < 0"
-                            [class.text-green-500]="account.balance > 0">{{ formatCurrency(account.balance)
-                            }}</span>
+                        }}</span>
                     </div>
                     <div *ngIf="accounts().length === 0" class="text-dash-text-dim text-xs italic">
                         Keine Konten erstellt.
