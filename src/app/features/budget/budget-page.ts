@@ -103,6 +103,8 @@ export class BudgetPage {
 
     expandedTransactionId = signal<string | null>(null);
     editingTransaction = signal<Transaction | null>(null);
+    inlineEditingTransactionId = signal<string | null>(null);
+    inlineTransactionTypes = signal<Map<string, 'income' | 'expense' | 'transfer'>>(new Map());
 
     toggleExpansion(id: string) {
         if (this.expandedTransactionId() === id) {
@@ -486,5 +488,90 @@ export class BudgetPage {
 
     private saveCategories() {
         localStorage.setItem('mybudget_categories', JSON.stringify(this.categories()));
+    }
+
+    // Inline editing methods
+    toggleInlineEdit(transactionId: string) {
+        if (this.inlineEditingTransactionId() === transactionId) {
+            this.inlineEditingTransactionId.set(null);
+        } else {
+            const transaction = this.transactions().find(t => t.id === transactionId);
+            if (transaction) {
+                this.inlineEditingTransactionId.set(transactionId);
+                // Initialize the type for this transaction
+                this.inlineTransactionTypes.update(map => {
+                    const newMap = new Map(map);
+                    newMap.set(transactionId, transaction.type);
+                    return newMap;
+                });
+            }
+        }
+    }
+
+    cancelInlineEdit(transactionId: string) {
+        this.inlineEditingTransactionId.set(null);
+        this.inlineTransactionTypes.update(map => {
+            const newMap = new Map(map);
+            newMap.delete(transactionId);
+            return newMap;
+        });
+    }
+
+    isEditingInline(transactionId: string): boolean {
+        return this.inlineEditingTransactionId() === transactionId;
+    }
+
+    setInlineTransactionType(transactionId: string, type: 'income' | 'expense' | 'transfer') {
+        this.inlineTransactionTypes.update(map => {
+            const newMap = new Map(map);
+            newMap.set(transactionId, type);
+            return newMap;
+        });
+    }
+
+    getInlineTransactionType(transactionId: string): 'income' | 'expense' | 'transfer' {
+        const transaction = this.transactions().find(t => t.id === transactionId);
+        return this.inlineTransactionTypes().get(transactionId) || transaction?.type || 'expense';
+    }
+
+    onInlineTransactionEdit(event: Event, transactionId: string) {
+        event.preventDefault();
+        const form = event.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        const type = this.getInlineTransactionType(transactionId);
+        const amount = parseFloat(formData.get('amount') as string);
+        const description = formData.get('description') as string;
+        const categoryId = formData.get('category') as string;
+        const accountId = formData.get('account') as string;
+        const toAccountId = formData.get('toAccount') as string;
+        const date = formData.get('date') as string;
+
+        const oldTransaction = this.transactions().find(t => t.id === transactionId);
+        if (!oldTransaction) return;
+
+        const updatedTransaction: Transaction = {
+            id: transactionId,
+            type,
+            amount,
+            description,
+            category: categoryId,
+            account: accountId,
+            toAccount: type === 'transfer' ? toAccountId : undefined,
+            date
+        };
+
+        // Revert old transaction balance and apply new one
+        this.revertTransactionBalance(oldTransaction);
+        this.applyTransactionBalance(updatedTransaction);
+
+        // Update the transaction
+        this.transactions.update(t => t.map(item => item.id === transactionId ? updatedTransaction : item));
+
+        this.saveTransactions();
+        this.saveAccounts();
+
+        // Exit edit mode
+        this.cancelInlineEdit(transactionId);
     }
 }
