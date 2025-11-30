@@ -1,0 +1,215 @@
+<div class="min-h-screen bg-dash-bg text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 grid-rows-[auto_1fr] gap-4 h-[calc(100vh-4rem)]">
+
+        <!-- Header -->
+        <header
+            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-4 rounded-sm">
+            <div class="flex items-center gap-4">
+                <!-- Apps Launcher -->
+                <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
+                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Dashboard</h1>
+            </div>
+            <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
+                <div>STATUS
+                    <span [class.text-dash-accent]="isOnline()" [class.text-red-500]="!isOnline()">
+                        {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Modal -->
+        <div *ngIf="showSettingsModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleSettingsModal()">
+            </div>
+            <div
+                class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Settings</h2>
+                    <button (click)="toggleSettingsModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-sm font-bold text-dash-text">Lesezeichen verwalten</h3>
+                        <div class="flex gap-2">
+                            <button (click)="exportBookmarks()"
+                                class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                                <span class="material-symbols-sharp">download</span>
+                                Exportieren
+                            </button>
+                            <button (click)="triggerImport()"
+                                class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                                <span class="material-symbols-sharp">upload</span>
+                                Importieren
+                            </button>
+                        </div>
+                        <p class="text-xs text-dash-text-dim">
+                            Unterstützt den Import von Chrome-Lesezeichen (HTML).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="md:col-span-12 flex flex-col gap-6 h-full overflow-y-auto pb-8">
+            <!-- Welcome / Actions -->
+            <div class="bg-dash-card border border-dash-border p-6 rounded-sm flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-dash-text">Willkommen zum Dashboard</h2>
+                    <p class="text-dash-text-dim text-sm">Verwalten Sie Ihre Projekte und Lesezeichen.</p>
+                </div>
+                <div class="flex gap-2">
+                    <a routerLink="/journal"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-dash-accent hover:bg-dash-accent/80 text-white rounded-sm transition-colors text-sm font-medium">
+                        <span class="material-symbols-sharp text-lg">book</span>
+                        <span>Journal</span>
+                    </a>
+                    <a routerLink="/budget"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-dash-accent hover:bg-dash-accent/80 text-white rounded-sm transition-colors text-sm font-medium">
+                        <span class="material-symbols-sharp text-lg">attach_money</span>
+                        <span>Budget</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bookmarks Section -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between gap-4">
+                    <h3 class="text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
+                        <span class="material-symbols-sharp text-dash-accent">bookmarks</span>
+                        Meine Lesezeichen
+                    </h3>
+
+                    <div class="flex-1 max-w-md mx-4">
+                        <div class="relative group">
+                            <span
+                                class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
+                                <span class="material-symbols-sharp text-lg">search</span>
+                            </span>
+                            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                                placeholder="Lesezeichen suchen..."
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                            <button *ngIf="searchTerm()" (click)="searchTerm.set('')"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
+                                <span class="material-symbols-sharp text-sm">close</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add Bookmark Form -->
+                    <div class="flex gap-2">
+                        <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
+                            [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all"
+                            title="Bearbeitungsmodus umschalten">
+                            <span class="material-symbols-sharp text-lg">edit</span>
+                        </button>
+                        <div class="w-px bg-dash-border mx-1"></div>
+                        <input type="text" [(ngModel)]="newBookmarkName" placeholder="Name"
+                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
+                        <input type="text" [(ngModel)]="newBookmarkUrl" placeholder="URL"
+                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
+                        <button (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="material-symbols-sharp text-lg">add</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bookmarks Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div *ngFor="let bookmark of filteredBookmarks()"
+                        class="group relative bg-dash-card border border-dash-border hover:border-dash-accent p-4 rounded-sm flex flex-col items-center gap-3 transition-all hover:-translate-y-1 hover:shadow-lg">
+
+                        <!-- Actions (Visible in Edit Mode) -->
+                        <div *ngIf="isEditMode()"
+                            class="absolute inset-0 bg-dash-card/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4 rounded-sm animate-in fade-in duration-200">
+                            <div class="flex gap-2">
+                                <button (click)="bookmarkService.toggleFavorite(bookmark.id)"
+                                    [class.text-yellow-400]="bookmark.isFavorite"
+                                    [class.text-dash-text-dim]="!bookmark.isFavorite"
+                                    class="p-2 bg-dash-bg rounded-sm hover:text-yellow-400 transition-colors border border-dash-border"
+                                    title="Favorit">
+                                    <span class="material-symbols-sharp text-lg">star</span>
+                                </button>
+                                <button (click)="startEditingBookmark(bookmark)"
+                                    class="p-2 bg-dash-bg rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors border border-dash-border"
+                                    title="Bearbeiten">
+                                    <span class="material-symbols-sharp text-lg">edit</span>
+                                </button>
+                                <button (click)="bookmarkService.removeBookmark(bookmark.id)"
+                                    class="p-2 bg-dash-bg rounded-sm text-dash-text-dim hover:text-red-500 transition-colors border border-dash-border"
+                                    title="Löschen">
+                                    <span class="material-symbols-sharp text-lg">delete</span>
+                                </button>
+                            </div>
+                            <span class="text-xs text-dash-text font-medium">{{ bookmark.name }}</span>
+                        </div>
+
+                        <!-- Icon & Link -->
+                        <a [href]="bookmark.url" [target]="isEditMode() ? '_self' : '_blank'"
+                            (click)="onBookmarkClick()" [class.pointer-events-none]="isEditMode()"
+                            class="flex flex-col items-center gap-2 w-full">
+                            <img [src]="bookmarkService.getFaviconUrl(bookmark.url)"
+                                (error)="$event.target.style.display='none'" class="w-8 h-8 rounded-sm" alt="Icon">
+                            <span class="text-sm font-medium text-dash-text truncate w-full text-center">{{
+                                bookmark.name }}</span>
+                        </a>
+
+                        <!-- Favorite Indicator (Always visible if favorite and NOT in edit mode) -->
+                        <div *ngIf="bookmark.isFavorite && !isEditMode()" class="absolute top-2 left-2 text-yellow-400">
+                            <span class="material-symbols-sharp text-xs">star</span>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div *ngIf="bookmarkService.bookmarks().length === 0"
+                        class="col-span-full py-12 flex flex-col items-center justify-center text-dash-text-dim border-2 border-dashed border-dash-border rounded-sm">
+                        <span class="material-symbols-sharp text-4xl mb-2 opacity-50">bookmark_add</span>
+                        <p>Noch keine Lesezeichen vorhanden.</p>
+                        <p class="text-xs">Fügen Sie oben neue Links hinzu.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Edit Bookmark Modal -->
+        <div *ngIf="editingBookmark" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="cancelEditingBookmark()"></div>
+            <div
+                class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-sm flex flex-col gap-4">
+                <h3 class="text-lg font-bold text-dash-text">Lesezeichen bearbeiten</h3>
+
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold">Name</label>
+                        <input type="text" [(ngModel)]="editingBookmark.name"
+                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold">URL</label>
+                        <input type="text" [(ngModel)]="editingBookmark.url"
+                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                    <button (click)="cancelEditingBookmark()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Abbrechen
+                    </button>
+                    <button (click)="saveEditedBookmark()"
+                        class="px-4 py-2 bg-dash-accent hover:bg-dash-accent/80 text-white rounded-sm text-sm font-medium transition-colors">
+                        Speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

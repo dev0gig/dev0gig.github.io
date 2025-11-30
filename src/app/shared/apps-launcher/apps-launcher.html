@@ -1,0 +1,83 @@
+<div class="relative">
+    <button (click)="toggleAppsModal()"
+        class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+        title="Apps">
+        <span class="material-symbols-sharp text-xl">apps</span>
+    </button>
+
+    <!-- Apps Modal -->
+    <div *ngIf="showAppsModal()"
+        class="absolute top-12 left-0 z-50 bg-dash-card border border-dash-border p-4 rounded-sm shadow-2xl flex flex-col gap-4 w-72 max-h-[80vh] overflow-y-auto">
+
+        <!-- Projects Section -->
+        <div>
+            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2 px-1">Projekte</h3>
+            <div class="grid grid-cols-3 gap-2">
+                <!-- Dashboard -->
+                <a routerLink="/" (click)="showAppsModal.set(false)"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Dashboard">
+                    <span class="material-symbols-sharp text-2xl">dashboard</span>
+                    <span class="text-[10px] font-medium">Dashboard</span>
+                </a>
+                <!-- Journal App -->
+                <a routerLink="/journal" (click)="showAppsModal.set(false)"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Journal">
+                    <span class="material-symbols-sharp text-2xl">book</span>
+                    <span class="text-[10px] font-medium">Journal</span>
+                </a>
+                <!-- My Budget -->
+                <a routerLink="/budget" (click)="showAppsModal.set(false)"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="My Budget">
+                    <span class="material-symbols-sharp text-2xl">account_balance_wallet</span>
+                    <span class="text-[10px] font-medium">Budget</span>
+                </a>
+                <!-- Settings -->
+                <button (click)="onSettingsClick()"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Settings">
+                    <span class="material-symbols-sharp text-2xl">settings</span>
+                    <span class="text-[10px] font-medium">Settings</span>
+                </button>
+                <!-- Install PWA -->
+                <button *ngIf="pwa.canInstall()" (click)="installPwa()"
+                    class="aspect-square bg-dash-bg/50 hover:bg-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Install App">
+                    <span class="material-symbols-sharp text-2xl">download</span>
+                    <span class="text-[10px] font-medium">Install</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Favorites Section -->
+        <div *ngIf="bookmarkService.bookmarks().length > 0">
+            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2 px-1 flex items-center gap-2">
+                Favoriten
+                <span class="material-symbols-sharp text-[10px]">star</span>
+            </h3>
+            <div class="grid grid-cols-3 gap-2">
+                <ng-container *ngFor="let bookmark of bookmarkService.bookmarks()">
+                    <a *ngIf="bookmark.isFavorite" [href]="bookmark.url" target="_blank"
+                        (click)="showAppsModal.set(false)"
+                        class="aspect-square bg-dash-card border border-dash-border hover:border-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text hover:text-dash-accent transition-colors group relative overflow-hidden"
+                        [title]="bookmark.name">
+                        <!-- Background hover effect -->
+                        <div
+                            class="absolute inset-0 bg-dash-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+
+                        <img [src]="bookmarkService.getFaviconUrl(bookmark.url)"
+                            (error)="$event.target.style.display='none'" class="w-6 h-6 rounded-sm mb-1" alt="Icon">
+                        <span class="text-[10px] font-medium truncate w-full text-center px-1">{{ bookmark.name
+                            }}</span>
+                    </a>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backdrop -->
+    <div *ngIf="showAppsModal()" (click)="toggleAppsModal()" class="fixed inset-0 z-40"></div>
+</div>
