@@ -1,5 +1,5 @@
 import { Component, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
@@ -31,7 +31,7 @@ interface Category {
 @Component({
     selector: 'app-budget-page',
     standalone: true,
-    imports: [CommonModule, RouterLink, FormsModule, AppsLauncher, BudgetCalendar],
+    imports: [CommonModule, RouterLink, FormsModule, AppsLauncher, BudgetCalendar, DecimalPipe],
     templateUrl: './budget-page.html',
     styleUrls: ['./budget-page.css']
 })
@@ -1047,5 +1047,135 @@ export class BudgetPage {
         }).join(' ');
 
         return points;
+    }
+
+    // Additional statistics methods
+    Math = Math; // Expose Math to template
+
+    getSelectedMonthName(): string {
+        return this.selectedMonth().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    }
+
+    getIncomeTransactionCount(): number {
+        return this.getSortedTransactions().filter(t => t.type === 'income').length;
+    }
+
+    getExpenseTransactionCount(): number {
+        return this.getSortedTransactions().filter(t => t.type === 'expense').length;
+    }
+
+    getIncomeCategoryStats() {
+        const transactions = this.getSortedTransactions().filter(t => t.type === 'income');
+        const total = transactions.reduce((sum, t) => sum + t.amount, 0);
+
+        const stats = new Map<string, number>();
+        transactions.forEach(t => {
+            const current = stats.get(t.category) || 0;
+            stats.set(t.category, current + t.amount);
+        });
+
+        return Array.from(stats.entries())
+            .map(([id, amount]) => ({
+                name: this.getCategoryById(id)?.name || 'Unbekannt',
+                amount,
+                percentage: total > 0 ? (amount / total) * 100 : 0,
+                color: this.getCategoryColor(id)
+            }))
+            .sort((a, b) => b.amount - a.amount);
+    }
+
+    getIncomePieChartGradient(): string {
+        const stats = this.getIncomeCategoryStats();
+        if (stats.length === 0) return 'conic-gradient(#333 0% 100%)';
+
+        let gradient = 'conic-gradient(';
+        let currentPercent = 0;
+
+        stats.forEach((stat, index) => {
+            const nextPercent = currentPercent + stat.percentage;
+            gradient += `${stat.color} ${currentPercent}% ${nextPercent}%${index < stats.length - 1 ? ', ' : ''}`;
+            currentPercent = nextPercent;
+        });
+
+        gradient += ')';
+        return gradient;
+    }
+
+    getDaysInSelectedMonth(): number {
+        return new Date(this.selectedMonth().getFullYear(), this.selectedMonth().getMonth() + 1, 0).getDate();
+    }
+
+    getTrendMaxValue(): number {
+        const data = this.getDailyTrend();
+        if (data.length === 0) return 100;
+        return Math.max(...data.map(d => d.balance), 100);
+    }
+
+    getTrendMinValue(): number {
+        const data = this.getDailyTrend();
+        if (data.length === 0) return 0;
+        return Math.min(...data.map(d => d.balance), 0);
+    }
+
+    getZeroLineY(): number {
+        const max = this.getTrendMaxValue();
+        const min = this.getTrendMinValue();
+        const range = max - min || 1;
+        const height = 50;
+        return height - ((0 - min) / range) * height;
+    }
+
+    getTrendAreaPoints(): string {
+        const data = this.getDailyTrend();
+        if (data.length === 0) return '';
+
+        const maxBalance = this.getTrendMaxValue();
+        const minBalance = this.getTrendMinValue();
+        const range = maxBalance - minBalance || 1;
+
+        const width = 100;
+        const height = 50;
+
+        let points = `0,${height} `;
+        data.forEach((d, i) => {
+            const x = (i / (data.length - 1)) * width;
+            const normalizedBalance = (d.balance - minBalance) / range;
+            const y = height - (normalizedBalance * height);
+            points += `${x},${y} `;
+        });
+        points += `${width},${height}`;
+
+        return points;
+    }
+
+    getTopExpenses(): Transaction[] {
+        return this.getSortedTransactions()
+            .filter(t => t.type === 'expense')
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 10);
+    }
+
+    getAverageDailyExpense(): number {
+        const expenses = this.getStats().expenses;
+        const daysInMonth = this.getDaysInSelectedMonth();
+        return expenses / daysInMonth;
+    }
+
+    getAverageDailyIncome(): number {
+        const income = this.getStats().income;
+        const daysInMonth = this.getDaysInSelectedMonth();
+        return income / daysInMonth;
+    }
+
+    getLargestExpense(): number {
+        const expenses = this.getSortedTransactions().filter(t => t.type === 'expense');
+        if (expenses.length === 0) return 0;
+        return Math.max(...expenses.map(t => t.amount));
+    }
+
+    getLargestIncome(): number {
+        const incomes = this.getSortedTransactions().filter(t => t.type === 'income');
+        if (incomes.length === 0) return 0;
+        return Math.max(...incomes.map(t => t.amount));
     }
 }
