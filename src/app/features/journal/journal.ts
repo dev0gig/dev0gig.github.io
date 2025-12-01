@@ -158,7 +158,12 @@ export class JournalService {
     const entriesByDate = new Map<string, string[]>();
 
     for (const entry of entries) {
-      const dateStr = entry.date.toISOString().split('T')[0]; // YYYY-MM-DD
+      // Use local date for filename to avoid timezone shifts
+      const year = entry.date.getFullYear();
+      const month = String(entry.date.getMonth() + 1).padStart(2, '0');
+      const day = String(entry.date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
       const current = entriesByDate.get(dateStr) || [];
       current.push(entry.text);
       entriesByDate.set(dateStr, current);
@@ -174,7 +179,7 @@ export class JournalService {
     return zip.generateAsync({ type: 'blob' });
   }
 
-  async importData(file: File): Promise<void> {
+  async importData(file: File): Promise<number> {
     const JSZip = (await import('jszip')).default;
     const zip = await JSZip.loadAsync(file);
     const newEntries: JournalEntry[] = [];
@@ -183,9 +188,19 @@ export class JournalService {
     for (const [filename, zipEntry] of Object.entries(zip.files)) {
       if (zipEntry.dir || !filename.endsWith('.txt')) continue;
 
+      // Handle paths in zip (e.g. if user zipped a folder)
+      // Extract just the filename part
+      const cleanFilename = filename.split('/').pop() || filename;
+
       // Parse date from filename (YYYY-MM-DD.txt)
-      const dateStr = filename.replace('.txt', '');
-      const date = new Date(dateStr);
+      const dateStr = cleanFilename.replace('.txt', '');
+
+      // Parse using local time components
+      const parts = dateStr.split('-').map(Number);
+      if (parts.length !== 3) continue;
+
+      const [year, month, day] = parts;
+      const date = new Date(year, month - 1, day);
 
       if (isNaN(date.getTime())) continue;
 
@@ -193,21 +208,30 @@ export class JournalService {
 
       if (!content || !content.trim()) continue;
 
-      // Create a new entry for this date
-      // We treat the entire file content as one entry for simplicity, 
-      // or we could try to split it back if we really wanted to.
-      // Given the requirement "pro tag ein txt file", one entry per day seems appropriate 
-      // or at least acceptable for import.
+      // Check if file contains multiple entries separated by '---'
+      const entryTexts = content.split(/\n\n---\n\n/);
 
-      newEntries.push({
-        id: crypto.randomUUID(),
-        date: date,
-        text: content
-      });
+      for (const text of entryTexts) {
+        if (!text.trim()) continue;
+
+        newEntries.push({
+          id: crypto.randomUUID(),
+          date: date,
+          text: text.trim()
+        });
+      }
     }
 
     if (newEntries.length > 0) {
+      // Sort by date descending
+      newEntries.sort((a, b) => b.date.getTime() - a.date.getTime());
+
       this.entriesSignal.set(newEntries);
+
+      // Update view to the latest entry
+      this.currentDate.set(newEntries[0].date);
     }
+
+    return newEntries.length;
   }
 }

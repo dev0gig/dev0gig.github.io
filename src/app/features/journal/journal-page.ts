@@ -33,15 +33,24 @@ export class JournalPage {
         window.URL.revokeObjectURL(url);
     }
 
-    onImport(event: Event) {
+    async onImport(event: Event) {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             if (confirm('Warning: Importing data will overwrite all existing entries. Are you sure you want to proceed?')) {
-                this.journal.importData(input.files[0]);
+                try {
+                    const count = await this.journal.importData(input.files[0]);
+                    if (count > 0) {
+                        alert(`Successfully imported ${count} entries.`);
+                    } else {
+                        alert('No valid entries found in the selected file.');
+                    }
+                } catch (e) {
+                    console.error('Import failed', e);
+                    alert('Import failed. Please check the file format.');
+                }
                 this.toggleSettingsModal(); // Close modal after import
-            } else {
-                input.value = ''; // Clear input so same file can be selected again if needed
             }
+            input.value = ''; // Clear input so same file can be selected again
         }
     }
 
