@@ -26,21 +26,27 @@
                 <p class="text-sm text-dash-text-dim">Verwalten Sie Ihre Projekte und Lesezeichen.</p>
             </div>
             <div class="flex gap-3">
-                <button (click)="navigateToJournal()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md"
-                    title="Journal">
-                    <span class="material-symbols-sharp text-xl">description</span>
-                </button>
-                <button (click)="navigateToBudget()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md"
-                    title="Budget">
-                    <span class="material-symbols-sharp text-xl">payments</span>
-                </button>
-                <button
-                    class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md"
-                    title="Bibliothek">
-                    <span class="material-symbols-sharp text-xl">book</span>
-                </button>
+                <div class="tooltip-container">
+                    <button (click)="navigateToJournal()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md">
+                        <span class="material-symbols-sharp text-xl">description</span>
+                    </button>
+                    <div class="tooltip-bubble">Journal</div>
+                </div>
+                <div class="tooltip-container">
+                    <button (click)="navigateToBudget()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md">
+                        <span class="material-symbols-sharp text-xl">payments</span>
+                    </button>
+                    <div class="tooltip-bubble">Budget</div>
+                </div>
+                <div class="tooltip-container">
+                    <button (click)="downloadMangaBuilder()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md">
+                        <span class="material-symbols-sharp text-xl">book</span>
+                    </button>
+                    <div class="tooltip-bubble">MangaBuilder</div>
+                </div>
             </div>
         </div>
 
@@ -129,9 +135,9 @@
             </div>
 
             <!-- Bookmarks Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-10 gap-4">
                 <div *ngFor="let bookmark of filteredBookmarks()"
-                    class="group relative bg-dash-card border border-dash-border hover:border-dash-accent p-4 rounded-sm flex flex-col items-center gap-3 transition-all hover:-translate-y-1 hover:shadow-lg">
+                    class="group relative bg-dash-card border border-dash-border hover:border-dash-accent p-4 rounded-sm flex flex-col items-center justify-center gap-3 transition-all hover:-translate-y-1 hover:shadow-lg aspect-square">
 
                     <!-- Actions (Visible in Edit Mode) -->
                     <div *ngIf="isEditMode()"
