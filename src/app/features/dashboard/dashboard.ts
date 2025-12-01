@@ -1,6 +1,6 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
@@ -16,6 +16,7 @@ import { BookmarkService } from '../../shared/bookmark.service';
 // Dashboard component with apps modal
 export class Dashboard {
     bookmarkService = inject(BookmarkService);
+    router = inject(Router);
     isOnline = signal(true);
     showSettingsModal = signal(false);
 
@@ -77,6 +78,14 @@ export class Dashboard {
             this.newBookmarkUrl = '';
             this.newBookmarkName = '';
         }
+    }
+
+    navigateToJournal() {
+        this.router.navigate(['/journal']);
+    }
+
+    navigateToBudget() {
+        this.router.navigate(['/budget']);
     }
 
     exportBookmarks() {

@@ -10,19 +10,28 @@ body {
     font-family: 'Ubuntu', sans-serif;
 }
 
-/* Custom Scrollbar for Webkit */
+/* Custom Scrollbar for Webkit - Sehr dezent */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #0c0c0c;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #333;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Firefox Scrollbar - Sehr dezent */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }

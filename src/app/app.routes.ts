@@ -5,6 +5,6 @@ import { BudgetPage } from './features/budget/budget-page';
 
 export const routes: Routes = [
     { path: '', component: Dashboard },
-    { path: 'tools', component: JournalPage },
+    { path: 'journal', component: JournalPage },
     { path: 'budget', component: BudgetPage }
 ];
