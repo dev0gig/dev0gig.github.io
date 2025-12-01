@@ -30,13 +30,18 @@ export class EntryList {
   // Editing state
   editingEntryId: string | null = null;
   editEntryText = '';
+  editingHeight: number = 0;
 
   addEntry() {
     if (this.newEntryText.trim()) {
       this.journal.addEntry(this.newEntryText);
       this.newEntryText = '';
-      // Reset to current month to see the new entry
-      this.journal.setCurrentDate(new Date());
+      // Only reset to current month if we're not already viewing the current month
+      const now = new Date();
+      const current = this.journal.currentDate();
+      if (current.getMonth() !== now.getMonth() || current.getFullYear() !== now.getFullYear()) {
+        this.journal.setCurrentDate(now);
+      }
     }
   }
 
@@ -48,31 +53,23 @@ export class EntryList {
   }
 
   // Edit mode methods
-  startEditing(entry: any) {
+  startEditing(entry: any, event: MouseEvent) {
+    // Get the actual height of the clicked text element
+    const textElement = event.currentTarget as HTMLElement;
+    this.editingHeight = textElement.offsetHeight;
     this.editingEntryId = entry.id;
     this.editEntryText = entry.text;
   }
 
   saveEdit() {
-    if (this.editingEntryId && this.editEntryText.trim()) {
-      this.journal.updateEntry(this.editingEntryId, this.editEntryText);
+    if (this.editingEntryId) {
+      // Only update if text is not empty
+      if (this.editEntryText.trim()) {
+        this.journal.updateEntry(this.editingEntryId, this.editEntryText);
+      }
+      // Always exit edit mode
       this.editingEntryId = null;
       this.editEntryText = '';
-    }
-  }
-
-  cancelEdit() {
-    this.editingEntryId = null;
-    this.editEntryText = '';
-  }
-
-  onEditKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Enter' && event.ctrlKey) {
-      event.preventDefault();
-      this.saveEdit();
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      this.cancelEdit();
     }
   }
 
@@ -81,4 +78,5 @@ export class EntryList {
       this.journal.deleteEntry(id);
     }
   }
+
 }

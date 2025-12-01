@@ -15,8 +15,11 @@
     <div class="flex-1 overflow-y-auto flex flex-col custom-scrollbar">
         <div class="p-6 flex flex-col gap-4">
             @for (entry of filteredEntries(); track entry.id) {
-            <div
-                class="bg-dash-bg/30 border border-dash-border/50 rounded-sm p-4 hover:border-dash-accent/50 transition-all group relative">
+            <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative"
+                [class.border-2]="editingEntryId === entry.id" [class.border-dashed]="editingEntryId === entry.id"
+                [class.border-amber-400]="editingEntryId === entry.id" [class.border]="editingEntryId !== entry.id"
+                [class.border-dash-border/50]="editingEntryId !== entry.id"
+                [class.hover:border-dash-accent/50]="editingEntryId !== entry.id">
                 <div class="flex justify-between items-start mb-2">
                     <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy •
                         HH:mm':'Europe/Vienna' }}</span>
@@ -26,17 +29,18 @@
                     </button>
                 </div>
 
-                @if (editingEntryId === entry.id) {
-                <textarea [(ngModel)]="editEntryText" (keydown)="onEditKeyDown($event)"
-                    class="w-full bg-dash-bg/50 border border-dash-border rounded-sm p-2 text-sm text-dash-text h-72 resize-none focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none"
-                    autofocus></textarea>
-                <div class="text-[10px] text-dash-text-dim mt-1">CTRL+ENTER to save, ESC to cancel</div>
-                } @else {
-                <div (click)="startEditing(entry)"
-                    class="whitespace-pre-wrap text-sm text-dash-text/90 leading-relaxed cursor-pointer hover:text-dash-text transition-colors">
-                    {{ entry.text }}
+                <div class="relative">
+                    @if (editingEntryId === entry.id) {
+                    <textarea #editTextarea [(ngModel)]="editEntryText" (blur)="saveEdit()"
+                        class="w-full bg-transparent text-sm text-dash-text resize-none focus:outline-none leading-relaxed whitespace-pre-wrap"
+                        [style.height.px]="editingHeight" autofocus></textarea>
+                    } @else {
+                    <div (click)="startEditing(entry, $event)"
+                        class="whitespace-pre-wrap text-sm text-dash-text/90 leading-relaxed cursor-pointer hover:text-dash-text transition-colors">
+                        {{ entry.text }}
+                    </div>
+                    }
                 </div>
-                }
             </div>
             } @empty {
             <div class="flex flex-col items-center justify-center h-full text-dash-text-dim opacity-50 py-12">

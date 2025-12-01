@@ -16,6 +16,9 @@ export class JournalService {
   private entriesSignal = signal<JournalEntry[]>(this.loadEntries());
   private searchQuerySignal = signal<string>('');
 
+  // Flag to skip initial effect execution
+  private isInitialized = false;
+
   // Navigation state
   readonly currentDate = signal(new Date());
 
@@ -36,9 +39,17 @@ export class JournalService {
   });
 
   constructor() {
-    // Auto-save effect
+    // Auto-save effect - skip first execution to avoid overwriting loaded data
     effect(() => {
-      this.saveEntries(this.entriesSignal());
+      const entries = this.entriesSignal();
+
+      // Skip the first execution (when loading from localStorage)
+      if (!this.isInitialized) {
+        this.isInitialized = true;
+        return;
+      }
+
+      this.saveEntries(entries);
     });
 
     // Initial calculation
@@ -80,6 +91,10 @@ export class JournalService {
 
   deleteEntry(id: string) {
     this.entriesSignal.update(entries => entries.filter(e => e.id !== id));
+  }
+
+  deleteAllEntries() {
+    this.entriesSignal.set([]);
   }
 
   updateEntry(id: string, text: string) {
@@ -226,9 +241,13 @@ export class JournalService {
       // Sort by date descending
       newEntries.sort((a, b) => b.date.getTime() - a.date.getTime());
 
+      // Explicitly save to localStorage first to ensure persistence
+      this.saveEntries(newEntries);
+
+      // Then update the signal
       this.entriesSignal.set(newEntries);
 
-      // Update view to the latest entry
+      // Update view to the latest entry's month
       this.currentDate.set(newEntries[0].date);
     }
 

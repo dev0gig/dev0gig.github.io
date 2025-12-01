@@ -54,6 +54,14 @@ export class JournalPage {
         }
     }
 
+    onDeleteAll() {
+        if (confirm('Warning: This will permanently delete ALL journal entries. This action cannot be undone. Are you sure?')) {
+            this.journal.deleteAllEntries();
+            this.toggleSettingsModal();
+            alert('All entries have been deleted.');
+        }
+    }
+
     constructor() {
         window.addEventListener('blur', () => this.isOnline.set(false));
         window.addEventListener('focus', () => this.isOnline.set(true));

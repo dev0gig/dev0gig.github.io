@@ -5,6 +5,13 @@ import { FormsModule } from '@angular/forms';
 
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { BookmarkService } from '../../shared/bookmark.service';
+import { JournalService } from '../journal/journal';
+
+interface ProjectSelection {
+    bookmarks: boolean;
+    journal: boolean;
+    budget: boolean;
+}
 
 @Component({
     selector: 'app-dashboard',
@@ -16,9 +23,17 @@ import { BookmarkService } from '../../shared/bookmark.service';
 // Dashboard component with apps modal
 export class Dashboard {
     bookmarkService = inject(BookmarkService);
+    journalService = inject(JournalService);
     router = inject(Router);
     isOnline = signal(true);
     showSettingsModal = signal(false);
+
+    // Project selection for import/export
+    projectSelection = signal<ProjectSelection>({
+        bookmarks: true,
+        journal: true,
+        budget: true
+    });
 
     newBookmarkUrl = '';
     newBookmarkName = '';
@@ -186,6 +201,236 @@ export class Dashboard {
             link.download = 'manga_builder_gui.exe';
             link.click();
         }
+    }
+
+    toggleProjectSelection(project: keyof ProjectSelection) {
+        this.projectSelection.update(sel => ({
+            ...sel,
+            [project]: !sel[project]
+        }));
+    }
+
+    selectAllProjects() {
+        this.projectSelection.set({
+            bookmarks: true,
+            journal: true,
+            budget: true
+        });
+    }
+
+    deselectAllProjects() {
+        this.projectSelection.set({
+            bookmarks: false,
+            journal: false,
+            budget: false
+        });
+    }
+
+    hasAnyProjectSelected(): boolean {
+        const sel = this.projectSelection();
+        return sel.bookmarks || sel.journal || sel.budget;
+    }
+
+    async exportAllData() {
+        const selection = this.projectSelection();
+
+        if (!this.hasAnyProjectSelected()) {
+            alert('Bitte wählen Sie mindestens ein Projekt zum Exportieren aus.');
+            return;
+        }
+
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+        const exportData: any = {
+            exportDate: new Date().toISOString(),
+            version: '1.0',
+            projects: {}
+        };
+
+        // Export Bookmarks
+        if (selection.bookmarks) {
+            const bookmarks = this.bookmarkService.bookmarks();
+            exportData.projects.bookmarks = bookmarks;
+        }
+
+        // Export Journal
+        if (selection.journal) {
+            const journalEntries = this.journalService.entries();
+            exportData.projects.journal = journalEntries;
+        }
+
+        // Export Budget
+        if (selection.budget) {
+            const transactions = localStorage.getItem('mybudget_transactions');
+            const accounts = localStorage.getItem('mybudget_accounts');
+            const categories = localStorage.getItem('mybudget_categories');
+
+            exportData.projects.budget = {
+                transactions: transactions ? JSON.parse(transactions) : [],
+                accounts: accounts ? JSON.parse(accounts) : [],
+                categories: categories ? JSON.parse(categories) : []
+            };
+        }
+
+        // Add JSON data to zip
+        zip.file('dashboard_backup.json', JSON.stringify(exportData, null, 2));
+
+        // Generate and download
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dashboard_backup_${new Date().toISOString().split('T')[0]}.zip`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        const selectedProjects = [];
+        if (selection.bookmarks) selectedProjects.push('Lesezeichen');
+        if (selection.journal) selectedProjects.push('Journal');
+        if (selection.budget) selectedProjects.push('Budget');
+
+        alert(`Export erfolgreich!\nExportierte Projekte: ${selectedProjects.join(', ')}`);
+    }
+
+    triggerImportAll() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.zip';
+        input.onchange = (e: any) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.processImportAllFile(file);
+            }
+        };
+        input.click();
+    }
+
+    private async processImportAllFile(file: File) {
+        try {
+            const JSZip = (await import('jszip')).default;
+            const zip = await JSZip.loadAsync(file);
+
+            const jsonFile = zip.file('dashboard_backup.json');
+            if (!jsonFile) {
+                alert('Ungültige Backup-Datei: dashboard_backup.json nicht gefunden.');
+                return;
+            }
+
+            const content = await jsonFile.async('string');
+            const data = JSON.parse(content);
+
+            if (!data.projects) {
+                alert('Ungültige Backup-Datei: Keine Projektdaten gefunden.');
+                return;
+            }
+
+            const selection = this.projectSelection();
+            const importedProjects: string[] = [];
+
+            // Confirm import
+            const projectsToImport = [];
+            if (selection.bookmarks && data.projects.bookmarks) projectsToImport.push('Lesezeichen');
+            if (selection.journal && data.projects.journal) projectsToImport.push('Journal');
+            if (selection.budget && data.projects.budget) projectsToImport.push('Budget');
+
+            if (projectsToImport.length === 0) {
+                alert('Keine passenden Daten in der Backup-Datei gefunden oder keine Projekte ausgewählt.');
+                return;
+            }
+
+            if (!confirm(`Warnung: Der Import überschreibt alle bestehenden Daten für:\n${projectsToImport.join(', ')}\n\nFortfahren?`)) {
+                return;
+            }
+
+            // Import Bookmarks
+            if (selection.bookmarks && data.projects.bookmarks) {
+                const bookmarks = data.projects.bookmarks.map((b: any) => ({
+                    ...b,
+                    createdAt: b.createdAt || Date.now()
+                }));
+                this.bookmarkService.importBookmarks(bookmarks, true);
+                importedProjects.push('Lesezeichen');
+            }
+
+            // Import Journal
+            if (selection.journal && data.projects.journal) {
+                const entries = data.projects.journal.map((e: any) => ({
+                    ...e,
+                    date: new Date(e.date)
+                }));
+                // Direct localStorage update for journal
+                localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
+                importedProjects.push('Journal');
+            }
+
+            // Import Budget
+            if (selection.budget && data.projects.budget) {
+                const budget = data.projects.budget;
+                if (budget.transactions) {
+                    localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
+                }
+                if (budget.accounts) {
+                    localStorage.setItem('mybudget_accounts', JSON.stringify(budget.accounts));
+                }
+                if (budget.categories) {
+                    localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
+                }
+                importedProjects.push('Budget');
+            }
+
+            this.toggleSettingsModal();
+            alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
+
+            // Reload to apply changes
+            window.location.reload();
+        } catch (e) {
+            console.error('Import failed', e);
+            alert('Import fehlgeschlagen. Bitte überprüfen Sie das Dateiformat.');
+        }
+    }
+
+    deleteAllData() {
+        const selection = this.projectSelection();
+
+        if (!this.hasAnyProjectSelected()) {
+            alert('Bitte wählen Sie mindestens ein Projekt zum Löschen aus.');
+            return;
+        }
+
+        const projectsToDelete = [];
+        if (selection.bookmarks) projectsToDelete.push('Lesezeichen');
+        if (selection.journal) projectsToDelete.push('Journal');
+        if (selection.budget) projectsToDelete.push('Budget');
+
+        if (!confirm(`WARNUNG: Dies löscht ALLE Daten für:\n${projectsToDelete.join(', ')}\n\nDiese Aktion kann nicht rückgängig gemacht werden!\n\nFortfahren?`)) {
+            return;
+        }
+
+        // Double confirmation for safety
+        if (!confirm('Sind Sie ABSOLUT sicher? Alle ausgewählten Daten werden unwiderruflich gelöscht!')) {
+            return;
+        }
+
+        // Delete Bookmarks
+        if (selection.bookmarks) {
+            localStorage.removeItem('dashboard_bookmarks');
+        }
+
+        // Delete Journal
+        if (selection.journal) {
+            localStorage.removeItem('terminal_journal_entries');
+        }
+
+        // Delete Budget
+        if (selection.budget) {
+            localStorage.removeItem('mybudget_transactions');
+            localStorage.removeItem('mybudget_accounts');
+            localStorage.removeItem('mybudget_categories');
+        }
+
+        this.toggleSettingsModal();
+        alert(`Gelöscht: ${projectsToDelete.join(', ')}\n\nDie Seite wird neu geladen.`);
+        window.location.reload();
     }
 
     constructor() {

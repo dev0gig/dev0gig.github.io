@@ -1,9 +1,10 @@
-<div class="min-h-screen bg-dash-bg text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 grid-rows-[auto_1fr] gap-4 h-[calc(100vh-4rem)]">
+<div
+    class="min-h-screen bg-dash-bg text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4">
 
         <!-- Header -->
         <header
-            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-4 rounded-sm">
+            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-4 rounded-sm sticky top-0 z-50 shadow-lg">
             <div class="flex items-center gap-4">
                 <!-- Apps Launcher -->
                 <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
@@ -55,7 +56,7 @@
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleSettingsModal()">
             </div>
             <div
-                class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4">
+                class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-bold text-dash-text">Settings</h2>
                     <button (click)="toggleSettingsModal()"
@@ -64,73 +65,150 @@
                     </button>
                 </div>
 
-                <div class="flex flex-col gap-4">
-                    <div class="flex flex-col gap-2">
-                        <h3 class="text-sm font-bold text-dash-text">Lesezeichen verwalten</h3>
+                <!-- Project Selection -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-dash-text">Projekte auswählen</h3>
                         <div class="flex gap-2">
-                            <button (click)="exportBookmarks()"
-                                class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
-                                <span class="material-symbols-sharp">download</span>
-                                Exportieren
+                            <button (click)="selectAllProjects()"
+                                class="text-xs text-dash-accent hover:text-dash-accent/80 transition-colors">
+                                Alle
                             </button>
-                            <button (click)="triggerImport()"
-                                class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
-                                <span class="material-symbols-sharp">upload</span>
-                                Importieren
+                            <span class="text-dash-text-dim">|</span>
+                            <button (click)="deselectAllProjects()"
+                                class="text-xs text-dash-text-dim hover:text-white transition-colors">
+                                Keine
                             </button>
                         </div>
-                        <p class="text-xs text-dash-text-dim">
-                            Unterstützt den Import von Chrome-Lesezeichen (HTML).
-                        </p>
                     </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button (click)="toggleProjectSelection('bookmarks')"
+                            [class]="projectSelection().bookmarks ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
+                            <span class="material-symbols-sharp text-xl">bookmarks</span>
+                            <span class="text-xs font-medium">Lesezeichen</span>
+                        </button>
+                        <button (click)="toggleProjectSelection('journal')"
+                            [class]="projectSelection().journal ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
+                            <span class="material-symbols-sharp text-xl">description</span>
+                            <span class="text-xs font-medium">Journal</span>
+                        </button>
+                        <button (click)="toggleProjectSelection('budget')"
+                            [class]="projectSelection().budget ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
+                            <span class="material-symbols-sharp text-xl">payments</span>
+                            <span class="text-xs font-medium">Budget</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-t border-dash-border"></div>
+
+                <!-- Backup / Restore Section -->
+                <div class="flex flex-col gap-3">
+                    <h3 class="text-sm font-bold text-dash-text">Backup & Wiederherstellung</h3>
+                    <p class="text-xs text-dash-text-dim">
+                        Exportieren oder importieren Sie Daten für die ausgewählten Projekte als ZIP-Datei.
+                    </p>
+                    <div class="flex gap-2">
+                        <button (click)="exportAllData()" [disabled]="!hasAnyProjectSelected()"
+                            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-dash-border">
+                            <span class="material-symbols-sharp">download</span>
+                            Exportieren
+                        </button>
+                        <button (click)="triggerImportAll()" [disabled]="!hasAnyProjectSelected()"
+                            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-dash-border">
+                            <span class="material-symbols-sharp">upload</span>
+                            Importieren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-t border-dash-border"></div>
+
+                <!-- Lesezeichen Import (Chrome HTML) -->
+                <div class="flex flex-col gap-2">
+                    <h3 class="text-sm font-bold text-dash-text">Lesezeichen (Chrome HTML)</h3>
+                    <div class="flex gap-2">
+                        <button (click)="exportBookmarks()"
+                            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                            <span class="material-symbols-sharp">download</span>
+                            HTML Export
+                        </button>
+                        <button (click)="triggerImport()"
+                            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                            <span class="material-symbols-sharp">upload</span>
+                            HTML Import
+                        </button>
+                    </div>
+                    <p class="text-xs text-dash-text-dim">
+                        Unterstützt den Import von Chrome-Lesezeichen (HTML).
+                    </p>
+                </div>
+
+                <div class="border-t border-dash-border"></div>
+
+                <!-- Danger Zone -->
+                <div class="flex flex-col gap-3">
+                    <h3 class="text-sm font-bold text-red-500">Gefahrenzone</h3>
+                    <p class="text-xs text-dash-text-dim">
+                        Löschen Sie alle Daten für die ausgewählten Projekte. Diese Aktion kann nicht rückgängig gemacht
+                        werden!
+                    </p>
+                    <button (click)="deleteAllData()" [disabled]="!hasAnyProjectSelected()"
+                        class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-sm transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500/10">
+                        <span class="material-symbols-sharp">delete_forever</span>
+                        Ausgewählte Daten löschen
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Main Content Area -->
-        <main class="md:col-span-12 flex flex-col gap-6 h-full overflow-y-auto pb-8">
+        <main class="md:col-span-12 flex flex-col gap-6">
             <!-- Bookmarks Header and Controls -->
-            <div class="flex flex-wrap items-center gap-4">
-                <!-- Heading -->
-                <h3 class="text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
-                    <span class="material-symbols-sharp text-dash-accent">bookmarks</span>
-                    Meine Lesezeichen
-                </h3>
+            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
+                <div class="flex items-center gap-4">
+                    <!-- Heading (left-aligned) -->
+                    <h3 class="text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
+                        <span class="material-symbols-sharp text-dash-accent">bookmarks</span>
+                        Meine Lesezeichen
+                    </h3>
 
-                <!-- Search Bar -->
-                <div class="flex-1 min-w-[200px] max-w-md">
-                    <div class="relative group">
-                        <span
-                            class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
-                            <span class="material-symbols-sharp text-lg">search</span>
-                        </span>
-                        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
-                            placeholder="Lesezeichen suchen..."
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
-                        <button *ngIf="searchTerm()" (click)="searchTerm.set('')"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
-                            <span class="material-symbols-sharp text-sm">close</span>
+                    <!-- Search Bar (centered, takes remaining space) -->
+                    <div class="flex-1 flex justify-center">
+                        <div class="w-full max-w-md">
+                            <div class="relative group">
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
+                                    <span class="material-symbols-sharp text-lg">search</span>
+                                </span>
+                                <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                                    placeholder="Lesezeichen suchen..."
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                                <button *ngIf="searchTerm()" (click)="searchTerm.set('')"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
+                                    <span class="material-symbols-sharp text-sm">close</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons (right-aligned) -->
+                    <div class="flex gap-2">
+                        <input type="text" [(ngModel)]="newBookmarkName" placeholder="Name"
+                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
+                        <input type="text" [(ngModel)]="newBookmarkUrl" placeholder="URL"
+                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
+                        <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
+                            [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all"
+                            title="Bearbeitungsmodus umschalten">
+                            <span class="material-symbols-sharp text-lg">edit</span>
+                        </button>
+                        <button (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="material-symbols-sharp text-lg">add</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- Add Bookmark Form -->
-                <div class="flex gap-2">
-                    <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
-                        [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
-                        class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all"
-                        title="Bearbeitungsmodus umschalten">
-                        <span class="material-symbols-sharp text-lg">edit</span>
-                    </button>
-                    <div class="w-px bg-dash-border mx-1"></div>
-                    <input type="text" [(ngModel)]="newBookmarkName" placeholder="Name"
-                        class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
-                    <input type="text" [(ngModel)]="newBookmarkUrl" placeholder="URL"
-                        class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
-                    <button (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
-                        class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span class="material-symbols-sharp text-lg">add</span>
-                    </button>
                 </div>
             </div>
 
@@ -142,23 +220,23 @@
                     <!-- Actions (Visible in Edit Mode) -->
                     <div *ngIf="isEditMode()"
                         class="absolute inset-0 bg-dash-card/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4 rounded-sm animate-in fade-in duration-200">
-                        <div class="flex gap-2">
+                        <div class="flex gap-1">
                             <button (click)="bookmarkService.toggleFavorite(bookmark.id)"
                                 [class.text-yellow-400]="bookmark.isFavorite"
                                 [class.text-dash-text-dim]="!bookmark.isFavorite"
-                                class="p-2 bg-dash-bg rounded-sm hover:text-yellow-400 transition-colors border border-dash-border"
+                                class="p-1 bg-dash-bg rounded-sm hover:text-yellow-400 transition-colors border border-dash-border"
                                 title="Favorit">
-                                <span class="material-symbols-sharp text-lg">star</span>
+                                <span class="material-symbols-sharp text-sm">star</span>
                             </button>
                             <button (click)="startEditingBookmark(bookmark)"
-                                class="p-2 bg-dash-bg rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors border border-dash-border"
+                                class="p-1 bg-dash-bg rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors border border-dash-border"
                                 title="Bearbeiten">
-                                <span class="material-symbols-sharp text-lg">edit</span>
+                                <span class="material-symbols-sharp text-sm">edit</span>
                             </button>
                             <button (click)="bookmarkService.removeBookmark(bookmark.id)"
-                                class="p-2 bg-dash-bg rounded-sm text-dash-text-dim hover:text-red-500 transition-colors border border-dash-border"
+                                class="p-1 bg-dash-bg rounded-sm text-dash-text-dim hover:text-red-500 transition-colors border border-dash-border"
                                 title="Löschen">
-                                <span class="material-symbols-sharp text-lg">delete</span>
+                                <span class="material-symbols-sharp text-sm">delete</span>
                             </button>
                         </div>
                         <span class="text-xs text-dash-text font-medium">{{ bookmark.name }}</span>
@@ -168,7 +246,7 @@
                     <a [href]="bookmark.url" [target]="isEditMode() ? '_self' : '_blank'" (click)="onBookmarkClick()"
                         [class.pointer-events-none]="isEditMode()" class="flex flex-col items-center gap-2 w-full">
                         <img [src]="bookmarkService.getFaviconUrl(bookmark.url)"
-                            (error)="$event.target.style.display='none'" class="w-8 h-8 rounded-sm" alt="Icon">
+                            (error)="$event.target.style.display='none'" class="w-9 h-9 rounded-sm" alt="Icon">
                         <span class="text-sm font-medium text-dash-text truncate w-full text-center">{{
                             bookmark.name }}</span>
                     </a>

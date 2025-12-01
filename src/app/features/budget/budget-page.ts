@@ -63,7 +63,7 @@ export class BudgetPage {
     constructor() {
         this.loadData();
         this.initializeDefaultCategories();
-
+        this.initializeSampleData();
     }
 
     private loadData() {
@@ -93,7 +93,208 @@ export class BudgetPage {
         }
     }
 
+    private initializeSampleData() {
+        // Only initialize if no transactions exist
+        if (this.transactions().length > 0) return;
 
+        // Sample accounts
+        const sampleAccounts: Account[] = [
+            { id: 'acc_giro', name: 'Girokonto DE123', balance: 0 },
+            { id: 'acc_kredit', name: 'Kreditkarte XX789', balance: 0 },
+            { id: 'acc_spar', name: 'Sparkonto DE456', balance: 0 }
+        ];
+
+        // Sample categories
+        const sampleCategories: Category[] = [
+            { id: 'cat_einkommen', name: 'Einkommen', type: 'income' },
+            { id: 'cat_wohnen', name: 'Wohnen', type: 'expense' },
+            { id: 'cat_lebensmittel', name: 'Lebensmittel', type: 'expense' },
+            { id: 'cat_sparen', name: 'Sparen', type: 'both' },
+            { id: 'cat_freizeit', name: 'Freizeit', type: 'expense' },
+            { id: 'cat_unterhaltung', name: 'Unterhaltung', type: 'expense' },
+            { id: 'cat_transport', name: 'Transport', type: 'expense' },
+            { id: 'cat_bildung', name: 'Bildung', type: 'expense' },
+            { id: 'cat_gesundheit', name: 'Gesundheit', type: 'expense' },
+            { id: 'cat_schulden', name: 'Schulden', type: 'both' },
+            { id: 'cat_sonstiges', name: 'Sonstiges', type: 'both' },
+            { id: 'cat_versicherung', name: 'Versicherung', type: 'expense' },
+            { id: 'cat_kommunikation', name: 'Kommunikation', type: 'expense' },
+            { id: 'cat_bargeld', name: 'Bargeld', type: 'expense' },
+            { id: 'cat_gebuehren', name: 'Gebühren', type: 'expense' }
+        ];
+
+        // Sample transactions data
+        const sampleData = [
+            { date: '2025-11-01', desc: 'Gehalt', account: 'acc_giro', category: 'cat_einkommen', amount: 4500.00 },
+            { date: '2025-11-01', desc: 'Miete November', account: 'acc_giro', category: 'cat_wohnen', amount: -1250.00 },
+            { date: '2025-11-02', desc: 'Lebensmittel (Edeka)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -45.89 },
+            { date: '2025-11-03', desc: 'Sparen', account: 'acc_giro', category: 'cat_sparen', amount: -500.00 },
+            { date: '2025-11-03', desc: 'Übertrag Einzahlung', account: 'acc_spar', category: 'cat_sparen', amount: 500.00 },
+            { date: '2025-11-04', desc: 'Kinobesuch', account: 'acc_giro', category: 'cat_freizeit', amount: -32.00 },
+            { date: '2025-11-05', desc: 'Netflix Abo', account: 'acc_kredit', category: 'cat_unterhaltung', amount: -12.99 },
+            { date: '2025-11-06', desc: 'Bahnticket', account: 'acc_giro', category: 'cat_transport', amount: -19.90 },
+            { date: '2025-11-07', desc: 'Bücherkauf', account: 'acc_kredit', category: 'cat_bildung', amount: -25.50 },
+            { date: '2025-11-08', desc: 'Stromabschlag', account: 'acc_giro', category: 'cat_wohnen', amount: -85.00 },
+            { date: '2025-11-09', desc: 'Lebensmittel (Rewe)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -67.35 },
+            { date: '2025-11-10', desc: 'Restaurantbesuch', account: 'acc_giro', category: 'cat_freizeit', amount: -75.40 },
+            { date: '2025-11-11', desc: 'Überweisung Schulden', account: 'acc_spar', category: 'cat_schulden', amount: -150.00 },
+            { date: '2025-11-11', desc: 'Rückzahlung', account: 'acc_giro', category: 'cat_einkommen', amount: 150.00 },
+            { date: '2025-11-12', desc: 'Fitnessstudio', account: 'acc_kredit', category: 'cat_gesundheit', amount: -49.90 },
+            { date: '2025-11-13', desc: 'Online-Shopping', account: 'acc_kredit', category: 'cat_sonstiges', amount: -112.50 },
+            { date: '2025-11-14', desc: 'Tanken', account: 'acc_giro', category: 'cat_transport', amount: -55.80 },
+            { date: '2025-11-15', desc: 'Lebensmittel (Lidl)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -33.10 },
+            { date: '2025-11-16', desc: 'Dividendenzahlung', account: 'acc_spar', category: 'cat_einkommen', amount: 15.20 },
+            { date: '2025-11-17', desc: 'Kaffee', account: 'acc_kredit', category: 'cat_freizeit', amount: -4.50 },
+            { date: '2025-11-18', desc: 'Versicherung', account: 'acc_giro', category: 'cat_versicherung', amount: -65.99 },
+            { date: '2025-11-19', desc: 'Software-Lizenz', account: 'acc_kredit', category: 'cat_bildung', amount: -9.99 },
+            { date: '2025-11-20', desc: 'Lebensmittel (Edeka)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -51.77 },
+            { date: '2025-11-21', desc: 'Konzertkarten', account: 'acc_kredit', category: 'cat_freizeit', amount: -90.00 },
+            { date: '2025-11-22', desc: 'Geldautomat Abhebung', account: 'acc_giro', category: 'cat_bargeld', amount: -100.00 },
+            { date: '2025-11-23', desc: 'Telefonrechnung', account: 'acc_giro', category: 'cat_kommunikation', amount: -39.95 },
+            { date: '2025-11-24', desc: 'Geschenk', account: 'acc_kredit', category: 'cat_sonstiges', amount: -40.00 },
+            { date: '2025-11-25', desc: 'Zinsen Gutschrift', account: 'acc_spar', category: 'cat_einkommen', amount: 0.55 },
+            { date: '2025-11-26', desc: 'Werkzeugkauf', account: 'acc_giro', category: 'cat_sonstiges', amount: -19.99 },
+            { date: '2025-11-27', desc: 'Apotheke', account: 'acc_kredit', category: 'cat_gesundheit', amount: -15.20 },
+            { date: '2025-11-28', desc: 'Online-Kurs', account: 'acc_kredit', category: 'cat_bildung', amount: -49.00 },
+            { date: '2025-11-29', desc: 'Lebensmittel (Aldi)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -22.60 },
+            { date: '2025-11-30', desc: 'Zahlung Kreditkarte', account: 'acc_giro', category: 'cat_schulden', amount: -450.00 },
+            { date: '2025-12-01', desc: 'Lebensmittel (Edeka)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -40.15 },
+            { date: '2025-12-02', desc: 'Sparen', account: 'acc_giro', category: 'cat_sparen', amount: -200.00 },
+            { date: '2025-12-02', desc: 'Übertrag Einzahlung', account: 'acc_spar', category: 'cat_sparen', amount: 200.00 },
+            { date: '2025-12-03', desc: 'Geschenk', account: 'acc_giro', category: 'cat_sonstiges', amount: -55.00 },
+            { date: '2025-12-04', desc: 'Bäckerei', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -8.50 },
+            { date: '2025-12-05', desc: 'Internet-Rechnung', account: 'acc_giro', category: 'cat_kommunikation', amount: -34.99 },
+            { date: '2025-12-06', desc: 'Tanken', account: 'acc_kredit', category: 'cat_transport', amount: -61.20 },
+            { date: '2025-12-07', desc: 'Hobby-Zubehör', account: 'acc_giro', category: 'cat_freizeit', amount: -28.50 },
+            { date: '2025-12-08', desc: 'Lebensmittel (Rewe)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -72.90 },
+            { date: '2025-12-09', desc: 'Abendessen', account: 'acc_giro', category: 'cat_freizeit', amount: -48.60 },
+            { date: '2025-12-10', desc: 'Software-Abo', account: 'acc_kredit', category: 'cat_unterhaltung', amount: -7.99 },
+            { date: '2025-12-11', desc: 'Übertrag Auszahlung', account: 'acc_spar', category: 'cat_sonstiges', amount: -100.00 },
+            { date: '2025-12-11', desc: 'Einzahlung aus Sparkonto', account: 'acc_giro', category: 'cat_sonstiges', amount: 100.00 },
+            { date: '2025-12-12', desc: 'Kleidung', account: 'acc_kredit', category: 'cat_sonstiges', amount: -89.90 },
+            { date: '2025-12-13', desc: 'Lebensmittel (Lidl)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -35.40 },
+            { date: '2025-12-14', desc: 'Sportausrüstung', account: 'acc_kredit', category: 'cat_gesundheit', amount: -149.00 },
+            { date: '2025-12-15', desc: 'Reparatur Auto', account: 'acc_giro', category: 'cat_transport', amount: -180.00 },
+            { date: '2025-12-16', desc: 'Lebensmittel (Aldi)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -29.75 },
+            { date: '2025-12-17', desc: 'Online-Shopping', account: 'acc_kredit', category: 'cat_sonstiges', amount: -45.60 },
+            { date: '2025-12-18', desc: 'Gebühren Bank', account: 'acc_giro', category: 'cat_gebuehren', amount: -5.00 },
+            { date: '2025-12-19', desc: 'Weihnachtsmarkt', account: 'acc_giro', category: 'cat_freizeit', amount: -22.50 },
+            { date: '2025-12-20', desc: 'Lebensmittel (Edeka)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -55.30 },
+            { date: '2025-12-21', desc: 'Übertrag Einzahlung', account: 'acc_spar', category: 'cat_sparen', amount: 100.00 },
+            { date: '2025-12-22', desc: 'Geschenk', account: 'acc_giro', category: 'cat_sonstiges', amount: -99.00 },
+            { date: '2025-12-23', desc: 'Lebensmittel (Rewe)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -110.50 },
+            { date: '2025-12-24', desc: 'Lastschrift Beitrag', account: 'acc_spar', category: 'cat_versicherung', amount: -12.50 },
+            { date: '2025-12-25', desc: 'Rückerstattung Online', account: 'acc_kredit', category: 'cat_einkommen', amount: 15.00 },
+            { date: '2025-12-26', desc: 'Spende', account: 'acc_giro', category: 'cat_sonstiges', amount: -20.00 },
+            { date: '2025-12-27', desc: 'Buch', account: 'acc_kredit', category: 'cat_bildung', amount: -18.99 },
+            { date: '2025-12-28', desc: 'Tanken', account: 'acc_giro', category: 'cat_transport', amount: -45.90 },
+            { date: '2025-12-29', desc: 'Silvester-Einkauf', account: 'acc_giro', category: 'cat_lebensmittel', amount: -78.20 },
+            { date: '2025-12-30', desc: 'Streaming-Abo', account: 'acc_kredit', category: 'cat_unterhaltung', amount: -9.99 },
+            { date: '2025-12-31', desc: 'Zahlung Kreditkarte', account: 'acc_giro', category: 'cat_schulden', amount: -300.00 },
+            { date: '2026-01-01', desc: 'Gehalt', account: 'acc_giro', category: 'cat_einkommen', amount: 4500.00 },
+            { date: '2026-01-01', desc: 'Miete Januar', account: 'acc_giro', category: 'cat_wohnen', amount: -1250.00 },
+            { date: '2026-01-02', desc: 'Lebensmittel (Lidl)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -38.70 },
+            { date: '2026-01-03', desc: 'Sparen', account: 'acc_giro', category: 'cat_sparen', amount: -500.00 },
+            { date: '2026-01-03', desc: 'Übertrag Einzahlung', account: 'acc_spar', category: 'cat_sparen', amount: 500.00 },
+            { date: '2026-01-04', desc: 'Museumseintritt', account: 'acc_giro', category: 'cat_freizeit', amount: -18.00 },
+            { date: '2026-01-05', desc: 'Amazon Prime', account: 'acc_kredit', category: 'cat_unterhaltung', amount: -8.99 },
+            { date: '2026-01-06', desc: 'Busfahrkarte', account: 'acc_giro', category: 'cat_transport', amount: -2.90 },
+            { date: '2026-01-07', desc: 'Zeitschrift', account: 'acc_kredit', category: 'cat_bildung', amount: -6.50 },
+            { date: '2026-01-08', desc: 'Heizkosten Vorauszahlung', account: 'acc_giro', category: 'cat_wohnen', amount: -75.00 },
+            { date: '2026-01-09', desc: 'Lebensmittel (Aldi)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -59.45 },
+            { date: '2026-01-10', desc: 'Kino', account: 'acc_giro', category: 'cat_freizeit', amount: -24.00 },
+            { date: '2026-01-11', desc: 'Überweisung Schulden', account: 'acc_spar', category: 'cat_schulden', amount: -50.00 },
+            { date: '2026-01-11', desc: 'Rückzahlung', account: 'acc_giro', category: 'cat_einkommen', amount: 50.00 },
+            { date: '2026-01-12', desc: 'Schwimmbad', account: 'acc_kredit', category: 'cat_gesundheit', amount: -14.50 },
+            { date: '2026-01-13', desc: 'Online-Bestellung', account: 'acc_kredit', category: 'cat_sonstiges', amount: -78.20 },
+            { date: '2026-01-14', desc: 'Tanken', account: 'acc_giro', category: 'cat_transport', amount: -60.10 },
+            { date: '2026-01-15', desc: 'Lebensmittel (Edeka)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -41.90 },
+            { date: '2026-01-16', desc: 'Zinsen Kapital', account: 'acc_spar', category: 'cat_einkommen', amount: 0.80 },
+            { date: '2026-01-17', desc: 'Café', account: 'acc_kredit', category: 'cat_freizeit', amount: -5.50 },
+            { date: '2026-01-18', desc: 'Haftpflichtversicherung', account: 'acc_giro', category: 'cat_versicherung', amount: -79.99 },
+            { date: '2026-01-19', desc: 'Online-Lernplattform', account: 'acc_kredit', category: 'cat_bildung', amount: -19.99 },
+            { date: '2026-01-20', desc: 'Lebensmittel (Rewe)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -48.33 },
+            { date: '2026-01-21', desc: 'Theaterkarten', account: 'acc_kredit', category: 'cat_freizeit', amount: -120.00 },
+            { date: '2026-01-22', desc: 'Geldautomat Abhebung', account: 'acc_giro', category: 'cat_bargeld', amount: -50.00 },
+            { date: '2026-01-23', desc: 'Handyrechnung', account: 'acc_giro', category: 'cat_kommunikation', amount: -29.95 },
+            { date: '2026-01-24', desc: 'Blumen', account: 'acc_kredit', category: 'cat_sonstiges', amount: -30.00 },
+            { date: '2026-01-25', desc: 'Zinsen Gutschrift', account: 'acc_spar', category: 'cat_einkommen', amount: 1.20 },
+            { date: '2026-01-26', desc: 'Büromaterial', account: 'acc_giro', category: 'cat_sonstiges', amount: -14.99 },
+            { date: '2026-01-27', desc: 'Arztkosten', account: 'acc_kredit', category: 'cat_gesundheit', amount: -25.00 },
+            { date: '2026-01-28', desc: 'Webhosting', account: 'acc_kredit', category: 'cat_bildung', amount: -59.00 },
+            { date: '2026-01-29', desc: 'Lebensmittel (Lidl)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -27.10 },
+            { date: '2026-01-30', desc: 'Zahlung Kreditkarte', account: 'acc_giro', category: 'cat_schulden', amount: -500.00 },
+            { date: '2026-02-01', desc: 'Lebensmittel (Edeka)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -42.99 },
+            { date: '2026-02-02', desc: 'Sparen', account: 'acc_giro', category: 'cat_sparen', amount: -150.00 },
+            { date: '2026-02-02', desc: 'Übertrag Einzahlung', account: 'acc_spar', category: 'cat_sparen', amount: 150.00 },
+            { date: '2026-02-03', desc: 'Geschenk', account: 'acc_giro', category: 'cat_sonstiges', amount: -45.00 },
+            { date: '2026-02-04', desc: 'Bäckerei', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -7.50 },
+            { date: '2026-02-05', desc: 'Vodafone Rechnung', account: 'acc_giro', category: 'cat_kommunikation', amount: -49.99 },
+            { date: '2026-02-06', desc: 'Tanken', account: 'acc_kredit', category: 'cat_transport', amount: -58.50 },
+            { date: '2026-02-07', desc: 'Bastelbedarf', account: 'acc_giro', category: 'cat_freizeit', amount: -15.50 },
+            { date: '2026-02-08', desc: 'Lebensmittel (Aldi)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -65.20 },
+            { date: '2026-02-09', desc: 'Mittagessen', account: 'acc_giro', category: 'cat_freizeit', amount: -35.80 },
+            { date: '2026-02-10', desc: 'Spotify Abo', account: 'acc_kredit', category: 'cat_unterhaltung', amount: -14.99 },
+            { date: '2026-02-11', desc: 'Übertrag Auszahlung', account: 'acc_spar', category: 'cat_sonstiges', amount: -50.00 },
+            { date: '2026-02-11', desc: 'Einzahlung aus Sparkonto', account: 'acc_giro', category: 'cat_sonstiges', amount: 50.00 },
+            { date: '2026-02-12', desc: 'Schuhe', account: 'acc_kredit', category: 'cat_sonstiges', amount: -79.90 },
+            { date: '2026-02-13', desc: 'Lebensmittel (Rewe)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -39.10 },
+            { date: '2026-02-14', desc: 'Massage', account: 'acc_kredit', category: 'cat_gesundheit', amount: -60.00 },
+            { date: '2026-02-15', desc: 'KFZ-Steuer', account: 'acc_giro', category: 'cat_transport', amount: -120.00 },
+            { date: '2026-02-16', desc: 'Lebensmittel (Edeka)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -31.50 },
+            { date: '2026-02-17', desc: 'Online-Shopping', account: 'acc_kredit', category: 'cat_sonstiges', amount: -55.90 },
+            { date: '2026-02-18', desc: 'Gebühren Bank', account: 'acc_giro', category: 'cat_gebuehren', amount: -5.00 },
+            { date: '2026-02-19', desc: 'Zoo-Eintritt', account: 'acc_giro', category: 'cat_freizeit', amount: -38.00 },
+            { date: '2026-02-20', desc: 'Lebensmittel (Lidl)', account: 'acc_kredit', category: 'cat_lebensmittel', amount: -51.40 },
+            { date: '2026-02-21', desc: 'Übertrag Einzahlung', account: 'acc_spar', category: 'cat_sparen', amount: 50.00 },
+            { date: '2026-02-22', desc: 'Geschenk', account: 'acc_giro', category: 'cat_sonstiges', amount: -75.00 },
+            { date: '2026-02-23', desc: 'Lebensmittel (Aldi)', account: 'acc_giro', category: 'cat_lebensmittel', amount: -95.80 },
+            { date: '2026-02-24', desc: 'Lastschrift Beitrag', account: 'acc_spar', category: 'cat_versicherung', amount: -12.50 },
+            { date: '2026-02-25', desc: 'Rückerstattung', account: 'acc_kredit', category: 'cat_einkommen', amount: 20.00 },
+            { date: '2026-02-26', desc: 'Spende', account: 'acc_giro', category: 'cat_sonstiges', amount: -10.00 },
+            { date: '2026-02-27', desc: 'Online-Magazin', account: 'acc_kredit', category: 'cat_bildung', amount: -10.99 },
+            { date: '2026-02-28', desc: 'Tanken', account: 'acc_giro', category: 'cat_transport', amount: -49.50 },
+            { date: '2026-02-28', desc: 'Zahlung Kreditkarte', account: 'acc_giro', category: 'cat_schulden', amount: -350.00 }
+        ];
+
+        // Create transactions and update account balances
+        const transactions: Transaction[] = [];
+        const accountBalances = new Map<string, number>();
+        sampleAccounts.forEach(a => accountBalances.set(a.id, 0));
+
+        sampleData.forEach((item, index) => {
+            const type: 'income' | 'expense' = item.amount >= 0 ? 'income' : 'expense';
+            const transaction: Transaction = {
+                id: `sample_${index}`,
+                type,
+                amount: Math.abs(item.amount),
+                description: item.desc,
+                category: item.category,
+                account: item.account,
+                date: item.date
+            };
+            transactions.push(transaction);
+
+            // Update account balance
+            const currentBalance = accountBalances.get(item.account) || 0;
+            accountBalances.set(item.account, currentBalance + item.amount);
+        });
+
+        // Update account balances
+        sampleAccounts.forEach(a => {
+            a.balance = accountBalances.get(a.id) || 0;
+        });
+
+        // Set the data
+        this.accounts.set(sampleAccounts);
+        this.categories.set(sampleCategories);
+        this.transactions.set(transactions);
+
+        // Save to localStorage
+        this.saveAccounts();
+        this.saveCategories();
+        this.saveTransactions();
+    }
 
     toggleTransactionModal() {
         this.showTransactionModal.set(!this.showTransactionModal());
@@ -440,6 +641,10 @@ export class BudgetPage {
         }).format(amount);
     }
 
+    getTotalBalance(): number {
+        return this.accounts().reduce((sum, a) => sum + a.balance, 0);
+    }
+
     formatDate(dateStr: string): string {
         const date = new Date(dateStr);
         return date.toLocaleDateString('de-DE', {
@@ -464,6 +669,52 @@ export class BudgetPage {
             }
         };
         input.click();
+    }
+
+    triggerExport() {
+        const transactions = this.transactions();
+        if (transactions.length === 0) {
+            alert('Keine Transaktionen zum Exportieren vorhanden.');
+            return;
+        }
+
+        // Build CSV content
+        // Format: ID, Amount, Date, Title, Empty, Account, Currency, Category
+        const csvLines: string[] = [];
+
+        transactions.forEach(t => {
+            const account = this.getAccountById(t.account);
+            const category = this.getCategoryById(t.category);
+            const amount = t.type === 'expense' ? -t.amount : t.amount;
+
+            const line = [
+                t.id,
+                amount.toFixed(2),
+                t.date,
+                t.description,
+                '', // Empty field
+                account?.name || '',
+                'EUR',
+                category?.name || ''
+            ].join(',');
+
+            csvLines.push(line);
+        });
+
+        const csvContent = csvLines.join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', `budget_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     private processImportFile(file: File) {
@@ -641,6 +892,12 @@ export class BudgetPage {
         const accountId = formData.get('account') as string;
         const toAccountId = formData.get('toAccount') as string;
         const date = formData.get('date') as string;
+
+        // Validate: Transfer requires toAccount
+        if (type === 'transfer' && !toAccountId) {
+            alert('Bei einem Transfer muss ein Zielkonto angegeben werden.');
+            return;
+        }
 
         const oldTransaction = this.transactions().find(t => t.id === transactionId);
         if (!oldTransaction) return;

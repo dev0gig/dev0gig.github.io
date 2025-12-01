@@ -161,14 +161,14 @@ export class BookmarkService {
         }
     }
 
-    importBookmarks(newBookmarks: { url: string; name: string; createdAt?: number; isFavorite?: boolean }[]) {
+    importBookmarks(newBookmarks: { url: string; name: string; createdAt?: number; isFavorite?: boolean; id?: string }[], replace: boolean = false) {
         const bookmarksToAdd: Bookmark[] = newBookmarks.map(b => {
             let url = b.url;
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 url = 'https://' + url;
             }
             return {
-                id: crypto.randomUUID(),
+                id: b.id || crypto.randomUUID(),
                 url,
                 name: b.name,
                 isFavorite: b.isFavorite || false,
@@ -176,6 +176,14 @@ export class BookmarkService {
             };
         });
 
-        this.bookmarks.update(current => this.sortBookmarks([...bookmarksToAdd, ...current]));
+        if (replace) {
+            this.bookmarks.set(this.sortBookmarks(bookmarksToAdd));
+        } else {
+            this.bookmarks.update(current => this.sortBookmarks([...bookmarksToAdd, ...current]));
+        }
+    }
+
+    clearAllBookmarks() {
+        this.bookmarks.set([]);
     }
 }
