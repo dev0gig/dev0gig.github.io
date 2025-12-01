@@ -170,6 +170,15 @@ export class Dashboard {
         }
     }
 
+    downloadMangaBuilder() {
+        if (confirm('Möchten Sie das Manga Builder Tool herunterladen?')) {
+            const link = document.createElement('a');
+            link.href = 'manga_builder_gui.exe';
+            link.download = 'manga_builder_gui.exe';
+            link.click();
+        }
+    }
+
     constructor() {
         window.addEventListener('blur', () => this.isOnline.set(false));
         window.addEventListener('focus', () => this.isOnline.set(true));
