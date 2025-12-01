@@ -1,0 +1,17 @@
+{
+  "name": "Journal App",
+  "short_name": "Journal",
+  "theme_color": "#0f1014",
+  "background_color": "#0f1014",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
