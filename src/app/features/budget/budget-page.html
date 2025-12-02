@@ -475,6 +475,14 @@
                                     <span class="material-symbols-sharp text-sm">delete</span>
                                     <span class="hidden sm:inline">Löschen</span>
                                 </button>
+
+                                <button type="button"
+                                    (click)="copyTransactionToFixedCost(transaction); $event.stopPropagation()"
+                                    class="px-2 sm:px-3 py-1 bg-dash-accent/10 hover:bg-dash-accent/20 text-dash-accent text-xs rounded-sm border border-dash-accent/30 transition-colors flex items-center gap-1"
+                                    title="Als Fixkosten speichern">
+                                    <span class="material-symbols-sharp text-sm">bookmark_add</span>
+                                    <span class="hidden sm:inline">Als Fixkosten</span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -856,24 +864,108 @@
                 </div>
             </div>
 
+            <!-- Fixed Costs Card -->
+            <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Fixkosten</h3>
+                    <button (click)="toggleFixedCostModal()"
+                        class="text-dash-accent hover:text-dash-accent-hover transition-colors"
+                        title="Neue Fixkosten hinzufügen">
+                        <span class="material-symbols-sharp text-lg">add</span>
+                    </button>
+                </div>
+
+                <!-- Fixed Costs List -->
+                <div class="space-y-2">
+                    @for (fixedCost of getFixedCosts(); track fixedCost.id) {
+                    <div
+                        class="bg-dash-bg rounded-sm border border-dash-border p-3 group hover:border-dash-text-dim transition-colors">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-medium text-dash-text truncate">{{ fixedCost.name }}</div>
+                                <div class="text-xs text-dash-text-dim truncate">
+                                    {{ getCategoryFullName(fixedCost.category) }} • {{
+                                    getAccountById(fixedCost.account)?.name }}
+                                </div>
+                            </div>
+                            <div class="font-mono text-sm font-bold whitespace-nowrap"
+                                [class.text-red-500]="fixedCost.type === 'expense'"
+                                [class.text-green-500]="fixedCost.type === 'income'">
+                                {{ fixedCost.type === 'expense' ? '-' : '+' }}{{ formatCurrency(fixedCost.amount) }}
+                            </div>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end gap-1 mt-2 pt-2 border-t border-dash-border">
+                            <button (click)="createTransactionFromFixedCost(fixedCost)"
+                                class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
+                                title="Als Transaktion hinzufügen">
+                                <span class="material-symbols-sharp text-sm">add</span>
+                                <span>Buchen</span>
+                            </button>
+                            <button (click)="openEditFixedCostModal(fixedCost)"
+                                class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                title="Bearbeiten">
+                                <span class="material-symbols-sharp text-sm">edit</span>
+                            </button>
+                            <button (click)="deleteFixedCost(fixedCost.id)"
+                                class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                title="Löschen">
+                                <span class="material-symbols-sharp text-sm">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    }
+
+                    @if (getFixedCosts().length === 0) {
+                    <div class="text-center py-4 text-dash-text-dim text-sm italic">
+                        Keine Fixkosten definiert.
+                    </div>
+                    }
+                </div>
+
+                <!-- Fixed Costs Summary -->
+                @if (getFixedCosts().length > 0) {
+                <div class="mt-4 pt-4 border-t border-dash-border">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-dash-text-dim font-medium">Summe Fixkosten</span>
+                        <span class="font-mono font-bold"
+                            [class.text-green-500]="getFixedIncomeTotal() - getFixedCostsTotal() >= 0"
+                            [class.text-red-500]="getFixedIncomeTotal() - getFixedCostsTotal() < 0">
+                            {{ getFixedIncomeTotal() - getFixedCostsTotal() >= 0 ? '+' : '' }}{{
+                            formatCurrency(getFixedIncomeTotal() - getFixedCostsTotal()) }}
+                        </span>
+                    </div>
+                </div>
+                }
+            </div>
+
         </aside>
 
         <!-- Transaction Modal -->
         @if (showTransactionModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                (click)="toggleTransactionModal(); editingTransaction.set(null)"></div>
+                (click)="toggleTransactionModal(); editingTransaction.set(null); clearPrefillData()"></div>
             <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-dash-text">{{ editingTransaction() ? 'Transaktion
-                        bearbeiten'
-                        : 'Neue
-                        Transaktion' }}</h2>
-                    <button (click)="toggleTransactionModal(); editingTransaction.set(null)"
+                    <h2 class="text-lg font-bold text-dash-text">
+                        {{ editingTransaction() ? 'Transaktion bearbeiten' : (prefillFromFixedCost() ? 'Fixkosten
+                        buchen' : 'Neue Transaktion') }}
+                    </h2>
+                    <button (click)="toggleTransactionModal(); editingTransaction.set(null); clearPrefillData()"
                         class="text-dash-text-dim hover:text-white transition-colors">
                         <span class="material-symbols-sharp">close</span>
                     </button>
                 </div>
+                <!-- Prefill Info Banner -->
+                @if (prefillFromFixedCost()) {
+                <div class="mb-4 p-3 bg-dash-accent/10 border border-dash-accent/30 rounded-sm">
+                    <div class="flex items-center gap-2 text-dash-accent text-sm">
+                        <span class="material-symbols-sharp text-lg">info</span>
+                        <span>Vorausgefüllt aus Fixkosten: <strong>{{ prefillFromFixedCost()!.name }}</strong></span>
+                    </div>
+                </div>
+                }
                 <form (submit)="onTransactionSubmit($event)" class="space-y-4">
                     <div>
                         <label
@@ -896,21 +988,24 @@
                     <div>
                         <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
                             (€)</label>
-                        <input type="number" name="amount" step="0.01" required [ngModel]="editingTransaction()?.amount"
+                        <input type="number" name="amount" step="0.01" required
+                            [ngModel]="editingTransaction()?.amount || prefillFromFixedCost()?.amount"
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                             placeholder="0,00">
                     </div>
                     <div>
                         <label
                             class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Beschreibung</label>
-                        <input type="text" name="description" required [ngModel]="editingTransaction()?.description"
+                        <input type="text" name="description" required
+                            [ngModel]="editingTransaction()?.description || prefillFromFixedCost()?.name"
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                             placeholder="z.B. Einkauf bei Supermarkt">
                     </div>
                     <div>
                         <label
                             class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
-                        <select name="category" required [ngModel]="editingTransaction()?.category"
+                        <select name="category" required
+                            [ngModel]="editingTransaction()?.category || prefillFromFixedCost()?.category"
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                             <option value="">Kategorie wählen</option>
                             @for (category of categories(); track category.id) {
@@ -924,7 +1019,8 @@
                             <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
                                 {{ currentTransactionType() === 'transfer' ? 'Von Konto' : 'Konto' }}
                             </label>
-                            <select name="account" required [ngModel]="editingTransaction()?.account"
+                            <select name="account" required
+                                [ngModel]="editingTransaction()?.account || prefillFromFixedCost()?.account"
                                 class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                                 <option value="">Wählen</option>
                                 @for (account of accounts(); track account.id) {
@@ -953,7 +1049,8 @@
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                     </div>
                     <div class="flex gap-2 pt-4">
-                        <button type="button" (click)="toggleTransactionModal(); editingTransaction.set(null)"
+                        <button type="button"
+                            (click)="toggleTransactionModal(); editingTransaction.set(null); clearPrefillData()"
                             class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
                             Abbrechen
                         </button>
@@ -1069,6 +1166,100 @@
 
                     <div class="flex gap-2 pt-4">
                         <button type="button" (click)="toggleCategoryModal(); editingCategory.set(null)"
+                            class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
+                            Abbrechen
+                        </button>
+                        <button type="submit"
+                            class="flex-1 bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors">
+                            Speichern
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        }
+
+        <!-- Fixed Cost Modal -->
+        @if (showFixedCostModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleFixedCostModal()">
+            </div>
+            <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold text-dash-text">{{ editingFixedCost() ? 'Fixkosten bearbeiten' : 'Neue
+                        Fixkosten' }}</h2>
+                    <button (click)="toggleFixedCostModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+                <form (submit)="onFixedCostSubmit($event)" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Name</label>
+                        <input type="text" name="fixedCostName" required [value]="editingFixedCost()?.name || ''"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                            placeholder="z.B. Miete, Strom, Netflix">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
+                            (€)</label>
+                        <input type="number" name="fixedCostAmount" step="0.01" required
+                            [value]="editingFixedCost()?.amount || ''"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                            placeholder="0,00">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                        <div class="flex gap-2">
+                            <label class="flex-1">
+                                <input type="radio" name="fixedCostType" value="expense"
+                                    [checked]="!editingFixedCost() || editingFixedCost()?.type === 'expense'"
+                                    class="sr-only peer">
+                                <div class="w-full text-center px-4 py-2 rounded-sm text-sm font-medium transition-colors border cursor-pointer
+                                    peer-checked:bg-red-500/20 peer-checked:text-red-500 peer-checked:border-red-500
+                                    bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-text-dim">
+                                    Ausgabe
+                                </div>
+                            </label>
+                            <label class="flex-1">
+                                <input type="radio" name="fixedCostType" value="income"
+                                    [checked]="editingFixedCost()?.type === 'income'" class="sr-only peer">
+                                <div class="w-full text-center px-4 py-2 rounded-sm text-sm font-medium transition-colors border cursor-pointer
+                                    peer-checked:bg-green-500/20 peer-checked:text-green-500 peer-checked:border-green-500
+                                    bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-text-dim">
+                                    Einnahme
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
+                        <select name="fixedCostCategory" required
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                            <option value="">Kategorie wählen</option>
+                            @for (category of categories(); track category.id) {
+                            <option [value]="category.id" [selected]="editingFixedCost()?.category === category.id">{{
+                                category.name }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Konto</label>
+                        <select name="fixedCostAccount" required
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                            <option value="">Konto wählen</option>
+                            @for (account of accounts(); track account.id) {
+                            <option [value]="account.id" [selected]="editingFixedCost()?.account === account.id">{{
+                                account.name }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="flex gap-2 pt-4">
+                        <button type="button" (click)="toggleFixedCostModal()"
                             class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
                             Abbrechen
                         </button>

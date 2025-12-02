@@ -14,6 +14,16 @@ interface Transaction {
     account: string;
     toAccount?: string; // For transfers
     date: string;
+    isFixedCost?: boolean; // Mark as fixed cost
+}
+
+interface FixedCost {
+    id: string;
+    name: string;
+    amount: number;
+    type: 'income' | 'expense';
+    category: string;
+    account: string;
 }
 
 interface Account {
@@ -39,17 +49,23 @@ interface Category {
 export class BudgetPage {
     transactions = signal<Transaction[]>([]);
     accounts = signal<Account[]>([]);
+    fixedCosts = signal<FixedCost[]>([]);
     isOnline = signal(true);
 
     categories = signal<Category[]>([]);
 
     editingCategory = signal<Category | null>(null);
+    editingFixedCost = signal<FixedCost | null>(null);
 
     showTransactionModal = signal(false);
     showAccountModal = signal(false);
     showCategoryModal = signal(false);
     showSettingsModal = signal(false);
+    showFixedCostModal = signal(false);
     settingsView = signal<'main' | 'accounts' | 'categories'>('main');
+
+    // For pre-filling transaction from fixed cost
+    prefillFromFixedCost = signal<FixedCost | null>(null);
 
     selectedMonth = signal(new Date());
 
@@ -75,10 +91,12 @@ export class BudgetPage {
         const transactionsData = localStorage.getItem('mybudget_transactions');
         const accountsData = localStorage.getItem('mybudget_accounts');
         const categoriesData = localStorage.getItem('mybudget_categories');
+        const fixedCostsData = localStorage.getItem('mybudget_fixedcosts');
 
         if (transactionsData) this.transactions.set(JSON.parse(transactionsData));
         if (accountsData) this.accounts.set(JSON.parse(accountsData));
         if (categoriesData) this.categories.set(JSON.parse(categoriesData));
+        if (fixedCostsData) this.fixedCosts.set(JSON.parse(fixedCostsData));
     }
 
     private initializeDefaultCategories() {
@@ -101,6 +119,13 @@ export class BudgetPage {
 
     toggleCategoryModal() {
         this.showCategoryModal.set(!this.showCategoryModal());
+    }
+
+    toggleFixedCostModal() {
+        this.showFixedCostModal.set(!this.showFixedCostModal());
+        if (!this.showFixedCostModal()) {
+            this.editingFixedCost.set(null);
+        }
     }
 
     setTransactionType(type: 'income' | 'expense' | 'transfer') {
@@ -489,14 +514,15 @@ export class BudgetPage {
 
     triggerExport() {
         const transactions = this.transactions();
-        if (transactions.length === 0) {
-            alert('Keine Transaktionen zum Exportieren vorhanden.');
+        const fixedCosts = this.fixedCosts();
+
+        if (transactions.length === 0 && fixedCosts.length === 0) {
+            alert('Keine Daten zum Exportieren vorhanden.');
             return;
         }
 
-        // Build JSON content
-        // Format: { datum, betrag, beschreibung, konto, kategorie }
-        const jsonData = transactions.map(t => {
+        // Build JSON content with extended format including fixed costs
+        const transactionsData = transactions.map(t => {
             const account = this.getAccountById(t.account);
             const category = this.getCategoryById(t.category);
             const betrag = t.type === 'expense' ? -t.amount : t.amount;
@@ -510,7 +536,28 @@ export class BudgetPage {
             };
         });
 
-        const jsonContent = JSON.stringify(jsonData, null, 2);
+        const fixedCostsData = fixedCosts.map(fc => {
+            const account = this.getAccountById(fc.account);
+            const category = this.getCategoryById(fc.category);
+            const betrag = fc.type === 'expense' ? -fc.amount : fc.amount;
+
+            return {
+                name: fc.name,
+                betrag: betrag,
+                konto: account?.name || '',
+                kategorie: category?.name || ''
+            };
+        });
+
+        // Export as extended format with both transactions and fixed costs
+        const exportData = {
+            version: 2,
+            exportDate: new Date().toISOString(),
+            transaktionen: transactionsData,
+            fixkosten: fixedCostsData
+        };
+
+        const jsonContent = JSON.stringify(exportData, null, 2);
 
         // Create and download file
         const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
@@ -536,7 +583,7 @@ export class BudgetPage {
     }
 
     private parseAndImportJSON(jsonString: string) {
-        let jsonData: any[];
+        let jsonData: any;
         try {
             jsonData = JSON.parse(jsonString);
         } catch (error) {
@@ -544,17 +591,129 @@ export class BudgetPage {
             return;
         }
 
-        if (!Array.isArray(jsonData)) {
-            alert('Die JSON-Datei muss ein Array von Transaktionen enthalten.');
-            return;
+        // Check if it's the new extended format (version 2) or legacy format
+        if (jsonData.version === 2 && jsonData.transaktionen) {
+            this.importExtendedFormat(jsonData);
+        } else if (Array.isArray(jsonData)) {
+            // Legacy format - array of transactions
+            this.importLegacyFormat(jsonData);
+        } else {
+            alert('Unbekanntes Dateiformat. Bitte überprüfen Sie die JSON-Datei.');
+        }
+    }
+
+    private importExtendedFormat(data: { transaktionen: any[], fixkosten: any[] }) {
+        const newTransactions: Transaction[] = [];
+        const newFixedCosts: FixedCost[] = [];
+
+        // Local maps for batch processing
+        const accountsMap = new Map<string, Account>();
+        const categoriesMap = new Map<string, Category>();
+        this.categories().forEach(c => categoriesMap.set(c.name, c));
+
+        // Process transactions
+        data.transaktionen.forEach(item => {
+            if (!item.datum || item.betrag === undefined || !item.beschreibung) return;
+
+            const amountRaw = parseFloat(item.betrag);
+            const dateRaw = item.datum.trim();
+            const description = item.beschreibung.trim();
+            const accountName = (item.konto || 'Unbekannt').trim();
+            const categoryNameRaw = (item.kategorie || 'Sonstiges').trim();
+
+            // Handle Account
+            let account = accountsMap.get(accountName);
+            if (!account) {
+                account = {
+                    id: this.generateId(),
+                    name: accountName,
+                    balance: 0
+                };
+                accountsMap.set(accountName, account);
+            }
+            account.balance += amountRaw;
+
+            // Handle Category
+            const categoryId = this.getOrCreateCategory(categoryNameRaw, categoriesMap);
+
+            // Create Transaction
+            const amount = Math.abs(amountRaw);
+            const type: 'income' | 'expense' = amountRaw >= 0 ? 'income' : 'expense';
+
+            const transaction: Transaction = {
+                id: this.generateId(),
+                type,
+                amount,
+                description,
+                category: categoryId,
+                account: account.id,
+                date: dateRaw.split('T')[0]
+            };
+
+            newTransactions.push(transaction);
+        });
+
+        // Process fixed costs
+        if (data.fixkosten && Array.isArray(data.fixkosten)) {
+            data.fixkosten.forEach(item => {
+                if (!item.name || item.betrag === undefined) return;
+
+                const amountRaw = parseFloat(item.betrag);
+                const name = item.name.trim();
+                const accountName = (item.konto || 'Unbekannt').trim();
+                const categoryNameRaw = (item.kategorie || 'Sonstiges').trim();
+
+                // Handle Account (ensure it exists)
+                let account = accountsMap.get(accountName);
+                if (!account) {
+                    account = {
+                        id: this.generateId(),
+                        name: accountName,
+                        balance: 0
+                    };
+                    accountsMap.set(accountName, account);
+                }
+
+                // Handle Category
+                const categoryId = this.getOrCreateCategory(categoryNameRaw, categoriesMap);
+
+                // Create Fixed Cost
+                const amount = Math.abs(amountRaw);
+                const type: 'income' | 'expense' = amountRaw >= 0 ? 'income' : 'expense';
+
+                const fixedCost: FixedCost = {
+                    id: this.generateId(),
+                    name,
+                    amount,
+                    type,
+                    category: categoryId,
+                    account: account.id
+                };
+
+                newFixedCosts.push(fixedCost);
+            });
         }
 
+        // Save all data
+        this.transactions.set(newTransactions);
+        this.accounts.set(Array.from(accountsMap.values()));
+        this.categories.set(Array.from(categoriesMap.values()));
+        this.fixedCosts.set(newFixedCosts);
+
+        this.saveTransactions();
+        this.saveAccounts();
+        this.saveCategories();
+        this.saveFixedCosts();
+
+        const message = `Import erfolgreich:\n- ${newTransactions.length} Transaktionen\n- ${newFixedCosts.length} Fixkosten`;
+        alert(message);
+    }
+
+    private importLegacyFormat(jsonData: any[]) {
         const newTransactions: Transaction[] = [];
 
         // Local maps for batch processing
-        // Start with empty accounts to reset them (clean start)
         const accountsMap = new Map<string, Account>();
-        // Start with existing categories to preserve icons/ids
         const categoriesMap = new Map<string, Category>();
         this.categories().forEach(c => categoriesMap.set(c.name, c));
 
@@ -567,7 +726,7 @@ export class BudgetPage {
             const accountName = (item.konto || 'Unbekannt').trim();
             const categoryNameRaw = (item.kategorie || 'Sonstiges').trim();
 
-            // 1. Handle Account
+            // Handle Account
             let account = accountsMap.get(accountName);
             if (!account) {
                 account = {
@@ -577,59 +736,12 @@ export class BudgetPage {
                 };
                 accountsMap.set(accountName, account);
             }
-
-            // Update balance
             account.balance += amountRaw;
 
-            // 2. Handle Category with subcategory support (format: "Parent/Child")
-            let categoryId: string;
+            // Handle Category
+            const categoryId = this.getOrCreateCategory(categoryNameRaw, categoriesMap);
 
-            if (categoryNameRaw.includes('/')) {
-                // Split into parent and subcategory
-                const parts = categoryNameRaw.split('/');
-                const parentName = parts[0].trim();
-                const subName = parts.slice(1).join('/').trim(); // Handle multiple slashes
-
-                // Create or get parent category
-                let parentCategory = categoriesMap.get(parentName);
-                if (!parentCategory) {
-                    parentCategory = {
-                        id: this.generateId(),
-                        name: parentName,
-                        type: 'both'
-                    };
-                    categoriesMap.set(parentName, parentCategory);
-                }
-
-                // Create or get subcategory (stored with full path as key)
-                const fullSubName = `${parentName}/${subName}`;
-                let subCategory = categoriesMap.get(fullSubName);
-                if (!subCategory) {
-                    subCategory = {
-                        id: this.generateId(),
-                        name: subName,
-                        type: 'both',
-                        parentId: parentCategory.id
-                    };
-                    categoriesMap.set(fullSubName, subCategory);
-                }
-
-                categoryId = subCategory.id;
-            } else {
-                // Simple category without subcategory
-                let category = categoriesMap.get(categoryNameRaw);
-                if (!category) {
-                    category = {
-                        id: this.generateId(),
-                        name: categoryNameRaw,
-                        type: 'both'
-                    };
-                    categoriesMap.set(categoryNameRaw, category);
-                }
-                categoryId = category.id;
-            }
-
-            // 3. Create Transaction
+            // Create Transaction
             const amount = Math.abs(amountRaw);
             const type: 'income' | 'expense' = amountRaw >= 0 ? 'income' : 'expense';
 
@@ -647,7 +759,6 @@ export class BudgetPage {
         });
 
         if (newTransactions.length > 0) {
-            // Set signals with new data (replacing old for transactions/accounts)
             this.transactions.set(newTransactions);
             this.accounts.set(Array.from(accountsMap.values()));
             this.categories.set(Array.from(categoriesMap.values()));
@@ -659,6 +770,53 @@ export class BudgetPage {
             alert(`${newTransactions.length} Transaktionen erfolgreich importiert.`);
         } else {
             alert('Keine gültigen Transaktionen in der Datei gefunden.');
+        }
+    }
+
+    private getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>): string {
+        if (categoryNameRaw.includes('/')) {
+            // Split into parent and subcategory
+            const parts = categoryNameRaw.split('/');
+            const parentName = parts[0].trim();
+            const subName = parts.slice(1).join('/').trim();
+
+            // Create or get parent category
+            let parentCategory = categoriesMap.get(parentName);
+            if (!parentCategory) {
+                parentCategory = {
+                    id: this.generateId(),
+                    name: parentName,
+                    type: 'both'
+                };
+                categoriesMap.set(parentName, parentCategory);
+            }
+
+            // Create or get subcategory
+            const fullSubName = `${parentName}/${subName}`;
+            let subCategory = categoriesMap.get(fullSubName);
+            if (!subCategory) {
+                subCategory = {
+                    id: this.generateId(),
+                    name: subName,
+                    type: 'both',
+                    parentId: parentCategory.id
+                };
+                categoriesMap.set(fullSubName, subCategory);
+            }
+
+            return subCategory.id;
+        } else {
+            // Simple category without subcategory
+            let category = categoriesMap.get(categoryNameRaw);
+            if (!category) {
+                category = {
+                    id: this.generateId(),
+                    name: categoryNameRaw,
+                    type: 'both'
+                };
+                categoriesMap.set(categoryNameRaw, category);
+            }
+            return category.id;
         }
     }
 
@@ -693,6 +851,116 @@ export class BudgetPage {
 
     private saveCategories() {
         localStorage.setItem('mybudget_categories', JSON.stringify(this.categories()));
+    }
+
+    private saveFixedCosts() {
+        localStorage.setItem('mybudget_fixedcosts', JSON.stringify(this.fixedCosts()));
+    }
+
+    // Fixed Costs Methods
+    getFixedCosts(): FixedCost[] {
+        return this.fixedCosts();
+    }
+
+    getFixedCostsTotal(): number {
+        return this.fixedCosts()
+            .filter(fc => fc.type === 'expense')
+            .reduce((sum, fc) => sum + fc.amount, 0);
+    }
+
+    getFixedIncomeTotal(): number {
+        return this.fixedCosts()
+            .filter(fc => fc.type === 'income')
+            .reduce((sum, fc) => sum + fc.amount, 0);
+    }
+
+    openEditFixedCostModal(fixedCost: FixedCost) {
+        this.editingFixedCost.set(fixedCost);
+        this.showFixedCostModal.set(true);
+    }
+
+    deleteFixedCost(id: string) {
+        if (confirm('Möchten Sie diese Fixkosten wirklich löschen?')) {
+            this.fixedCosts.update(fc => fc.filter(item => item.id !== id));
+            this.saveFixedCosts();
+        }
+    }
+
+    onFixedCostSubmit(event: Event) {
+        event.preventDefault();
+        const form = event.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        const name = formData.get('fixedCostName') as string;
+        const amount = parseFloat(formData.get('fixedCostAmount') as string);
+        const type = formData.get('fixedCostType') as 'income' | 'expense';
+        const categoryId = formData.get('fixedCostCategory') as string;
+        const accountId = formData.get('fixedCostAccount') as string;
+
+        if (this.editingFixedCost()) {
+            const updatedFixedCost: FixedCost = {
+                ...this.editingFixedCost()!,
+                name,
+                amount,
+                type,
+                category: categoryId,
+                account: accountId
+            };
+            this.fixedCosts.update(fcs =>
+                fcs.map(fc => fc.id === updatedFixedCost.id ? updatedFixedCost : fc)
+            );
+        } else {
+            const fixedCost: FixedCost = {
+                id: this.generateId(),
+                name,
+                amount,
+                type,
+                category: categoryId,
+                account: accountId
+            };
+            this.fixedCosts.update(fc => [...fc, fixedCost]);
+        }
+
+        this.saveFixedCosts();
+        this.toggleFixedCostModal();
+        form.reset();
+    }
+
+    createTransactionFromFixedCost(fixedCost: FixedCost) {
+        // Set the prefill data and open the transaction modal
+        this.prefillFromFixedCost.set(fixedCost);
+        this.currentTransactionType.set(fixedCost.type);
+        this.showTransactionModal.set(true);
+
+        // Set today's date after modal opens
+        setTimeout(() => {
+            const dateInput = document.getElementById('transactionDate') as HTMLInputElement;
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }, 0);
+    }
+
+    clearPrefillData() {
+        this.prefillFromFixedCost.set(null);
+    }
+
+    copyTransactionToFixedCost(transaction: Transaction) {
+        // Create a new fixed cost from the transaction
+        const fixedCost: FixedCost = {
+            id: this.generateId(),
+            name: transaction.description,
+            amount: transaction.amount,
+            type: transaction.type === 'transfer' ? 'expense' : transaction.type,
+            category: transaction.category,
+            account: transaction.account
+        };
+
+        this.fixedCosts.update(fc => [...fc, fixedCost]);
+        this.saveFixedCosts();
+
+        // Show confirmation
+        alert(`"${transaction.description}" wurde als Fixkosten gespeichert.`);
     }
 
     // Inline editing methods
