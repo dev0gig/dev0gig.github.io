@@ -26,16 +26,49 @@ export class JournalService {
   readonly entries = this.entriesSignal.asReadonly();
   readonly storageUsage = signal<string>('0 KB');
 
+  // Month filter state (null = no filter, show all)
+  private selectedMonthFilter = signal<{ year: number; month: number } | null>(null);
+  readonly monthFilter = this.selectedMonthFilter.asReadonly();
+
   readonly displayEntries = computed(() => {
     const query = this.searchQuerySignal().toLowerCase();
+    const monthFilter = this.selectedMonthFilter();
     const entries = this.entriesSignal();
     let result = entries;
 
+    // Apply month filter first
+    if (monthFilter) {
+      result = result.filter(e =>
+        e.date.getFullYear() === monthFilter.year &&
+        e.date.getMonth() === monthFilter.month
+      );
+    }
+
+    // Then apply search query
     if (query) {
-      result = entries.filter(e => e.text.toLowerCase().includes(query));
+      result = result.filter(e => e.text.toLowerCase().includes(query));
     }
 
     return result.sort((a, b) => b.date.getTime() - a.date.getTime());
+  });
+
+  // Get entries count per month for the current year
+  readonly monthlyEntryCounts = computed(() => {
+    const entries = this.entriesSignal();
+    const currentYear = new Date().getFullYear();
+    const counts: { month: number; name: string; count: number }[] = [];
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    for (let i = 0; i < 12; i++) {
+      const count = entries.filter(e =>
+        e.date.getFullYear() === currentYear &&
+        e.date.getMonth() === i
+      ).length;
+      counts.push({ month: i, name: monthNames[i], count });
+    }
+
+    return counts;
   });
 
   constructor() {
@@ -62,6 +95,16 @@ export class JournalService {
 
   setCurrentDate(date: Date) {
     this.currentDate.set(date);
+  }
+
+  setMonthFilter(year: number, month: number) {
+    this.selectedMonthFilter.set({ year, month });
+    // Also navigate calendar to that month
+    this.currentDate.set(new Date(year, month, 1));
+  }
+
+  clearMonthFilter() {
+    this.selectedMonthFilter.set(null);
   }
 
   prevMonth() {

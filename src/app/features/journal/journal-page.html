@@ -75,6 +75,42 @@
                 <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-4 tracking-wider">Calendar</h2>
                 <app-calendar class="flex-1"></app-calendar>
             </div>
+
+            <!-- Total Entries Count -->
+            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
+                <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Total Entries</h2>
+                <div class="text-2xl font-bold text-dash-accent">{{ journal.entries().length }}</div>
+            </div>
+
+            <!-- Monthly Breakdown -->
+            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">{{ currentYear }} Entries
+                    </h2>
+                    <button *ngIf="journal.monthFilter()" (click)="journal.clearMonthFilter()"
+                        class="text-[10px] text-dash-accent hover:text-white transition-colors flex items-center gap-1">
+                        <span class="material-symbols-sharp text-xs">close</span>
+                        Clear Filter
+                    </button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    @for (month of journal.monthlyEntryCounts(); track month.month) {
+                    <button (click)="onMonthClick(month.month)"
+                        class="flex items-center justify-between p-2 rounded-sm text-xs transition-all duration-200"
+                        [class.bg-dash-bg]="!isMonthSelected(month.month)"
+                        [class.hover:bg-dash-card-hover]="!isMonthSelected(month.month)"
+                        [class.bg-dash-accent]="isMonthSelected(month.month)"
+                        [class.text-white]="isMonthSelected(month.month)"
+                        [class.text-dash-text-dim]="!isMonthSelected(month.month) && month.count === 0"
+                        [class.text-dash-text]="!isMonthSelected(month.month) && month.count > 0">
+                        <span class="font-medium">{{ month.name }}</span>
+                        <span class="font-mono"
+                            [class.text-dash-accent]="month.count > 0 && !isMonthSelected(month.month)">{{ month.count
+                            }}</span>
+                    </button>
+                    }
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content Area -->

@@ -18,9 +18,19 @@ export class JournalPage {
     journal = inject(JournalService);
     isOnline = signal(true);
     showSettingsModal = signal(false);
+    currentYear = new Date().getFullYear();
 
     toggleSettingsModal() {
         this.showSettingsModal.update(v => !v);
+    }
+
+    onMonthClick(month: number) {
+        this.journal.setMonthFilter(this.currentYear, month);
+    }
+
+    isMonthSelected(month: number): boolean {
+        const filter = this.journal.monthFilter();
+        return filter !== null && filter.year === this.currentYear && filter.month === month;
     }
 
     async onExport() {
