@@ -264,15 +264,17 @@ export class Dashboard {
             const transactions = localStorage.getItem('mybudget_transactions');
             const accounts = localStorage.getItem('mybudget_accounts');
             const categories = localStorage.getItem('mybudget_categories');
+            const fixedCosts = localStorage.getItem('mybudget_fixedcosts');
 
             const budgetData = {
                 exportDate,
-                version: '1.0',
+                version: '1.1',
                 project: 'budget',
                 data: {
                     transactions: transactions ? JSON.parse(transactions) : [],
                     accounts: accounts ? JSON.parse(accounts) : [],
-                    categories: categories ? JSON.parse(categories) : []
+                    categories: categories ? JSON.parse(categories) : [],
+                    fixedCosts: fixedCosts ? JSON.parse(fixedCosts) : []
                 }
             };
             zip.file('budget.json', JSON.stringify(budgetData, null, 2));
@@ -383,6 +385,9 @@ export class Dashboard {
                 if (budget.categories) {
                     localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
                 }
+                if (budget.fixedCosts) {
+                    localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
+                }
                 importedProjects.push('Budget');
             }
 
@@ -454,6 +459,9 @@ export class Dashboard {
             if (budget.categories) {
                 localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
             }
+            if (budget.fixedCosts) {
+                localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
+            }
             importedProjects.push('Budget');
         }
 
@@ -500,6 +508,7 @@ export class Dashboard {
             localStorage.removeItem('mybudget_transactions');
             localStorage.removeItem('mybudget_accounts');
             localStorage.removeItem('mybudget_categories');
+            localStorage.removeItem('mybudget_fixedcosts');
         }
 
         this.toggleSettingsModal();
