@@ -41,6 +41,20 @@
                     <span class="material-symbols-sharp text-2xl">settings</span>
                     <span class="text-[10px] font-medium">Settings</span>
                 </button>
+                <!-- Manga Builder Download -->
+                <button (click)="downloadMangaBuilder()"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Manga Builder (.exe)">
+                    <span class="material-symbols-sharp text-2xl">book</span>
+                    <span class="text-[10px] font-medium text-center leading-tight">Manga<br>Builder.exe</span>
+                </button>
+                <!-- AudioNotes Download -->
+                <button (click)="downloadAudioNotes()"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="AudioNotes (.apk)">
+                    <span class="material-symbols-sharp text-2xl">mic</span>
+                    <span class="text-[10px] font-medium text-center leading-tight">Audio<br>Notes.apk</span>
+                </button>
                 <!-- Install PWA -->
                 <button *ngIf="pwa.canInstall()" (click)="installPwa()"
                     class="aspect-square bg-dash-bg/50 hover:bg-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text-dim hover:text-white transition-colors"

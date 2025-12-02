@@ -30,4 +30,24 @@ export class AppsLauncher {
         this.pwa.installPwa();
         this.showAppsModal.set(false);
     }
+
+    downloadMangaBuilder() {
+        if (confirm('Möchten Sie das Manga Builder Tool herunterladen?')) {
+            const link = document.createElement('a');
+            link.href = 'manga_builder_gui.exe';
+            link.download = 'manga_builder_gui.exe';
+            link.click();
+        }
+        this.showAppsModal.set(false);
+    }
+
+    downloadAudioNotes() {
+        if (confirm('Möchten Sie die AudioNotes App herunterladen?')) {
+            const link = document.createElement('a');
+            link.href = 'audionotes.apk';
+            link.download = 'audionotes.apk';
+            link.click();
+        }
+        this.showAppsModal.set(false);
+    }
 }

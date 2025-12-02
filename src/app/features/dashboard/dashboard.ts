@@ -194,14 +194,6 @@ export class Dashboard {
         }
     }
 
-    downloadMangaBuilder() {
-        if (confirm('Möchten Sie das Manga Builder Tool herunterladen?')) {
-            const link = document.createElement('a');
-            link.href = 'manga_builder_gui.exe';
-            link.download = 'manga_builder_gui.exe';
-            link.click();
-        }
-    }
 
     toggleProjectSelection(project: keyof ProjectSelection) {
         this.projectSelection.update(sel => ({
@@ -241,39 +233,50 @@ export class Dashboard {
 
         const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
-        const exportData: any = {
-            exportDate: new Date().toISOString(),
-            version: '1.0',
-            projects: {}
-        };
+        const exportDate = new Date().toISOString();
 
-        // Export Bookmarks
+        // Export Bookmarks as separate JSON file
         if (selection.bookmarks) {
             const bookmarks = this.bookmarkService.bookmarks();
-            exportData.projects.bookmarks = bookmarks;
+            const bookmarksData = {
+                exportDate,
+                version: '1.0',
+                project: 'bookmarks',
+                data: bookmarks
+            };
+            zip.file('bookmarks.json', JSON.stringify(bookmarksData, null, 2));
         }
 
-        // Export Journal
+        // Export Journal as separate JSON file
         if (selection.journal) {
             const journalEntries = this.journalService.entries();
-            exportData.projects.journal = journalEntries;
+            const journalData = {
+                exportDate,
+                version: '1.0',
+                project: 'journal',
+                data: journalEntries
+            };
+            zip.file('journal.json', JSON.stringify(journalData, null, 2));
         }
 
-        // Export Budget
+        // Export Budget as separate JSON file
         if (selection.budget) {
             const transactions = localStorage.getItem('mybudget_transactions');
             const accounts = localStorage.getItem('mybudget_accounts');
             const categories = localStorage.getItem('mybudget_categories');
 
-            exportData.projects.budget = {
-                transactions: transactions ? JSON.parse(transactions) : [],
-                accounts: accounts ? JSON.parse(accounts) : [],
-                categories: categories ? JSON.parse(categories) : []
+            const budgetData = {
+                exportDate,
+                version: '1.0',
+                project: 'budget',
+                data: {
+                    transactions: transactions ? JSON.parse(transactions) : [],
+                    accounts: accounts ? JSON.parse(accounts) : [],
+                    categories: categories ? JSON.parse(categories) : []
+                }
             };
+            zip.file('budget.json', JSON.stringify(budgetData, null, 2));
         }
-
-        // Add JSON data to zip
-        zip.file('dashboard_backup.json', JSON.stringify(exportData, null, 2));
 
         // Generate and download
         const blob = await zip.generateAsync({ type: 'blob' });
@@ -310,28 +313,28 @@ export class Dashboard {
             const JSZip = (await import('jszip')).default;
             const zip = await JSZip.loadAsync(file);
 
-            const jsonFile = zip.file('dashboard_backup.json');
-            if (!jsonFile) {
-                alert('Ungültige Backup-Datei: dashboard_backup.json nicht gefunden.');
-                return;
-            }
-
-            const content = await jsonFile.async('string');
-            const data = JSON.parse(content);
-
-            if (!data.projects) {
-                alert('Ungültige Backup-Datei: Keine Projektdaten gefunden.');
-                return;
-            }
-
             const selection = this.projectSelection();
             const importedProjects: string[] = [];
+            const projectsToImport: string[] = [];
 
-            // Confirm import
-            const projectsToImport = [];
-            if (selection.bookmarks && data.projects.bookmarks) projectsToImport.push('Lesezeichen');
-            if (selection.journal && data.projects.journal) projectsToImport.push('Journal');
-            if (selection.budget && data.projects.budget) projectsToImport.push('Budget');
+            // Check which files exist in the ZIP
+            const bookmarksFile = zip.file('bookmarks.json');
+            const journalFile = zip.file('journal.json');
+            const budgetFile = zip.file('budget.json');
+
+            // Also check for legacy format (dashboard_backup.json)
+            const legacyFile = zip.file('dashboard_backup.json');
+
+            // Determine which projects can be imported
+            if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
+            if (selection.journal && journalFile) projectsToImport.push('Journal');
+            if (selection.budget && budgetFile) projectsToImport.push('Budget');
+
+            // If no new format files found, try legacy format
+            if (projectsToImport.length === 0 && legacyFile) {
+                await this.processLegacyImport(legacyFile, selection);
+                return;
+            }
 
             if (projectsToImport.length === 0) {
                 alert('Keine passenden Daten in der Backup-Datei gefunden oder keine Projekte ausgewählt.');
@@ -343,8 +346,10 @@ export class Dashboard {
             }
 
             // Import Bookmarks
-            if (selection.bookmarks && data.projects.bookmarks) {
-                const bookmarks = data.projects.bookmarks.map((b: any) => ({
+            if (selection.bookmarks && bookmarksFile) {
+                const content = await bookmarksFile.async('string');
+                const bookmarksData = JSON.parse(content);
+                const bookmarks = (bookmarksData.data || []).map((b: any) => ({
                     ...b,
                     createdAt: b.createdAt || Date.now()
                 }));
@@ -353,19 +358,22 @@ export class Dashboard {
             }
 
             // Import Journal
-            if (selection.journal && data.projects.journal) {
-                const entries = data.projects.journal.map((e: any) => ({
+            if (selection.journal && journalFile) {
+                const content = await journalFile.async('string');
+                const journalData = JSON.parse(content);
+                const entries = (journalData.data || []).map((e: any) => ({
                     ...e,
                     date: new Date(e.date)
                 }));
-                // Direct localStorage update for journal
                 localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
                 importedProjects.push('Journal');
             }
 
             // Import Budget
-            if (selection.budget && data.projects.budget) {
-                const budget = data.projects.budget;
+            if (selection.budget && budgetFile) {
+                const content = await budgetFile.async('string');
+                const budgetData = JSON.parse(content);
+                const budget = budgetData.data || {};
                 if (budget.transactions) {
                     localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
                 }
@@ -387,6 +395,72 @@ export class Dashboard {
             console.error('Import failed', e);
             alert('Import fehlgeschlagen. Bitte überprüfen Sie das Dateiformat.');
         }
+    }
+
+    private async processLegacyImport(legacyFile: any, selection: ProjectSelection) {
+        const content = await legacyFile.async('string');
+        const data = JSON.parse(content);
+
+        if (!data.projects) {
+            alert('Ungültige Backup-Datei: Keine Projektdaten gefunden.');
+            return;
+        }
+
+        const importedProjects: string[] = [];
+        const projectsToImport: string[] = [];
+
+        if (selection.bookmarks && data.projects.bookmarks) projectsToImport.push('Lesezeichen');
+        if (selection.journal && data.projects.journal) projectsToImport.push('Journal');
+        if (selection.budget && data.projects.budget) projectsToImport.push('Budget');
+
+        if (projectsToImport.length === 0) {
+            alert('Keine passenden Daten in der Backup-Datei gefunden oder keine Projekte ausgewählt.');
+            return;
+        }
+
+        if (!confirm(`Warnung: Der Import überschreibt alle bestehenden Daten für:\n${projectsToImport.join(', ')}\n\nFortfahren?`)) {
+            return;
+        }
+
+        // Import Bookmarks
+        if (selection.bookmarks && data.projects.bookmarks) {
+            const bookmarks = data.projects.bookmarks.map((b: any) => ({
+                ...b,
+                createdAt: b.createdAt || Date.now()
+            }));
+            this.bookmarkService.importBookmarks(bookmarks, true);
+            importedProjects.push('Lesezeichen');
+        }
+
+        // Import Journal
+        if (selection.journal && data.projects.journal) {
+            const entries = data.projects.journal.map((e: any) => ({
+                ...e,
+                date: new Date(e.date)
+            }));
+            localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
+            importedProjects.push('Journal');
+        }
+
+        // Import Budget
+        if (selection.budget && data.projects.budget) {
+            const budget = data.projects.budget;
+            if (budget.transactions) {
+                localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
+            }
+            if (budget.accounts) {
+                localStorage.setItem('mybudget_accounts', JSON.stringify(budget.accounts));
+            }
+            if (budget.categories) {
+                localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
+            }
+            importedProjects.push('Budget');
+        }
+
+        this.toggleSettingsModal();
+        alert(`Import erfolgreich (Legacy-Format)!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
+
+        window.location.reload();
     }
 
     deleteAllData() {
