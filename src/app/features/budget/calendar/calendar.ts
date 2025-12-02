@@ -97,6 +97,12 @@ export class BudgetCalendar implements OnChanges {
         this.monthChange.emit(newDate);
     }
 
+    goToToday() {
+        const today = new Date();
+        this.currentDate.set(today);
+        this.monthChange.emit(today);
+    }
+
     private hasTransactionOnDate(date: Date): boolean {
         return this.transactions.some(t => {
             const tDate = new Date(t.date);

@@ -4,27 +4,33 @@
 
         <!-- Header -->
         <header
-            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-4 rounded-sm sticky top-0 z-50 shadow-lg">
-            <div class="flex items-center gap-4">
+            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-3 md:p-4 rounded-sm sticky top-0 z-50 shadow-lg">
+            <div class="flex items-center gap-2 md:gap-4">
                 <!-- Apps Launcher -->
                 <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
-                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Budget</h1>
+                <h1 class="text-xs md:text-sm font-bold tracking-widest text-dash-text-dim uppercase">Budget</h1>
             </div>
-            <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
+            <div class="flex gap-2 md:gap-4 text-xs font-mono text-dash-text-dim items-center">
                 <!-- View Toggle Switch -->
-                <div class="flex items-center gap-2 bg-dash-bg rounded-sm p-1 border border-dash-border">
+                <div class="flex items-center gap-1 md:gap-2 bg-dash-bg rounded-sm p-1 border border-dash-border">
                     <button (click)="toggleViewMode('transactions')"
-                        [class]="viewMode() === 'transactions' ? 'px-3 py-1.5 rounded-sm text-xs font-medium transition-colors bg-dash-accent text-white' : 'px-3 py-1.5 rounded-sm text-xs font-medium transition-colors text-dash-text-dim hover:text-white'">
-                        <span class="material-symbols-sharp text-sm align-middle mr-1">receipt_long</span>
-                        Transaktionen
+                        [class]="viewMode() === 'transactions' ? 'px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium transition-colors bg-dash-accent text-white' : 'px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium transition-colors text-dash-text-dim hover:text-white'">
+                        <span class="material-symbols-sharp text-sm align-middle md:mr-1">receipt_long</span>
+                        <span class="hidden md:inline">Transaktionen</span>
                     </button>
                     <button (click)="toggleViewMode('statistics')"
-                        [class]="viewMode() === 'statistics' ? 'px-3 py-1.5 rounded-sm text-xs font-medium transition-colors bg-dash-accent text-white' : 'px-3 py-1.5 rounded-sm text-xs font-medium transition-colors text-dash-text-dim hover:text-white'">
-                        <span class="material-symbols-sharp text-sm align-middle mr-1">analytics</span>
-                        Statistik
+                        [class]="viewMode() === 'statistics' ? 'px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium transition-colors bg-dash-accent text-white' : 'px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium transition-colors text-dash-text-dim hover:text-white'">
+                        <span class="material-symbols-sharp text-sm align-middle md:mr-1">analytics</span>
+                        <span class="hidden md:inline">Statistik</span>
                     </button>
                 </div>
-                <div>TRANSACTIONS <span class="text-white">{{ transactions().length }}</span></div>
+                <div class="hidden sm:block">STATUS
+                    <span [class.text-dash-accent]="isOnline()" [class.text-red-500]="!isOnline()">
+                        {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
+                    </span>
+                </div>
+                <div class="hidden sm:block">TRANSACTIONS <span class="text-white">{{ transactions().length }}</span>
+                </div>
             </div>
         </header>
 
@@ -224,28 +230,29 @@
         </div>
 
         <!-- Main Content Area -->
-        <main class="md:col-span-8 lg:col-span-9 flex flex-col gap-4">
+        <main class="md:col-span-8 lg:col-span-9 flex flex-col gap-4 order-2 md:order-1">
 
             <!-- TRANSACTIONS VIEW -->
             @if (viewMode() === 'transactions') {
             <!-- Transaction List Header with Frame -->
-            <div class="bg-dash-card border border-dash-border rounded-sm p-4">
-                <div class="flex items-center justify-between gap-4">
-                    <!-- Title (Left) -->
-                    <h2 class="text-lg font-bold text-dash-text whitespace-nowrap">Transaktionen</h2>
+            <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
+                    <!-- Title (Left) - Hidden on mobile, shown in button -->
+                    <h2 class="hidden sm:block text-lg font-bold text-dash-text whitespace-nowrap">Transaktionen</h2>
 
                     <!-- Search Field (Center) -->
-                    <div class="flex-1 max-w-md">
+                    <div class="flex-1 w-full sm:max-w-md order-2 sm:order-none">
                         <input type="text" (input)="onSearch($event)" [value]="searchQuery()"
                             placeholder="Transaktion suchen..."
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent text-sm">
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent text-sm">
                     </div>
 
                     <!-- Button (Right) -->
                     <button (click)="toggleTransactionModal()"
-                        class="bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap">
+                        class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap order-1 sm:order-none">
                         <span class="material-symbols-sharp text-lg">add</span>
-                        Neue Transaktion
+                        <span class="sm:hidden">Neue Transaktion</span>
+                        <span class="hidden sm:inline">Neue Transaktion</span>
                     </button>
                 </div>
             </div>
@@ -261,11 +268,41 @@
                 </div>
                 }
                 @for (transaction of getSortedTransactions(); track transaction.id; let last = $last) {
-                <div class="p-4 cursor-pointer hover:bg-dash-card-hover transition-colors"
+                <div class="p-3 md:p-4 cursor-pointer hover:bg-dash-card-hover transition-colors"
                     (click)="toggleExpansion(transaction.id)" [class.border-b]="!last"
                     [class.border-dash-border]="!last">
-                    <!-- Transaction Row -->
-                    <div class="grid grid-cols-12 gap-4 items-center">
+                    <!-- Transaction Row - Mobile Layout -->
+                    <div class="flex flex-col gap-2 md:hidden">
+                        <!-- Top row: Description and Amount -->
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="font-medium text-dash-text truncate flex-1"
+                                title="{{ transaction.description }}">
+                                {{ transaction.description }}
+                            </div>
+                            <div class="font-mono font-bold text-sm whitespace-nowrap"
+                                [class.text-green-500]="transaction.type === 'income'"
+                                [class.text-red-500]="transaction.type === 'expense'"
+                                [class.text-blue-400]="transaction.type === 'transfer'">
+                                <span *ngIf="transaction.type === 'transfer'"
+                                    class="material-symbols-sharp text-sm align-middle mr-1">sync_alt</span>
+                                {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense' ? '-' : '')
+                                }}{{ formatCurrency(transaction.amount) }}
+                            </div>
+                        </div>
+                        <!-- Bottom row: Date, Account, Category -->
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-dash-text-dim">
+                            <span class="font-mono">{{ formatDate(transaction.date) }}</span>
+                            <span class="truncate">{{ getAccountById(transaction.account)?.name || 'Unbekannt' }}
+                                <span *ngIf="transaction.type === 'transfer'" class="text-dash-accent">
+                                    → {{ getAccountById(transaction.toAccount!)?.name }}
+                                </span>
+                            </span>
+                            <span class="truncate">{{ getCategoryFullName(transaction.category) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Row - Desktop Layout -->
+                    <div class="hidden md:grid grid-cols-12 gap-4 items-center">
                         <!-- Date -->
                         <div class="col-span-2 text-dash-text-dim font-mono text-xs">
                             {{ formatDate(transaction.date) }}
@@ -332,14 +369,14 @@
                             </div>
 
                             <!-- Amount and Description -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label
                                         class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
                                         (€)</label>
                                     <input type="number" name="amount" step="0.01" required [value]="transaction.amount"
                                         [disabled]="!isEditingInline(transaction.id)"
-                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
                                         placeholder="0,00">
                                 </div>
                                 <div>
@@ -347,7 +384,7 @@
                                         class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Datum</label>
                                     <input type="date" name="date" required [value]="transaction.date"
                                         [disabled]="!isEditingInline(transaction.id)"
-                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                                 </div>
                             </div>
 
@@ -375,7 +412,7 @@
                             </div>
 
                             <!-- Account(s) -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label
                                         class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
@@ -384,7 +421,7 @@
                                         : 'Konto' }}
                                     </label>
                                     <select name="account" required [disabled]="!isEditingInline(transaction.id)"
-                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                                         <option value="">Wählen</option>
                                         @for (account of accounts(); track account.id) {
                                         <option [value]="account.id" [selected]="account.id === transaction.account">{{
@@ -400,7 +437,7 @@
                                     <select name="toAccount"
                                         [required]="getInlineTransactionType(transaction.id) === 'transfer'"
                                         [disabled]="!isEditingInline(transaction.id)"
-                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                                         <option value="">Wählen</option>
                                         @for (account of accounts(); track account.id) {
                                         <option [value]="account.id" [selected]="account.id === transaction.toAccount">
@@ -411,32 +448,32 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex justify-end gap-2 pt-2">
+                            <div class="flex flex-wrap justify-end gap-2 pt-2">
                                 <button type="button" *ngIf="!isEditingInline(transaction.id)"
                                     (click)="toggleInlineEdit(transaction.id); $event.stopPropagation()"
-                                    class="px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                                    class="px-2 sm:px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
                                     <span class="material-symbols-sharp text-sm">edit</span>
-                                    Bearbeiten
+                                    <span class="hidden sm:inline">Bearbeiten</span>
                                 </button>
 
                                 <button type="button" *ngIf="isEditingInline(transaction.id)"
                                     (click)="cancelInlineEdit(transaction.id); $event.stopPropagation()"
-                                    class="px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text-dim hover:text-white text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                                    class="px-2 sm:px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text-dim hover:text-white text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
                                     <span class="material-symbols-sharp text-sm">close</span>
-                                    Abbrechen
+                                    <span class="hidden sm:inline">Abbrechen</span>
                                 </button>
 
                                 <button type="submit" *ngIf="isEditingInline(transaction.id)"
-                                    class="px-3 py-1 bg-dash-accent hover:bg-dash-accent-hover text-white text-xs rounded-sm transition-colors flex items-center gap-1">
+                                    class="px-2 sm:px-3 py-1 bg-dash-accent hover:bg-dash-accent-hover text-white text-xs rounded-sm transition-colors flex items-center gap-1">
                                     <span class="material-symbols-sharp text-sm">save</span>
-                                    Speichern
+                                    <span class="hidden sm:inline">Speichern</span>
                                 </button>
 
                                 <button type="button"
                                     (click)="deleteTransaction(transaction.id); $event.stopPropagation()"
-                                    class="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs rounded-sm border border-red-500/30 transition-colors flex items-center gap-1">
+                                    class="px-2 sm:px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs rounded-sm border border-red-500/30 transition-colors flex items-center gap-1">
                                     <span class="material-symbols-sharp text-sm">delete</span>
-                                    Löschen
+                                    <span class="hidden sm:inline">Löschen</span>
                                 </button>
                             </div>
                         </form>
@@ -527,35 +564,39 @@
                 <!-- Charts Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <!-- Expenses by Category (Pie Chart) -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
                         <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Ausgaben nach
                             Kategorie</h3>
 
                         @if (getCategoryStats().length > 0) {
-                        <div class="flex items-center gap-6">
+                        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                             <!-- Pie Chart -->
-                            <div class="relative w-32 h-32 flex-shrink-0">
+                            <div class="relative w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0">
                                 <div class="w-full h-full rounded-full" [style.background]="getPieChartGradient()">
                                 </div>
                                 <div
-                                    class="absolute inset-4 bg-dash-card rounded-full flex items-center justify-center">
-                                    <span class="text-xs text-dash-text-dim font-mono">{{
+                                    class="absolute inset-3 sm:inset-4 bg-dash-card rounded-full flex items-center justify-center">
+                                    <span class="text-[10px] sm:text-xs text-dash-text-dim font-mono">{{
                                         formatCurrency(getStats().expenses) }}</span>
                                 </div>
                             </div>
 
                             <!-- Legend -->
-                            <div class="flex-1 space-y-2 max-h-48 overflow-y-auto">
+                            <div class="flex-1 w-full space-y-2 max-h-48 overflow-y-auto">
                                 @for (stat of getCategoryStats(); track stat.name) {
-                                <div class="flex items-center justify-between text-sm">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-3 h-3 rounded-sm" [style.background-color]="stat.color"></div>
-                                        <span class="text-dash-text truncate max-w-[120px]">{{ stat.name }}</span>
+                                <div class="flex items-center justify-between text-xs sm:text-sm">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div class="w-3 h-3 rounded-sm flex-shrink-0"
+                                            [style.background-color]="stat.color"></div>
+                                        <span class="text-dash-text truncate">{{ stat.name }}</span>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-dash-text-dim font-mono text-xs">{{ stat.percentage |
+                                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                                        <span class="text-dash-text-dim font-mono text-[10px] sm:text-xs">{{
+                                            stat.percentage |
                                             number:'1.1-1' }}%</span>
-                                        <span class="text-dash-text font-mono text-xs">{{ formatCurrency(stat.amount)
+                                        <span
+                                            class="text-dash-text font-mono text-[10px] sm:text-xs hidden sm:inline">{{
+                                            formatCurrency(stat.amount)
                                             }}</span>
                                     </div>
                                 </div>
@@ -570,35 +611,39 @@
                     </div>
 
                     <!-- Income by Category -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
                         <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Einnahmen nach
                             Kategorie</h3>
 
                         @if (getIncomeCategoryStats().length > 0) {
-                        <div class="flex items-center gap-6">
+                        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                             <!-- Pie Chart -->
-                            <div class="relative w-32 h-32 flex-shrink-0">
+                            <div class="relative w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0">
                                 <div class="w-full h-full rounded-full"
                                     [style.background]="getIncomePieChartGradient()"></div>
                                 <div
-                                    class="absolute inset-4 bg-dash-card rounded-full flex items-center justify-center">
-                                    <span class="text-xs text-dash-text-dim font-mono">{{
+                                    class="absolute inset-3 sm:inset-4 bg-dash-card rounded-full flex items-center justify-center">
+                                    <span class="text-[10px] sm:text-xs text-dash-text-dim font-mono">{{
                                         formatCurrency(getStats().income) }}</span>
                                 </div>
                             </div>
 
                             <!-- Legend -->
-                            <div class="flex-1 space-y-2 max-h-48 overflow-y-auto">
+                            <div class="flex-1 w-full space-y-2 max-h-48 overflow-y-auto">
                                 @for (stat of getIncomeCategoryStats(); track stat.name) {
-                                <div class="flex items-center justify-between text-sm">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-3 h-3 rounded-sm" [style.background-color]="stat.color"></div>
-                                        <span class="text-dash-text truncate max-w-[120px]">{{ stat.name }}</span>
+                                <div class="flex items-center justify-between text-xs sm:text-sm">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div class="w-3 h-3 rounded-sm flex-shrink-0"
+                                            [style.background-color]="stat.color"></div>
+                                        <span class="text-dash-text truncate">{{ stat.name }}</span>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-dash-text-dim font-mono text-xs">{{ stat.percentage |
+                                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                                        <span class="text-dash-text-dim font-mono text-[10px] sm:text-xs">{{
+                                            stat.percentage |
                                             number:'1.1-1' }}%</span>
-                                        <span class="text-dash-text font-mono text-xs">{{ formatCurrency(stat.amount)
+                                        <span
+                                            class="text-dash-text font-mono text-[10px] sm:text-xs hidden sm:inline">{{
+                                            formatCurrency(stat.amount)
                                             }}</span>
                                     </div>
                                 </div>
@@ -667,20 +712,21 @@
                 </div>
 
                 <!-- Daily Breakdown -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
                     <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Tägliche Übersicht
                     </h3>
 
-                    <div class="grid grid-cols-7 gap-1">
+                    <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
                         @for (day of getDailyTrend(); track day.day) {
-                        <div class="p-2 rounded-sm text-center text-xs"
+                        <div class="p-1 sm:p-2 rounded-sm text-center text-[10px] sm:text-xs"
                             [class.bg-green-500/20]="day.income > day.expense"
                             [class.bg-red-500/20]="day.expense > day.income"
                             [class.bg-dash-bg]="day.income === 0 && day.expense === 0"
                             [title]="'Tag ' + day.day + ': +' + formatCurrency(day.income) + ' / -' + formatCurrency(day.expense)">
                             <div class="font-bold text-dash-text">{{ day.day }}</div>
                             @if (day.income > 0 || day.expense > 0) {
-                            <div class="text-[9px] font-mono" [class.text-green-500]="day.income > day.expense"
+                            <div class="text-[8px] sm:text-[9px] font-mono hidden sm:block"
+                                [class.text-green-500]="day.income > day.expense"
                                 [class.text-red-500]="day.expense > day.income">
                                 {{ day.income > day.expense ? '+' : '-' }}{{ formatCurrency(Math.abs(day.income -
                                 day.expense)) }}
@@ -692,23 +738,26 @@
                 </div>
 
                 <!-- Top Expenses -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
                     <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Top 10 Ausgaben</h3>
 
                     @if (getTopExpenses().length > 0) {
                     <div class="space-y-2">
                         @for (transaction of getTopExpenses(); track transaction.id; let i = $index) {
-                        <div class="flex items-center justify-between p-2 bg-dash-bg rounded-sm">
-                            <div class="flex items-center gap-3">
-                                <span class="text-dash-text-dim font-mono text-xs w-5">{{ i + 1 }}.</span>
-                                <div>
-                                    <div class="text-sm text-dash-text">{{ transaction.description }}</div>
-                                    <div class="text-xs text-dash-text-dim">{{
+                        <div class="flex items-center justify-between p-2 bg-dash-bg rounded-sm gap-2">
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span class="text-dash-text-dim font-mono text-xs w-4 sm:w-5 flex-shrink-0">{{ i + 1
+                                    }}.</span>
+                                <div class="min-w-0">
+                                    <div class="text-xs sm:text-sm text-dash-text truncate">{{ transaction.description
+                                        }}</div>
+                                    <div class="text-[10px] sm:text-xs text-dash-text-dim truncate">{{
                                         getCategoryFullName(transaction.category) }} • {{ formatDate(transaction.date)
                                         }}</div>
                                 </div>
                             </div>
-                            <span class="font-mono font-bold text-red-500">-{{ formatCurrency(transaction.amount)
+                            <span class="font-mono font-bold text-red-500 text-xs sm:text-sm flex-shrink-0">-{{
+                                formatCurrency(transaction.amount)
                                 }}</span>
                         </div>
                         }
@@ -721,23 +770,31 @@
                 </div>
 
                 <!-- Average Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4 text-center">
-                        <div class="text-xs text-dash-text-dim uppercase tracking-wider mb-1">Ø Tägliche Ausgaben</div>
-                        <div class="text-lg font-bold text-red-500">{{ formatCurrency(getAverageDailyExpense()) }}</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                        <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Ø Tägl.
+                            Ausgaben</div>
+                        <div class="text-sm sm:text-lg font-bold text-red-500">{{
+                            formatCurrency(getAverageDailyExpense()) }}</div>
                     </div>
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4 text-center">
-                        <div class="text-xs text-dash-text-dim uppercase tracking-wider mb-1">Ø Tägliche Einnahmen</div>
-                        <div class="text-lg font-bold text-green-500">{{ formatCurrency(getAverageDailyIncome()) }}
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                        <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Ø Tägl.
+                            Einnahmen</div>
+                        <div class="text-sm sm:text-lg font-bold text-green-500">{{
+                            formatCurrency(getAverageDailyIncome()) }}
                         </div>
                     </div>
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4 text-center">
-                        <div class="text-xs text-dash-text-dim uppercase tracking-wider mb-1">Größte Ausgabe</div>
-                        <div class="text-lg font-bold text-red-500">{{ formatCurrency(getLargestExpense()) }}</div>
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                        <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Größte
+                            Ausgabe</div>
+                        <div class="text-sm sm:text-lg font-bold text-red-500">{{ formatCurrency(getLargestExpense()) }}
+                        </div>
                     </div>
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4 text-center">
-                        <div class="text-xs text-dash-text-dim uppercase tracking-wider mb-1">Größte Einnahme</div>
-                        <div class="text-lg font-bold text-green-500">{{ formatCurrency(getLargestIncome()) }}</div>
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                        <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Größte
+                            Einnahme</div>
+                        <div class="text-sm sm:text-lg font-bold text-green-500">{{ formatCurrency(getLargestIncome())
+                            }}</div>
                     </div>
                 </div>
             </div>
@@ -746,7 +803,7 @@
         </main>
 
         <!-- Sidebar -->
-        <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4">
+        <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4 order-1 md:order-2">
             <!-- Stats Card -->
             <div class="bg-dash-card border border-dash-border rounded-sm p-4">
                 <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-4">Übersicht</h3>
@@ -862,13 +919,13 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
                                 {{ currentTransactionType() === 'transfer' ? 'Von Konto' : 'Konto' }}
                             </label>
                             <select name="account" required [ngModel]="editingTransaction()?.account"
-                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                                 <option value="">Wählen</option>
                                 @for (account of accounts(); track account.id) {
                                 <option [value]="account.id">{{ account.name }}</option>
@@ -880,7 +937,7 @@
                             <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
                                 Konto</label>
                             <select name="toAccount" required [ngModel]="editingTransaction()?.toAccount"
-                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                                 <option value="">Wählen</option>
                                 @for (account of accounts(); track account.id) {
                                 <option [value]="account.id">{{ account.name }}</option>

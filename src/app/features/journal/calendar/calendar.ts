@@ -90,6 +90,10 @@ export class Calendar {
     this.journal.nextMonth();
   }
 
+  goToToday() {
+    this.journal.goToToday();
+  }
+
   private isSameDay(d1: Date, d2: Date): boolean {
     return d1.getFullYear() === d2.getFullYear() &&
       d1.getMonth() === d2.getMonth() &&

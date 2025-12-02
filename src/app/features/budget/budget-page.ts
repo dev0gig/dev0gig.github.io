@@ -39,6 +39,7 @@ interface Category {
 export class BudgetPage {
     transactions = signal<Transaction[]>([]);
     accounts = signal<Account[]>([]);
+    isOnline = signal(true);
 
     categories = signal<Category[]>([]);
 
@@ -65,6 +66,9 @@ export class BudgetPage {
         this.loadData();
         this.initializeDefaultCategories();
         this.initializeSampleData();
+
+        window.addEventListener('blur', () => this.isOnline.set(false));
+        window.addEventListener('focus', () => this.isOnline.set(true));
     }
 
     private loadData() {

@@ -4,7 +4,13 @@
             class="text-dash-text-dim hover:text-white transition-colors p-1 flex items-center justify-center">
             <span class="material-symbols-sharp text-sm">chevron_left</span>
         </button>
-        <span class="font-bold text-sm tracking-widest">{{ monthName() | uppercase }}</span>
+        <div class="flex items-center gap-2">
+            <span class="font-bold text-sm tracking-widest">{{ monthName() | uppercase }}</span>
+            <button (click)="goToToday()"
+                class="text-dash-text-dim hover:text-dash-accent transition-colors px-2 py-0.5 text-[10px] border border-dash-border rounded-sm hover:border-dash-accent">
+                TODAY
+            </button>
+        </div>
         <button (click)="nextMonth()"
             class="text-dash-text-dim hover:text-white transition-colors p-1 flex items-center justify-center">
             <span class="material-symbols-sharp text-sm">chevron_right</span>

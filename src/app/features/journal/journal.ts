@@ -123,6 +123,10 @@ export class JournalService {
     });
   }
 
+  goToToday() {
+    this.currentDate.set(new Date());
+  }
+
   addEntry(text: string) {
     const newEntry: JournalEntry = {
       id: crypto.randomUUID(),
