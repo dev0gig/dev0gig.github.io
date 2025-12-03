@@ -38,6 +38,7 @@ export class Dashboard {
     newBookmarkUrl = '';
     newBookmarkName = '';
     searchTerm = signal('');
+    googleSearchTerm = '';
 
     filteredBookmarks = computed(() => {
         const term = this.searchTerm().toLowerCase();
@@ -54,6 +55,15 @@ export class Dashboard {
     onBookmarkClick() {
         if (this.searchTerm()) {
             this.searchTerm.set('');
+        }
+    }
+
+    searchGoogle(event: Event) {
+        event.preventDefault();
+        if (this.googleSearchTerm) {
+            const query = encodeURIComponent(this.googleSearchTerm);
+            window.open(`https://www.google.com/search?q=${query}`, '_blank');
+            this.googleSearchTerm = '';
         }
     }
 

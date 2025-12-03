@@ -156,28 +156,88 @@
             <!-- Bookmarks Header and Controls -->
             <div class="bg-dash-card border border-dash-border p-3 sm:p-4 rounded-sm">
                 <div class="flex flex-col gap-3">
-                    <!-- Top Row: Heading and Edit/Add buttons -->
-                    <div class="flex items-center justify-between">
-                        <!-- Heading (left-aligned) -->
-                        <h3
-                            class="text-base sm:text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
-                            <span class="material-symbols-sharp text-dash-accent text-lg sm:text-xl">bookmarks</span>
-                            <span class="hidden xs:inline">Meine </span>Lesezeichen
-                        </h3>
+                    <!-- Top Row: Heading -->
+                    <h3 class="text-base sm:text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
+                        <span class="material-symbols-sharp text-dash-accent text-lg sm:text-xl">bookmarks</span>
+                        <span class="hidden xs:inline">Meine </span>Lesezeichen
+                    </h3>
 
-                        <!-- Edit/Add Buttons (always visible) -->
-                        <div class="flex gap-2">
-                            <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
-                                [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
-                                class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-2.5 sm:px-3 py-1.5 rounded-sm transition-all"
-                                title="Bearbeitungsmodus umschalten">
-                                <span class="material-symbols-sharp text-lg">edit</span>
+                    <!-- Desktop: All inputs on one line -->
+                    <div class="hidden md:flex gap-2 items-center">
+                        <!-- Google Search -->
+                        <div class="relative group flex-[2]">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+                                    <path fill="#FFC107"
+                                        d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+                                    <path fill="#FF3D00"
+                                        d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+                                    <path fill="#4CAF50"
+                                        d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+                                    <path fill="#1976D2"
+                                        d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+                                </svg>
+                            </span>
+                            <input type="text" [(ngModel)]="googleSearchTerm" (keydown.enter)="searchGoogle($event)"
+                                placeholder="Google Suche..."
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                        </div>
+                        <!-- Bookmark Search -->
+                        <div class="relative group flex-[2]">
+                            <span
+                                class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
+                                <span class="material-symbols-sharp text-lg">search</span>
+                            </span>
+                            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                                name="bookmarkSearch" placeholder="Lesezeichen suchen..."
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                            <button type="button" *ngIf="searchTerm()" (click)="searchTerm.set('')"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
+                                <span class="material-symbols-sharp text-sm">close</span>
                             </button>
                         </div>
+                        <!-- Name Input (shorter) -->
+                        <input type="text" [(ngModel)]="newBookmarkName" name="bookmarkName" placeholder="Name"
+                            class="w-28 bg-dash-bg border border-dash-border text-dash-text px-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
+                        <!-- URL Input (shorter) -->
+                        <input type="text" [(ngModel)]="newBookmarkUrl" name="bookmarkUrl" placeholder="URL"
+                            class="w-36 bg-dash-bg border border-dash-border text-dash-text px-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
+                        <!-- Add Button -->
+                        <button type="button" (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            title="Lesezeichen hinzufügen">
+                            <span class="material-symbols-sharp text-lg">add</span>
+                        </button>
+                        <!-- Edit Button -->
+                        <button type="button" (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
+                            [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all flex items-center"
+                            title="Bearbeitungsmodus umschalten">
+                            <span class="material-symbols-sharp text-lg">edit</span>
+                        </button>
                     </div>
 
-                    <!-- Search Bar (full width on mobile) -->
-                    <div class="w-full">
+                    <!-- Mobile: Stacked layout -->
+                    <div class="flex flex-col gap-2 md:hidden">
+                        <!-- Google Search -->
+                        <div class="relative group">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+                                    <path fill="#FFC107"
+                                        d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+                                    <path fill="#FF3D00"
+                                        d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+                                    <path fill="#4CAF50"
+                                        d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+                                    <path fill="#1976D2"
+                                        d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+                                </svg>
+                            </span>
+                            <input type="text" [(ngModel)]="googleSearchTerm" (keydown.enter)="searchGoogle($event)"
+                                placeholder="Google Suche..."
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                        </div>
+                        <!-- Bookmark Search -->
                         <div class="relative group">
                             <span
                                 class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
@@ -185,25 +245,34 @@
                             </span>
                             <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
                                 placeholder="Lesezeichen suchen..."
-                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
                             <button *ngIf="searchTerm()" (click)="searchTerm.set('')"
                                 class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
                                 <span class="material-symbols-sharp text-sm">close</span>
                             </button>
                         </div>
-                    </div>
-
-                    <!-- Add Bookmark Inputs (stacked on mobile) -->
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" [(ngModel)]="newBookmarkName" placeholder="Name"
-                            class="flex-1 bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
-                        <input type="text" [(ngModel)]="newBookmarkUrl" placeholder="URL"
-                            class="flex-1 bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
-                        <button (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
-                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-4 py-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                            <span class="material-symbols-sharp text-lg">add</span>
-                            <span class="sm:hidden">Hinzufügen</span>
-                        </button>
+                        <!-- Add Bookmark Inputs -->
+                        <div class="flex gap-2">
+                            <input type="text" [(ngModel)]="newBookmarkName" placeholder="Name"
+                                class="flex-1 min-w-0 bg-dash-bg border border-dash-border text-dash-text px-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                            <input type="text" [(ngModel)]="newBookmarkUrl" placeholder="URL"
+                                class="flex-1 min-w-0 bg-dash-bg border border-dash-border text-dash-text px-3 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                        </div>
+                        <!-- Buttons Row -->
+                        <div class="flex gap-2">
+                            <button (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
+                                class="flex-1 bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-4 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <span class="material-symbols-sharp text-lg">add</span>
+                                <span>Hinzufügen</span>
+                            </button>
+                            <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
+                                [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
+                                class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-4 h-10 rounded-sm transition-all flex items-center justify-center gap-2"
+                                title="Bearbeitungsmodus umschalten">
+                                <span class="material-symbols-sharp text-lg">edit</span>
+                                <span>Bearbeiten</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
