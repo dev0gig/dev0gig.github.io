@@ -1,6 +1,6 @@
 {
-  "name": "Journal App",
-  "short_name": "Journal",
+  "name": "Tools",
+  "short_name": "Tools",
   "theme_color": "#0f1014",
   "background_color": "#0f1014",
   "display": "standalone",
