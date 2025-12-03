@@ -1,10 +1,9 @@
-<div
-    class="min-h-screen bg-dash-bg text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
+<div class="min-h-screen text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4">
 
         <!-- Header -->
         <header
-            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-3 md:p-4 rounded-sm sticky top-0 z-50 shadow-lg">
+            class="md:col-span-12 flex items-center justify-between gradient-header p-3 md:p-4 rounded-sm sticky top-0 z-50 shadow-lg">
             <div class="flex items-center gap-2 md:gap-4">
                 <!-- Apps Launcher -->
                 <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
@@ -41,13 +40,13 @@
 
         <!-- Settings Modal -->
         <div *ngIf="showSettingsModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleSettingsModal()">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleSettingsModal()">
             </div>
             <div
-                class="relative bg-dash-card border border-dash-border rounded-sm shadow-2xl w-full max-w-4xl flex flex-col h-[80vh] overflow-hidden">
+                class="relative gradient-card rounded-sm shadow-2xl w-full max-w-4xl flex flex-col h-[80vh] overflow-hidden accent-glow">
 
                 <!-- Modal Header -->
-                <div class="flex items-center justify-between p-6 border-b border-dash-border bg-dash-card">
+                <div class="flex items-center justify-between p-6 border-b border-dash-border gradient-header">
                     <h2 class="text-lg font-bold text-dash-text">Settings</h2>
                     <button (click)="toggleSettingsModal()"
                         class="text-dash-text-dim hover:text-white transition-colors font-bold px-2">
@@ -78,7 +77,7 @@
                     </div>
 
                     <!-- Content Area -->
-                    <div class="w-2/3 p-6 overflow-y-auto bg-dash-card">
+                    <div class="w-2/3 p-6 overflow-y-auto">
 
                         <!-- Main / Data View -->
                         <div *ngIf="settingsView() === 'main'" class="flex flex-col gap-6">
@@ -208,7 +207,7 @@
             <!-- TRANSACTIONS VIEW -->
             @if (viewMode() === 'transactions') {
             <!-- Transaction List Header with Frame -->
-            <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+            <div class="gradient-card p-3 md:p-4 rounded-sm">
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
                     <!-- Title (Left) - Hidden on mobile, shown in button -->
                     <h2 class="hidden sm:block text-lg font-bold text-dash-text whitespace-nowrap">Transaktionen</h2>
@@ -222,7 +221,7 @@
 
                     <!-- Button (Right) -->
                     <button (click)="toggleTransactionModal()"
-                        class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap order-1 sm:order-none">
+                        class="gradient-btn text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap order-1 sm:order-none">
                         <span class="material-symbols-sharp text-lg">add</span>
                         <span class="sm:hidden">Neue Transaktion</span>
                         <span class="hidden sm:inline">Neue Transaktion</span>
@@ -231,7 +230,7 @@
             </div>
 
             <!-- Transaction List Container -->
-            <div class="bg-dash-card border border-dash-border rounded-sm">
+            <div class="gradient-card rounded-sm">
                 @if (getSortedTransactions().length === 0) {
                 <div class="p-8 text-center">
                     <span class="material-symbols-sharp text-4xl text-dash-text-dim mb-4 block">receipt_long</span>
@@ -468,7 +467,7 @@
             @if (viewMode() === 'statistics') {
             <div class="flex flex-col gap-4">
                 <!-- Statistics Header -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                <div class="gradient-card p-4 rounded-sm">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-bold text-dash-text">
                             Statistik - {{ getSelectedMonthName() }}
@@ -487,7 +486,7 @@
                 <!-- Summary Cards Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Total Income Card -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="gradient-card p-4 rounded-sm">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-sm bg-green-500/20 flex items-center justify-center">
                                 <span class="material-symbols-sharp text-green-500">trending_up</span>
@@ -504,7 +503,7 @@
                     </div>
 
                     <!-- Total Expenses Card -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="gradient-card p-4 rounded-sm">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-sm bg-red-500/20 flex items-center justify-center">
                                 <span class="material-symbols-sharp text-red-500">trending_down</span>
@@ -521,7 +520,7 @@
                     </div>
 
                     <!-- Net Balance Card -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="gradient-card p-4 rounded-sm">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-sm bg-dash-accent/20 flex items-center justify-center">
                                 <span class="material-symbols-sharp text-dash-accent">account_balance</span>
@@ -545,7 +544,7 @@
                 <!-- Charts Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <!-- Expenses by Category (Pie Chart) -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                    <div class="gradient-card p-3 md:p-4 rounded-sm">
                         <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Ausgaben nach
                             Kategorie</h3>
 
@@ -592,7 +591,7 @@
                     </div>
 
                     <!-- Income by Category -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                    <div class="gradient-card p-3 md:p-4 rounded-sm">
                         <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Einnahmen nach
                             Kategorie</h3>
 
@@ -640,7 +639,7 @@
                 </div>
 
                 <!-- Trend Chart -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                <div class="gradient-card p-4 rounded-sm">
                     <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Monatlicher Trend
                     </h3>
 
@@ -693,7 +692,7 @@
                 </div>
 
                 <!-- Daily Breakdown -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                <div class="gradient-card p-3 md:p-4 rounded-sm">
                     <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Tägliche Übersicht
                     </h3>
 
@@ -719,7 +718,7 @@
                 </div>
 
                 <!-- Top Expenses -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                <div class="gradient-card p-3 md:p-4 rounded-sm">
                     <h3 class="text-sm font-bold text-dash-text-dim uppercase tracking-wider mb-4">Top 10 Ausgaben</h3>
 
                     @if (getTopExpenses().length > 0) {
@@ -752,26 +751,26 @@
 
                 <!-- Average Stats -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                    <div class="gradient-card p-3 md:p-4 rounded-sm text-center">
                         <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Ø Tägl.
                             Ausgaben</div>
                         <div class="text-sm sm:text-lg font-bold text-red-500">{{
                             formatCurrency(getAverageDailyExpense()) }}</div>
                     </div>
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                    <div class="gradient-card p-3 md:p-4 rounded-sm text-center">
                         <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Ø Tägl.
                             Einnahmen</div>
                         <div class="text-sm sm:text-lg font-bold text-green-500">{{
                             formatCurrency(getAverageDailyIncome()) }}
                         </div>
                     </div>
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                    <div class="gradient-card p-3 md:p-4 rounded-sm text-center">
                         <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Größte
                             Ausgabe</div>
                         <div class="text-sm sm:text-lg font-bold text-red-500">{{ formatCurrency(getLargestExpense()) }}
                         </div>
                     </div>
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4 text-center">
+                    <div class="gradient-card p-3 md:p-4 rounded-sm text-center">
                         <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1">Größte
                             Einnahme</div>
                         <div class="text-sm sm:text-lg font-bold text-green-500">{{ formatCurrency(getLargestIncome())
@@ -785,11 +784,11 @@
             @if (viewMode() === 'fixedcosts') {
             <div class="flex flex-col gap-4">
                 <!-- Fixed Costs Header -->
-                <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                <div class="gradient-card p-3 md:p-4 rounded-sm">
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
                         <h2 class="text-lg font-bold text-dash-text whitespace-nowrap">Fixkosten</h2>
                         <button (click)="toggleFixedCostModal()"
-                            class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                            class="gradient-btn text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap">
                             <span class="material-symbols-sharp text-lg">add</span>
                             <span>Neue Fixkosten</span>
                         </button>
@@ -799,7 +798,7 @@
                 <!-- Fixed Costs Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Fixed Income Card -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="gradient-card p-4 rounded-sm">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-sm bg-green-500/20 flex items-center justify-center">
                                 <span class="material-symbols-sharp text-green-500">trending_up</span>
@@ -816,7 +815,7 @@
                     </div>
 
                     <!-- Fixed Expenses Card -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="gradient-card p-4 rounded-sm">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-sm bg-red-500/20 flex items-center justify-center">
                                 <span class="material-symbols-sharp text-red-500">trending_down</span>
@@ -833,7 +832,7 @@
                     </div>
 
                     <!-- Net Fixed Costs Card -->
-                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                    <div class="gradient-card p-4 rounded-sm">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-sm bg-dash-accent/20 flex items-center justify-center">
                                 <span class="material-symbols-sharp text-dash-accent">account_balance</span>
@@ -855,7 +854,7 @@
                 </div>
 
                 <!-- Fixed Costs List Container -->
-                <div class="bg-dash-card border border-dash-border rounded-sm">
+                <div class="gradient-card rounded-sm">
                     @if (getFixedCosts().length === 0) {
                     <div class="p-8 text-center">
                         <span class="material-symbols-sharp text-4xl text-dash-text-dim mb-4 block">bookmark</span>
@@ -962,7 +961,7 @@
         <!-- Sidebar -->
         <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4 order-1 md:order-2">
             <!-- Stats Card -->
-            <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+            <div class="gradient-card p-4 rounded-sm">
                 <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-4">Übersicht</h3>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
@@ -983,7 +982,7 @@
             <app-budget-calendar [transactions]="transactions()" (monthChange)="onMonthChange($event)">
             </app-budget-calendar>
             <!-- Accounts Card -->
-            <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+            <div class="gradient-card p-4 rounded-sm">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Konten</h3>
                 </div>
@@ -1018,9 +1017,9 @@
         <!-- Transaction Modal -->
         @if (showTransactionModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 (click)="toggleTransactionModal(); editingTransaction.set(null); clearPrefillData()"></div>
-            <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
+            <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-dash-text">
                         {{ editingTransaction() ? 'Transaktion bearbeiten' : (prefillFromFixedCost() ? 'Fixkosten
@@ -1129,7 +1128,7 @@
                             Abbrechen
                         </button>
                         <button type="submit"
-                            class="flex-1 bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors">
+                            class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
                             {{ editingTransaction() ? 'Speichern' : 'Hinzufügen' }}
                         </button>
                     </div>
@@ -1141,10 +1140,10 @@
         <!-- Account Modal -->
         @if (showAccountModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 (click)="toggleAccountModal(); editingAccount.set(null)">
             </div>
-            <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
+            <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-dash-text">{{ editingAccount() ? 'Konto bearbeiten' :
                         'Neues
@@ -1178,7 +1177,7 @@
                             Abbrechen
                         </button>
                         <button type="submit"
-                            class="flex-1 bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors">
+                            class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
                             Speichern
                         </button>
                     </div>
@@ -1190,9 +1189,9 @@
         <!-- Category Modal -->
         @if (showCategoryModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleCategoryModal()">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleCategoryModal()">
             </div>
-            <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
+            <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-dash-text">{{ editingCategory() ? 'Kategorie
                         bearbeiten' :
@@ -1244,7 +1243,7 @@
                             Abbrechen
                         </button>
                         <button type="submit"
-                            class="flex-1 bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors">
+                            class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
                             Speichern
                         </button>
                     </div>
@@ -1256,9 +1255,9 @@
         <!-- Fixed Cost Modal -->
         @if (showFixedCostModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleFixedCostModal()">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleFixedCostModal()">
             </div>
-            <div class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md">
+            <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-dash-text">{{ editingFixedCost() ? 'Fixkosten bearbeiten' : 'Neue
                         Fixkosten' }}</h2>
@@ -1338,7 +1337,7 @@
                             Abbrechen
                         </button>
                         <button type="submit"
-                            class="flex-1 bg-dash-accent hover:bg-dash-accent-hover text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors">
+                            class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
                             Speichern
                         </button>
                     </div>

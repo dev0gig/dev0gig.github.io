@@ -1,10 +1,9 @@
-<div
-    class="min-h-screen bg-dash-bg text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
+<div class="min-h-screen text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4">
 
         <!-- Header -->
         <header
-            class="md:col-span-12 flex items-center justify-between bg-dash-card border border-dash-border p-4 rounded-sm sticky top-0 z-50 shadow-lg">
+            class="md:col-span-12 flex items-center justify-between gradient-header p-4 rounded-sm sticky top-0 z-50 shadow-lg">
             <div class="flex items-center gap-4">
                 <!-- Apps Launcher -->
                 <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
@@ -22,10 +21,10 @@
 
         <!-- Settings Modal -->
         <div *ngIf="showSettingsModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="toggleSettingsModal()">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleSettingsModal()">
             </div>
             <div
-                class="relative bg-dash-card border border-dash-border p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4">
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-bold text-dash-text">Settings</h2>
                     <button (click)="toggleSettingsModal()"
@@ -71,7 +70,7 @@
         <!-- Sidebar / Left Column (Calendar & Stats) -->
         <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4">
             <!-- OCR Text Import -->
-            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
+            <div class="gradient-card p-4 rounded-sm">
                 <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-3 tracking-wider">Import OCR Text</h2>
                 <div class="border-2 border-dashed border-dash-border rounded-sm p-4 text-center cursor-pointer transition-all duration-200 hover:border-dash-accent hover:bg-dash-bg/50"
                     [class.border-dash-accent]="isDragging()" [class.bg-dash-accent/10]="isDragging()"
@@ -98,13 +97,13 @@
             </div>
 
             <!-- Calendar Widget -->
-            <div class="bg-dash-card border border-dash-border p-6 rounded-sm flex flex-col aspect-square w-full">
+            <div class="gradient-card p-6 rounded-sm flex flex-col aspect-square w-full">
                 <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-4 tracking-wider">Calendar</h2>
                 <app-calendar class="flex-1"></app-calendar>
             </div>
 
             <!-- Total Entries Count -->
-            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
+            <div class="gradient-card p-4 rounded-sm">
                 <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Total Entries</h2>
                 <div class="flex items-center justify-between">
                     <div class="text-2xl font-bold text-dash-accent">{{ journal.entries().length }}</div>
@@ -124,7 +123,7 @@
             </div>
 
             <!-- Monthly Breakdown -->
-            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
+            <div class="gradient-card p-4 rounded-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">{{ currentYear }} Entries
                     </h2>
@@ -157,12 +156,12 @@
         <!-- Main Content Area -->
         <main class="md:col-span-8 lg:col-span-9 flex flex-col gap-4">
             <!-- Search & Filter Bar -->
-            <div class="bg-dash-card border border-dash-border p-4 rounded-sm flex items-center gap-4">
+            <div class="gradient-card p-4 rounded-sm flex items-center gap-4">
                 <app-search class="flex-1"></app-search>
             </div>
 
             <!-- Entry List -->
-            <div class="bg-dash-card border border-dash-border p-0 rounded-sm flex flex-col relative">
+            <div class="gradient-card p-0 rounded-sm flex flex-col relative">
                 <div class="absolute top-0 right-0 p-4 z-10">
                     <div class="flex gap-2">
                         <span class="w-2 h-2 rounded-full bg-red-500/20"></span>
