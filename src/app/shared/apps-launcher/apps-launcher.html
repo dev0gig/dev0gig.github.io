@@ -9,21 +9,22 @@
     <div *ngIf="showAppsModal()"
         class="absolute top-12 left-0 z-50 bg-dash-card border border-dash-border p-4 rounded-sm shadow-2xl flex flex-col gap-4 w-72 max-h-[80vh] overflow-y-auto">
 
-        <!-- Quick Actions: Export/Import -->
-        <div class="flex gap-2">
+        <!-- Quick Actions: Export/Import (dezent) -->
+        <div class="flex justify-center gap-3 text-dash-text-dim">
             <button (click)="exportAllData()"
-                class="flex-1 flex flex-col items-center justify-center gap-1 px-3 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent hover:bg-dash-accent/10 text-dash-text rounded-sm transition-colors"
+                class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
                 title="Alle Daten exportieren (Ctrl+E)">
-                <span class="material-symbols-sharp text-lg">download</span>
-                <span class="text-xs font-medium">Export</span>
-                <span class="text-[10px] text-dash-text-dim">Ctrl+E</span>
+                <span class="material-symbols-sharp text-sm">download</span>
+                <span>Export</span>
+                <span class="text-[10px] opacity-60">Ctrl+E</span>
             </button>
+            <span class="text-dash-border">|</span>
             <button (click)="triggerImportAll()"
-                class="flex-1 flex flex-col items-center justify-center gap-1 px-3 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent hover:bg-dash-accent/10 text-dash-text rounded-sm transition-colors"
+                class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
                 title="Alle Daten importieren (Ctrl+I)">
-                <span class="material-symbols-sharp text-lg">upload</span>
-                <span class="text-xs font-medium">Import</span>
-                <span class="text-[10px] text-dash-text-dim">Ctrl+I</span>
+                <span class="material-symbols-sharp text-sm">upload</span>
+                <span>Import</span>
+                <span class="text-[10px] opacity-60">Ctrl+I</span>
             </button>
         </div>
 
@@ -35,24 +36,27 @@
             <div class="grid grid-cols-3 gap-2">
                 <!-- Dashboard -->
                 <a routerLink="/" (click)="showAppsModal.set(false)"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
-                    title="Dashboard">
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Dashboard (Alt+D)">
                     <span class="material-symbols-sharp text-2xl">dashboard</span>
                     <span class="text-[10px] font-medium">Dashboard</span>
+                    <span class="text-[9px] opacity-60">Alt+D</span>
                 </a>
                 <!-- Journal App -->
                 <a routerLink="/journal" (click)="showAppsModal.set(false)"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
-                    title="Journal">
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Journal (Alt+J)">
                     <span class="material-symbols-sharp text-2xl">book</span>
                     <span class="text-[10px] font-medium">Journal</span>
+                    <span class="text-[9px] opacity-60">Alt+J</span>
                 </a>
                 <!-- My Budget -->
                 <a routerLink="/budget" (click)="showAppsModal.set(false)"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
-                    title="My Budget">
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-colors"
+                    title="Budget (Alt+B)">
                     <span class="material-symbols-sharp text-2xl">account_balance_wallet</span>
                     <span class="text-[10px] font-medium">Budget</span>
+                    <span class="text-[9px] opacity-60">Alt+B</span>
                 </a>
                 <!-- Settings -->
                 <button (click)="onSettingsClick()"

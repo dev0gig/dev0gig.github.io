@@ -1,6 +1,6 @@
 import { Component, signal, output, inject, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { PwaService } from '../pwa.service';
 import { BookmarkService } from '../bookmark.service';
 
@@ -23,6 +23,7 @@ interface JournalEntry {
 export class AppsLauncher implements OnInit, OnDestroy {
     pwa = inject(PwaService);
     bookmarkService = inject(BookmarkService);
+    private router = inject(Router);
     showAppsModal = signal(false);
     openSettings = output<void>();
 
@@ -46,6 +47,24 @@ export class AppsLauncher implements OnInit, OnDestroy {
         if (event.ctrlKey && event.key === 'i') {
             event.preventDefault();
             this.triggerImportAll();
+        }
+        // Alt+D for Dashboard
+        if (event.altKey && event.key === 'd') {
+            event.preventDefault();
+            this.showAppsModal.set(false);
+            this.router.navigate(['/']);
+        }
+        // Alt+J for Journal
+        if (event.altKey && event.key === 'j') {
+            event.preventDefault();
+            this.showAppsModal.set(false);
+            this.router.navigate(['/journal']);
+        }
+        // Alt+B for Budget
+        if (event.altKey && event.key === 'b') {
+            event.preventDefault();
+            this.showAppsModal.set(false);
+            this.router.navigate(['/budget']);
         }
     }
 
