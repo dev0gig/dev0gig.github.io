@@ -1,8 +1,8 @@
 {
   "name": "Tools",
   "short_name": "Tools",
-  "theme_color": "#0f1014",
-  "background_color": "#0f1014",
+  "theme_color": "#1a1a1d",
+  "background_color": "#121214",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
