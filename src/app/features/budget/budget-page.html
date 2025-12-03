@@ -160,65 +160,33 @@
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <!-- Parent Categories -->
-                                <div *ngFor="let category of getParentCategories()" class="flex flex-col">
-                                    <div
-                                        class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
-                                        <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                                            <div class="flex flex-col overflow-hidden">
-                                                <span class="text-sm font-medium text-dash-text truncate">{{
-                                                    category.name }}</span>
-                                                <span class="text-[10px] uppercase tracking-wider font-bold"
-                                                    [class.text-green-500]="category.type === 'income'"
-                                                    [class.text-red-500]="category.type === 'expense'"
-                                                    [class.text-dash-text-dim]="category.type === 'both'">
-                                                    {{ category.type === 'income' ? 'Einnahme' : (category.type ===
-                                                    'expense' ? 'Ausgabe' : 'Beides') }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex gap-1">
-                                            <button (click)="openEditCategoryModal(category)"
-                                                class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
-                                                title="Bearbeiten">
-                                                Bearbeiten
-                                            </button>
-                                            <button (click)="deleteCategory(category.id)"
-                                                class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
-                                                title="Löschen">
-                                                Löschen
-                                            </button>
+                                <!-- Categories (sorted alphabetically) -->
+                                <div *ngFor="let category of getSortedCategories()"
+                                    class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
+                                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                                        <div class="flex flex-col overflow-hidden">
+                                            <span class="text-sm font-medium text-dash-text truncate">{{
+                                                category.name }}</span>
+                                            <span class="text-[10px] uppercase tracking-wider font-bold"
+                                                [class.text-green-500]="category.type === 'income'"
+                                                [class.text-red-500]="category.type === 'expense'"
+                                                [class.text-dash-text-dim]="category.type === 'both'">
+                                                {{ category.type === 'income' ? 'Einnahme' : (category.type ===
+                                                'expense' ? 'Ausgabe' : 'Beides') }}
+                                            </span>
                                         </div>
                                     </div>
-                                    <!-- Subcategories -->
-                                    <div *ngFor="let subcat of getSubcategories(category.id)"
-                                        class="flex justify-between items-center bg-dash-bg/50 p-3 ml-6 rounded-sm border border-dash-border/50 group hover:border-dash-text-dim transition-colors mt-1">
-                                        <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                                            <span class="text-dash-text-dim">└</span>
-                                            <div class="flex flex-col overflow-hidden">
-                                                <span class="text-sm font-medium text-dash-text truncate">{{ subcat.name
-                                                    }}</span>
-                                                <span class="text-[10px] uppercase tracking-wider font-bold"
-                                                    [class.text-green-500]="subcat.type === 'income'"
-                                                    [class.text-red-500]="subcat.type === 'expense'"
-                                                    [class.text-dash-text-dim]="subcat.type === 'both'">
-                                                    {{ subcat.type === 'income' ? 'Einnahme' : (subcat.type ===
-                                                    'expense' ? 'Ausgabe' : 'Beides') }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="flex gap-1">
-                                            <button (click)="openEditCategoryModal(subcat)"
-                                                class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
-                                                title="Bearbeiten">
-                                                Bearbeiten
-                                            </button>
-                                            <button (click)="deleteCategory(subcat.id)"
-                                                class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
-                                                title="Löschen">
-                                                Löschen
-                                            </button>
-                                        </div>
+                                    <div class="flex gap-1">
+                                        <button (click)="openEditCategoryModal(category)"
+                                            class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                            title="Bearbeiten">
+                                            Bearbeiten
+                                        </button>
+                                        <button (click)="deleteCategory(category.id)"
+                                            class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                            title="Löschen">
+                                            Löschen
+                                        </button>
                                     </div>
                                 </div>
                                 <div *ngIf="categories().length === 0"
@@ -409,7 +377,7 @@
                                 <select name="category" required [disabled]="!isEditingInline(transaction.id)"
                                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                                     <option value="">Kategorie wählen</option>
-                                    @for (category of categories(); track category.id) {
+                                    @for (category of getSortedCategories(); track category.id) {
                                     <option [value]="category.id" [selected]="category.id === transaction.category">{{
                                         category.name }}</option>
                                     }
@@ -896,7 +864,7 @@
                             hinzuzufügen.</p>
                     </div>
                     }
-                    @for (fixedCost of getFixedCosts(); track fixedCost.id; let last = $last) {
+                    @for (fixedCost of getFixedCostsSortedByCategory(); track fixedCost.id; let last = $last) {
                     <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors" [class.border-b]="!last"
                         [class.border-dash-border]="!last">
                         <!-- Fixed Cost Row - Mobile Layout -->
@@ -942,7 +910,7 @@
                         <!-- Fixed Cost Row - Desktop Layout -->
                         <div class="hidden md:grid grid-cols-12 gap-4 items-center">
                             <!-- Name -->
-                            <div class="col-span-4 font-medium text-dash-text truncate" title="{{ fixedCost.name }}">
+                            <div class="col-span-3 font-medium text-dash-text truncate" title="{{ fixedCost.name }}">
                                 {{ fixedCost.name }}
                             </div>
 
@@ -964,7 +932,7 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="col-span-2 flex justify-end gap-1">
+                            <div class="col-span-3 flex justify-end gap-1">
                                 <button (click)="createTransactionFromFixedCost(fixedCost)"
                                     class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
                                     title="Als Transaktion hinzufügen">
@@ -1114,7 +1082,7 @@
                             [ngModel]="editingTransaction()?.category || prefillFromFixedCost()?.category"
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                             <option value="">Kategorie wählen</option>
-                            @for (category of categories(); track category.id) {
+                            @for (category of getSortedCategories(); track category.id) {
                             <option [value]="category.id">{{ category.name }}</option>
                             }
                         </select>
@@ -1346,7 +1314,7 @@
                         <select name="fixedCostCategory" required
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
                             <option value="">Kategorie wählen</option>
-                            @for (category of categories(); track category.id) {
+                            @for (category of getSortedCategories(); track category.id) {
                             <option [value]="category.id" [selected]="editingFixedCost()?.category === category.id">{{
                                 category.name }}</option>
                             }

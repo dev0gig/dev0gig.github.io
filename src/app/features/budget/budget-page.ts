@@ -36,7 +36,6 @@ interface Category {
     id: string;
     name: string;
     type: 'income' | 'expense' | 'both';
-    parentId?: string; // For subcategories
 }
 
 @Component({
@@ -453,22 +452,11 @@ export class BudgetPage {
     getCategoryFullName(id: string): string {
         const category = this.getCategoryById(id);
         if (!category) return 'Unbekannt';
-
-        if (category.parentId) {
-            const parent = this.getCategoryById(category.parentId);
-            if (parent) {
-                return `${parent.name}/${category.name}`;
-            }
-        }
         return category.name;
     }
 
-    getParentCategories(): Category[] {
-        return this.categories().filter(c => !c.parentId);
-    }
-
-    getSubcategories(parentId: string): Category[] {
-        return this.categories().filter(c => c.parentId === parentId);
+    getSortedCategories(): Category[] {
+        return [...this.categories()].sort((a, b) => a.name.localeCompare(b.name, 'de'));
     }
 
     getAccountById(id: string): Account | undefined {
@@ -774,50 +762,19 @@ export class BudgetPage {
     }
 
     private getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>): string {
-        if (categoryNameRaw.includes('/')) {
-            // Split into parent and subcategory
-            const parts = categoryNameRaw.split('/');
-            const parentName = parts[0].trim();
-            const subName = parts.slice(1).join('/').trim();
+        // Flatten category name - if it contains '/', use the full string as category name
+        const categoryName = categoryNameRaw.trim();
 
-            // Create or get parent category
-            let parentCategory = categoriesMap.get(parentName);
-            if (!parentCategory) {
-                parentCategory = {
-                    id: this.generateId(),
-                    name: parentName,
-                    type: 'both'
-                };
-                categoriesMap.set(parentName, parentCategory);
-            }
-
-            // Create or get subcategory
-            const fullSubName = `${parentName}/${subName}`;
-            let subCategory = categoriesMap.get(fullSubName);
-            if (!subCategory) {
-                subCategory = {
-                    id: this.generateId(),
-                    name: subName,
-                    type: 'both',
-                    parentId: parentCategory.id
-                };
-                categoriesMap.set(fullSubName, subCategory);
-            }
-
-            return subCategory.id;
-        } else {
-            // Simple category without subcategory
-            let category = categoriesMap.get(categoryNameRaw);
-            if (!category) {
-                category = {
-                    id: this.generateId(),
-                    name: categoryNameRaw,
-                    type: 'both'
-                };
-                categoriesMap.set(categoryNameRaw, category);
-            }
-            return category.id;
+        let category = categoriesMap.get(categoryName);
+        if (!category) {
+            category = {
+                id: this.generateId(),
+                name: categoryName,
+                type: 'both'
+            };
+            categoriesMap.set(categoryName, category);
         }
+        return category.id;
     }
 
     private updateAccountBalance(accountId: string, delta: number) {
@@ -860,6 +817,14 @@ export class BudgetPage {
     // Fixed Costs Methods
     getFixedCosts(): FixedCost[] {
         return this.fixedCosts();
+    }
+
+    getFixedCostsSortedByCategory(): FixedCost[] {
+        return [...this.fixedCosts()].sort((a, b) => {
+            const categoryA = this.getCategoryFullName(a.category).toLowerCase();
+            const categoryB = this.getCategoryFullName(b.category).toLowerCase();
+            return categoryA.localeCompare(categoryB, 'de');
+        });
     }
 
     getFixedCostsTotal(): number {
