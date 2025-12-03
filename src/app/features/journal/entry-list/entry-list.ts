@@ -14,10 +14,15 @@ import { Search } from '../search/search';
 export class EntryList {
   protected journal = inject(JournalService);
 
-  // Filtered entries for current month
+  // Filtered entries for current month (or all when duplicate filter is active)
   filteredEntries = computed(() => {
     const current = this.journal.currentDate();
     const entries = this.journal.displayEntries();
+
+    // When duplicate filter is active, show all entries (already filtered by service)
+    if (this.journal.duplicateFilter()) {
+      return entries;
+    }
 
     return entries.filter(e =>
       e.date.getMonth() === current.getMonth() &&

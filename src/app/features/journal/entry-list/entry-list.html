@@ -16,13 +16,21 @@
         <div class="p-6 flex flex-col gap-4">
             @for (entry of filteredEntries(); track entry.id) {
             <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative"
-                [class.border-2]="editingEntryId === entry.id" [class.border-dashed]="editingEntryId === entry.id"
-                [class.border-amber-400]="editingEntryId === entry.id" [class.border]="editingEntryId !== entry.id"
-                [class.border-dash-border/50]="editingEntryId !== entry.id"
-                [class.hover:border-dash-accent/50]="editingEntryId !== entry.id">
+                [class.border-2]="editingEntryId === entry.id || journal.hasDuplicateDate(entry)"
+                [class.border-dashed]="editingEntryId === entry.id"
+                [class.border-amber-400]="editingEntryId === entry.id && !journal.hasDuplicateDate(entry)"
+                [class.border-red-500/60]="journal.hasDuplicateDate(entry) && editingEntryId !== entry.id"
+                [class.border]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)"
+                [class.border-dash-border/50]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)"
+                [class.hover:border-dash-accent/50]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy •
-                        HH:mm':'Europe/Vienna' }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy •
+                            HH:mm':'Europe/Vienna' }}</span>
+                        @if (journal.hasDuplicateDate(entry)) {
+                        <span class="text-[10px] text-red-400 font-medium">duplicate date</span>
+                        }
+                    </div>
                     <button class="text-dash-text-dim hover:text-red-400 transition-opacity"
                         (click)="deleteEntry(entry.id)" title="Delete">
                         <span class="material-symbols-sharp text-sm">delete</span>

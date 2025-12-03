@@ -30,9 +30,14 @@ export class JournalService {
   private selectedMonthFilter = signal<{ year: number; month: number } | null>(null);
   readonly monthFilter = this.selectedMonthFilter.asReadonly();
 
+  // Duplicate filter state
+  private showDuplicatesOnly = signal<boolean>(false);
+  readonly duplicateFilter = this.showDuplicatesOnly.asReadonly();
+
   readonly displayEntries = computed(() => {
     const query = this.searchQuerySignal().toLowerCase();
     const monthFilter = this.selectedMonthFilter();
+    const duplicateFilter = this.showDuplicatesOnly();
     const entries = this.entriesSignal();
     let result = entries;
 
@@ -44,6 +49,12 @@ export class JournalService {
       );
     }
 
+    // Apply duplicate filter
+    if (duplicateFilter) {
+      const duplicates = this.duplicateDates();
+      result = result.filter(e => duplicates.has(this.getDateKey(e.date)));
+    }
+
     // Then apply search query
     if (query) {
       result = result.filter(e => e.text.toLowerCase().includes(query));
@@ -51,6 +62,48 @@ export class JournalService {
 
     return result.sort((a, b) => b.date.getTime() - a.date.getTime());
   });
+
+  // Detect duplicate dates (entries with the same date)
+  readonly duplicateDates = computed(() => {
+    const entries = this.entriesSignal();
+    const dateCount = new Map<string, number>();
+
+    // Count entries per date (using date string without time)
+    for (const entry of entries) {
+      const dateKey = this.getDateKey(entry.date);
+      dateCount.set(dateKey, (dateCount.get(dateKey) || 0) + 1);
+    }
+
+    // Return set of date keys that have more than one entry
+    const duplicates = new Set<string>();
+    for (const [dateKey, count] of dateCount) {
+      if (count > 1) {
+        duplicates.add(dateKey);
+      }
+    }
+    return duplicates;
+  });
+
+  // Check if an entry has a duplicate date
+  hasDuplicateDate(entry: JournalEntry): boolean {
+    const dateKey = this.getDateKey(entry.date);
+    return this.duplicateDates().has(dateKey);
+  }
+
+  // Count of entries with duplicate dates
+  readonly duplicateEntriesCount = computed(() => {
+    const entries = this.entriesSignal();
+    const duplicates = this.duplicateDates();
+    return entries.filter(e => duplicates.has(this.getDateKey(e.date))).length;
+  });
+
+  // Helper to get date key (YYYY-MM-DD format)
+  private getDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   // Get entries count per month for the current year
   readonly monthlyEntryCounts = computed(() => {
@@ -107,6 +160,18 @@ export class JournalService {
     this.selectedMonthFilter.set(null);
   }
 
+  setDuplicateFilter(show: boolean) {
+    this.showDuplicatesOnly.set(show);
+    // Clear month filter when showing duplicates
+    if (show) {
+      this.selectedMonthFilter.set(null);
+    }
+  }
+
+  clearDuplicateFilter() {
+    this.showDuplicatesOnly.set(false);
+  }
+
   prevMonth() {
     this.currentDate.update(d => {
       const newDate = new Date(d);
@@ -134,6 +199,149 @@ export class JournalService {
       text: text,
     };
     this.entriesSignal.update(entries => [newEntry, ...entries]);
+  }
+
+  addEntryWithDate(text: string, date: Date) {
+    const newEntry: JournalEntry = {
+      id: crypto.randomUUID(),
+      date: date,
+      text: text,
+    };
+    this.entriesSignal.update(entries => [newEntry, ...entries]);
+  }
+
+  /**
+   * Clean OCR text by removing excessive whitespace and formatting paragraphs
+   * OCR often produces text with multiple spaces between words
+   *
+   * Rules:
+   * - First line is the date (handled separately)
+   * - Lines starting with "-" create new paragraphs
+   * - Lines without "-" are joined to the previous line as flowing text
+   */
+  cleanOcrText(text: string): string {
+    // First, clean up excessive whitespace in each line
+    const lines = text.split('\n').map(line => {
+      return line
+        // Replace multiple spaces with single space
+        .replace(/  +/g, ' ')
+        // Fix spaces before punctuation
+        .replace(/ ([.,!?;:])/g, '$1')
+        // Fix spaces after opening brackets/quotes
+        .replace(/([(\[„"']) /g, '$1')
+        // Fix spaces before closing brackets/quotes
+        .replace(/ ([)\]"'"])/g, '$1')
+        // Trim the line
+        .trim();
+    }).filter(line => line.length > 0); // Remove empty lines
+
+    if (lines.length === 0) return '';
+
+    // First line is the date, keep it separate
+    const result: string[] = [lines[0]];
+    let currentParagraph = '';
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Check if line starts with "-" (new paragraph/bullet point marker)
+      if (line.startsWith('-')) {
+        // Save current paragraph if exists
+        if (currentParagraph) {
+          result.push(currentParagraph);
+          currentParagraph = '';
+        }
+        // Start new paragraph, keep the "-" as bullet point
+        currentParagraph = '- ' + line.substring(1).trim();
+      } else {
+        // Join to current paragraph with space
+        if (currentParagraph) {
+          // Handle hyphenated words at end of line (word- next -> wordnext)
+          if (currentParagraph.endsWith('-')) {
+            currentParagraph = currentParagraph.slice(0, -1) + line;
+          } else {
+            currentParagraph += ' ' + line;
+          }
+        } else {
+          currentParagraph = line;
+        }
+      }
+    }
+
+    // Don't forget the last paragraph
+    if (currentParagraph) {
+      result.push(currentParagraph);
+    }
+
+    return result.join('\n');
+  }
+
+  /**
+   * Parse date from first line of OCR text
+   * Supports formats: DD.MM.YYYY, DD/MM/YYYY, DD-MM-YYYY
+   */
+  parseDateFromText(text: string): { date: Date | null; remainingText: string } {
+    const lines = text.split('\n');
+    if (lines.length === 0) {
+      return { date: null, remainingText: text };
+    }
+
+    const firstLine = lines[0].trim();
+
+    // Try to parse date in format DD.MM.YYYY, DD/MM/YYYY, or DD-MM-YYYY
+    const dateMatch = firstLine.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+
+    if (dateMatch) {
+      const day = parseInt(dateMatch[1], 10);
+      const month = parseInt(dateMatch[2], 10) - 1; // JS months are 0-indexed
+      const year = parseInt(dateMatch[3], 10);
+
+      const date = new Date(year, month, day);
+
+      // Validate the date is valid
+      if (!isNaN(date.getTime()) && date.getDate() === day) {
+        // Remove the date line from the text
+        const remainingText = lines.slice(1).join('\n').trim();
+        return { date, remainingText };
+      }
+    }
+
+    return { date: null, remainingText: text };
+  }
+
+  /**
+   * Import OCR text file: parse date from first line, clean text, create entry
+   */
+  importOcrText(rawText: string): { success: boolean; date: Date | null; error?: string } {
+    // First clean the OCR text
+    const cleanedText = this.cleanOcrText(rawText);
+
+    // Parse date from first line
+    const { date, remainingText } = this.parseDateFromText(cleanedText);
+
+    if (!date) {
+      return {
+        success: false,
+        date: null,
+        error: 'Could not parse date from first line. Expected format: DD.MM.YYYY'
+      };
+    }
+
+    if (!remainingText.trim()) {
+      return {
+        success: false,
+        date: null,
+        error: 'No text content found after date line'
+      };
+    }
+
+    // Add the entry with the parsed date
+    this.addEntryWithDate(remainingText, date);
+
+    // Navigate to the entry's month
+    this.currentDate.set(date);
+
+    return { success: true, date };
   }
 
   deleteEntry(id: string) {
