@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { BookmarkService } from '../../shared/bookmark.service';
 import { JournalService } from '../journal/journal';
+import { ThemeService, ACCENT_COLORS, AccentColor } from '../../shared/theme.service';
 
 interface ProjectSelection {
     bookmarks: boolean;
@@ -24,9 +25,13 @@ interface ProjectSelection {
 export class Dashboard {
     bookmarkService = inject(BookmarkService);
     journalService = inject(JournalService);
+    themeService = inject(ThemeService);
     router = inject(Router);
     isOnline = signal(true);
     showSettingsModal = signal(false);
+
+    // Accent colors for theme selection
+    accentColors = ACCENT_COLORS;
 
     // Project selection for import/export
     projectSelection = signal<ProjectSelection>({

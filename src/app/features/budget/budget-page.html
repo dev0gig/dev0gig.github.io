@@ -254,7 +254,7 @@
                             <div class="font-mono font-bold text-sm whitespace-nowrap"
                                 [class.text-green-500]="transaction.type === 'income'"
                                 [class.text-red-500]="transaction.type === 'expense'"
-                                [class.text-blue-400]="transaction.type === 'transfer'">
+                                [class.text-purple-400]="transaction.type === 'transfer'">
                                 <span *ngIf="transaction.type === 'transfer'"
                                     class="material-symbols-sharp text-sm align-middle mr-1">sync_alt</span>
                                 {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense' ? '-' : '')
@@ -303,7 +303,7 @@
                         <div class="col-span-2 text-right font-mono font-bold"
                             [class.text-green-500]="transaction.type === 'income'"
                             [class.text-red-500]="transaction.type === 'expense'"
-                            [class.text-blue-400]="transaction.type === 'transfer'">
+                            [class.text-purple-400]="transaction.type === 'transfer'">
                             <span *ngIf="transaction.type === 'transfer'"
                                 class="material-symbols-sharp text-base align-middle mr-1">sync_alt</span>
                             {{ transaction.type === 'income' ? '+' : (transaction.type === 'expense'
@@ -334,7 +334,7 @@
                                     </button>
                                     <button type="button" (click)="setInlineTransactionType(transaction.id, 'transfer')"
                                         [disabled]="!isEditingInline(transaction.id)"
-                                        [class]="getInlineTransactionType(transaction.id) === 'transfer' ? 'flex-1 bg-blue-500/20 text-blue-500 border border-blue-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                        [class]="getInlineTransactionType(transaction.id) === 'transfer' ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
                                         Transfer
                                     </button>
                                 </div>
@@ -659,14 +659,17 @@
                             <polygon [attr.points]="getTrendAreaPoints()" fill="url(#trendGradient)" opacity="0.3" />
 
                             <!-- Trend line -->
-                            <polyline [attr.points]="getTrendPoints()" fill="none" stroke="#3b82f6" stroke-width="0.5"
+                            <polyline [attr.points]="getTrendPoints()" fill="none"
+                                [attr.stroke]="themeService.currentAccentColor().value" stroke-width="0.5"
                                 stroke-linecap="round" stroke-linejoin="round" />
 
                             <!-- Gradient definition -->
                             <defs>
                                 <linearGradient id="trendGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.5" />
-                                    <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+                                    <stop offset="0%"
+                                        [attr.style]="'stop-color:' + themeService.currentAccentColor().value + ';stop-opacity:0.5'" />
+                                    <stop offset="100%"
+                                        [attr.style]="'stop-color:' + themeService.currentAccentColor().value + ';stop-opacity:0'" />
                                 </linearGradient>
                             </defs>
                         </svg>
@@ -1053,7 +1056,7 @@
                                 Einnahme
                             </button>
                             <button type="button" (click)="setTransactionType('transfer')"
-                                [class]="currentTransactionType() === 'transfer' ? 'flex-1 bg-blue-500/20 text-blue-500 border border-blue-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border'">
+                                [class]="currentTransactionType() === 'transfer' ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border'">
                                 Transfer
                             </button>
                         </div>

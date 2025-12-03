@@ -2,10 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --color-accent: #a855f7;
+    --color-accent-hover: #9333ea;
+    --color-accent-rgb: 168, 85, 247;
+}
+
 body {
-    background: linear-gradient(135deg, #0f1014 0%, #131620 50%, #0f1014 100%);
+    background: linear-gradient(135deg, #121214 0%, #161618 50%, #121214 100%);
     background-attachment: fixed;
-    color: #e2e8f0;
+    color: #e4e4e7;
     /* dash-text */
     font-family: 'Ubuntu', sans-serif;
     min-height: 100vh;
@@ -13,34 +19,34 @@ body {
 
 /* Gradient Card Styles */
 .gradient-card {
-    background: linear-gradient(145deg, #181b21 0%, #1a1e26 50%, #181b21 100%);
-    border: 1px solid rgba(59, 130, 246, 0.1);
+    background: linear-gradient(145deg, #1a1a1d 0%, #1c1c1f 50%, #1a1a1d 100%);
+    border: 1px solid rgba(var(--color-accent-rgb), 0.1);
 }
 
 .gradient-card:hover {
-    border-color: rgba(59, 130, 246, 0.25);
+    border-color: rgba(var(--color-accent-rgb), 0.25);
 }
 
 /* Gradient Header */
 .gradient-header {
-    background: linear-gradient(135deg, #181b21 0%, #1f232b 100%);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+    background: linear-gradient(135deg, #1a1a1d 0%, #222225 100%);
+    border-bottom: 1px solid rgba(var(--color-accent-rgb), 0.15);
 }
 
 /* Subtle accent glow */
 .accent-glow {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.1);
 }
 
 /* Gradient Button */
 .gradient-btn {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
     transition: all 0.3s ease;
 }
 
 .gradient-btn:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent-hover) 100%);
+    box-shadow: 0 4px 15px rgba(var(--color-accent-rgb), 0.3);
 }
 
 /* Gradient Border Effect */
@@ -54,7 +60,7 @@ body {
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.2) 0%, rgba(var(--color-accent-rgb), 0.05) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -64,7 +70,7 @@ body {
 
 /* Gradient Overlay for cards */
 .gradient-overlay {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(var(--color-accent-rgb), 0.03) 0%, transparent 100%);
 }
 
 /* Custom Scrollbar for Webkit - Sehr dezent */

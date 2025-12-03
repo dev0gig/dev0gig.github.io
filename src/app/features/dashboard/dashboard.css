@@ -11,7 +11,7 @@
     bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%) translateY(5px);
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #1a1a1d 0%, #222225 100%);
     color: #ffffff;
     padding: 6px 10px;
     border-radius: 4px;
@@ -36,6 +36,7 @@
 
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
+
     /* Hide tooltips on mobile (touch devices) */
     .tooltip-bubble {
         display: none;

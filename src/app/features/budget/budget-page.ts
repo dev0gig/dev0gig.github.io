@@ -1,9 +1,10 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { BudgetCalendar } from './calendar/calendar';
+import { ThemeService } from '../../shared/theme.service';
 
 interface Transaction {
     id: string;
@@ -46,6 +47,7 @@ interface Category {
     styleUrls: ['./budget-page.css']
 })
 export class BudgetPage {
+    themeService = inject(ThemeService);
     transactions = signal<Transaction[]>([]);
     accounts = signal<Account[]>([]);
     fixedCosts = signal<FixedCost[]>([]);

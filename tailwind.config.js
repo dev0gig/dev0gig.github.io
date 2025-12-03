@@ -14,14 +14,14 @@ module.exports = {
         },
         extend: {
             colors: {
-                'dash-bg': '#0f1014',       // Very dark blue/black for main background
-                'dash-card': '#181b21',     // Slightly lighter for cards
-                'dash-card-hover': '#1f232b',
-                'dash-border': '#2a2e37',   // Borders
-                'dash-text': '#e2e8f0',     // Main text
-                'dash-text-dim': '#94a3b8', // Secondary text
-                'dash-accent': '#3b82f6',   // Primary accent (blue)
-                'dash-accent-hover': '#2563eb',
+                'dash-bg': '#121214',       // Neutral dark gray for main background
+                'dash-card': '#1a1a1d',     // Slightly lighter neutral gray for cards
+                'dash-card-hover': '#222225',
+                'dash-border': '#2d2d31',   // Neutral gray borders
+                'dash-text': '#e4e4e7',     // Main text (neutral)
+                'dash-text-dim': '#a1a1aa', // Secondary text (neutral gray)
+                'dash-accent': 'var(--color-accent)',   // Primary accent (dynamic)
+                'dash-accent-hover': 'var(--color-accent-hover)',
             },
             fontFamily: {
                 sans: ['Ubuntu', 'system-ui', 'sans-serif'],
