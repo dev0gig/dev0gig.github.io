@@ -21,26 +21,22 @@
 
         <!-- Welcome Banner -->
         <div
-            class="md:col-span-12 bg-dash-card border border-dash-border p-6 rounded-sm flex items-center justify-between">
+            class="md:col-span-12 bg-dash-card border border-dash-border p-4 sm:p-6 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-dash-text mb-1">Willkommen zum Dashboard</h2>
-                <p class="text-sm text-dash-text-dim">Verwalten Sie Ihre Projekte und Lesezeichen.</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-dash-text mb-1">Willkommen zum Dashboard</h2>
+                <p class="text-xs sm:text-sm text-dash-text-dim">Verwalten Sie Ihre Projekte und Lesezeichen.</p>
             </div>
             <div class="flex gap-3">
-                <div class="tooltip-container">
-                    <button (click)="navigateToJournal()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md">
-                        <span class="material-symbols-sharp text-xl">description</span>
-                    </button>
-                    <div class="tooltip-bubble">Journal</div>
-                </div>
-                <div class="tooltip-container">
-                    <button (click)="navigateToBudget()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-sm transition-all hover:-translate-y-0.5 shadow-md">
-                        <span class="material-symbols-sharp text-xl">payments</span>
-                    </button>
-                    <div class="tooltip-bubble">Budget</div>
-                </div>
+                <button (click)="navigateToJournal()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-sm transition-all hover:-translate-y-0.5 shadow-md flex items-center gap-2">
+                    <span class="material-symbols-sharp text-lg sm:text-xl">description</span>
+                    <span class="text-sm font-medium">Journal</span>
+                </button>
+                <button (click)="navigateToBudget()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-sm transition-all hover:-translate-y-0.5 shadow-md flex items-center gap-2">
+                    <span class="material-symbols-sharp text-lg sm:text-xl">payments</span>
+                    <span class="text-sm font-medium">Budget</span>
+                </button>
             </div>
         </div>
 
@@ -156,97 +152,111 @@
         </div>
 
         <!-- Main Content Area -->
-        <main class="md:col-span-12 flex flex-col gap-6">
+        <main class="md:col-span-12 flex flex-col gap-4 sm:gap-6">
             <!-- Bookmarks Header and Controls -->
-            <div class="bg-dash-card border border-dash-border p-4 rounded-sm">
-                <div class="flex items-center gap-4">
-                    <!-- Heading (left-aligned) -->
-                    <h3 class="text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
-                        <span class="material-symbols-sharp text-dash-accent">bookmarks</span>
-                        Meine Lesezeichen
-                    </h3>
+            <div class="bg-dash-card border border-dash-border p-3 sm:p-4 rounded-sm">
+                <div class="flex flex-col gap-3">
+                    <!-- Top Row: Heading and Edit/Add buttons -->
+                    <div class="flex items-center justify-between">
+                        <!-- Heading (left-aligned) -->
+                        <h3
+                            class="text-base sm:text-lg font-bold text-dash-text flex items-center gap-2 whitespace-nowrap">
+                            <span class="material-symbols-sharp text-dash-accent text-lg sm:text-xl">bookmarks</span>
+                            <span class="hidden xs:inline">Meine </span>Lesezeichen
+                        </h3>
 
-                    <!-- Search Bar (centered, takes remaining space) -->
-                    <div class="flex-1 flex justify-center">
-                        <div class="w-full max-w-md">
-                            <div class="relative group">
-                                <span
-                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
-                                    <span class="material-symbols-sharp text-lg">search</span>
-                                </span>
-                                <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
-                                    placeholder="Lesezeichen suchen..."
-                                    class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
-                                <button *ngIf="searchTerm()" (click)="searchTerm.set('')"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
-                                    <span class="material-symbols-sharp text-sm">close</span>
-                                </button>
-                            </div>
+                        <!-- Edit/Add Buttons (always visible) -->
+                        <div class="flex gap-2">
+                            <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
+                                [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
+                                class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-2.5 sm:px-3 py-1.5 rounded-sm transition-all"
+                                title="Bearbeitungsmodus umschalten">
+                                <span class="material-symbols-sharp text-lg">edit</span>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Action Buttons (right-aligned) -->
-                    <div class="flex gap-2">
+                    <!-- Search Bar (full width on mobile) -->
+                    <div class="w-full">
+                        <div class="relative group">
+                            <span
+                                class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim group-focus-within:text-dash-accent transition-colors">
+                                <span class="material-symbols-sharp text-lg">search</span>
+                            </span>
+                            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                                placeholder="Lesezeichen suchen..."
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                            <button *ngIf="searchTerm()" (click)="searchTerm.set('')"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-dash-text">
+                                <span class="material-symbols-sharp text-sm">close</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add Bookmark Inputs (stacked on mobile) -->
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" [(ngModel)]="newBookmarkName" placeholder="Name"
-                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
+                            class="flex-1 bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
                         <input type="text" [(ngModel)]="newBookmarkUrl" placeholder="URL"
-                            class="bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent w-24 md:w-32">
-                        <button (click)="toggleEditMode()" [class.bg-dash-accent]="isEditMode()"
-                            [class.text-white]="isEditMode()" [class.border-dash-accent]="isEditMode()"
-                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all"
-                            title="Bearbeitungsmodus umschalten">
-                            <span class="material-symbols-sharp text-lg">edit</span>
-                        </button>
+                            class="flex-1 bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent">
                         <button (click)="addBookmark()" [disabled]="!newBookmarkName || !newBookmarkUrl"
-                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 py-1.5 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-4 py-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             <span class="material-symbols-sharp text-lg">add</span>
+                            <span class="sm:hidden">Hinzufügen</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Bookmarks Grid -->
-            <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-10 gap-4">
+            <div
+                class="grid grid-cols-4 xs:grid-cols-5 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-1.5 xs:gap-2 sm:gap-3">
                 <div *ngFor="let bookmark of filteredBookmarks()"
-                    class="group relative bg-dash-card border border-dash-border hover:border-dash-accent p-4 rounded-sm flex flex-col items-center justify-center gap-3 transition-all hover:-translate-y-1 hover:shadow-lg aspect-square">
+                    class="group relative bg-dash-card border border-dash-border hover:border-dash-accent p-1.5 xs:p-2 sm:p-3 rounded-sm flex flex-col items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 transition-all hover:-translate-y-1 hover:shadow-lg aspect-square">
 
                     <!-- Actions (Visible in Edit Mode) -->
                     <div *ngIf="isEditMode()"
-                        class="absolute inset-0 bg-dash-card/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4 rounded-sm animate-in fade-in duration-200">
-                        <div class="flex gap-1">
+                        class="absolute inset-0 bg-dash-card/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-2 sm:gap-4 rounded-sm animate-in fade-in duration-200">
+                        <div class="flex gap-0.5 sm:gap-1">
                             <button (click)="bookmarkService.toggleFavorite(bookmark.id)"
                                 [class.text-yellow-400]="bookmark.isFavorite"
                                 [class.text-dash-text-dim]="!bookmark.isFavorite"
-                                class="p-1 bg-dash-bg rounded-sm hover:text-yellow-400 transition-colors border border-dash-border"
+                                class="p-0.5 sm:p-1 bg-dash-bg rounded-sm hover:text-yellow-400 transition-colors border border-dash-border"
                                 title="Favorit">
-                                <span class="material-symbols-sharp text-sm">star</span>
+                                <span class="material-symbols-sharp text-xs sm:text-sm">star</span>
                             </button>
                             <button (click)="startEditingBookmark(bookmark)"
-                                class="p-1 bg-dash-bg rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors border border-dash-border"
+                                class="p-0.5 sm:p-1 bg-dash-bg rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors border border-dash-border"
                                 title="Bearbeiten">
-                                <span class="material-symbols-sharp text-sm">edit</span>
+                                <span class="material-symbols-sharp text-xs sm:text-sm">edit</span>
                             </button>
                             <button (click)="bookmarkService.removeBookmark(bookmark.id)"
-                                class="p-1 bg-dash-bg rounded-sm text-dash-text-dim hover:text-red-500 transition-colors border border-dash-border"
+                                class="p-0.5 sm:p-1 bg-dash-bg rounded-sm text-dash-text-dim hover:text-red-500 transition-colors border border-dash-border"
                                 title="Löschen">
-                                <span class="material-symbols-sharp text-sm">delete</span>
+                                <span class="material-symbols-sharp text-xs sm:text-sm">delete</span>
                             </button>
                         </div>
-                        <span class="text-xs text-dash-text font-medium">{{ bookmark.name }}</span>
+                        <span class="text-[10px] sm:text-xs text-dash-text font-medium text-center line-clamp-1">{{
+                            bookmark.name }}</span>
                     </div>
 
                     <!-- Icon & Link -->
                     <a [href]="bookmark.url" [target]="isEditMode() ? '_self' : '_blank'" (click)="onBookmarkClick()"
-                        [class.pointer-events-none]="isEditMode()" class="flex flex-col items-center gap-2 w-full">
+                        [class.pointer-events-none]="isEditMode()"
+                        class="flex flex-col items-center gap-0.5 xs:gap-1 sm:gap-2 w-full h-full justify-center">
                         <img [src]="bookmarkService.getFaviconUrl(bookmark.url)"
-                            (error)="$event.target.style.display='none'" class="w-9 h-9 rounded-sm" alt="Icon">
-                        <span class="text-sm font-medium text-dash-text w-full text-center line-clamp-2 break-words">{{
+                            (error)="$event.target.style.display='none'"
+                            class="w-10 h-10 xs:w-10 xs:h-10 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-sm flex-shrink-0"
+                            alt="Icon">
+                        <span
+                            class="text-[9px] xs:text-[10px] sm:text-xs font-medium text-dash-text w-full text-center line-clamp-2 break-words leading-tight">{{
                             bookmark.name }}</span>
                     </a>
 
                     <!-- Favorite Indicator (Always visible if favorite and NOT in edit mode) -->
-                    <div *ngIf="bookmark.isFavorite && !isEditMode()" class="absolute top-2 left-2 text-yellow-400">
-                        <span class="material-symbols-sharp text-xs">star</span>
+                    <div *ngIf="bookmark.isFavorite && !isEditMode()"
+                        class="absolute top-1 left-1 sm:top-2 sm:left-2 text-yellow-400">
+                        <span class="material-symbols-sharp text-[10px] sm:text-xs">star</span>
                     </div>
                 </div>
 

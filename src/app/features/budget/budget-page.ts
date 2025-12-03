@@ -874,6 +874,14 @@ export class BudgetPage {
             .reduce((sum, fc) => sum + fc.amount, 0);
     }
 
+    getFixedIncomeCount(): number {
+        return this.fixedCosts().filter(fc => fc.type === 'income').length;
+    }
+
+    getFixedExpenseCount(): number {
+        return this.fixedCosts().filter(fc => fc.type === 'expense').length;
+    }
+
     openEditFixedCostModal(fixedCost: FixedCost) {
         this.editingFixedCost.set(fixedCost);
         this.showFixedCostModal.set(true);
@@ -1054,9 +1062,9 @@ export class BudgetPage {
         this.cancelInlineEdit(transactionId);
     }
 
-    viewMode = signal<'transactions' | 'statistics'>('transactions');
+    viewMode = signal<'transactions' | 'statistics' | 'fixedcosts'>('transactions');
 
-    toggleViewMode(mode: 'transactions' | 'statistics') {
+    toggleViewMode(mode: 'transactions' | 'statistics' | 'fixedcosts') {
         this.viewMode.set(mode);
     }
 

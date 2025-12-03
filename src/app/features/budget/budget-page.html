@@ -23,6 +23,11 @@
                         <span class="material-symbols-sharp text-sm align-middle md:mr-1">analytics</span>
                         <span class="hidden md:inline">Statistik</span>
                     </button>
+                    <button (click)="toggleViewMode('fixedcosts')"
+                        [class]="viewMode() === 'fixedcosts' ? 'px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium transition-colors bg-dash-accent text-white' : 'px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium transition-colors text-dash-text-dim hover:text-white'">
+                        <span class="material-symbols-sharp text-sm align-middle md:mr-1">bookmark</span>
+                        <span class="hidden md:inline">Fixkosten</span>
+                    </button>
                 </div>
                 <div class="hidden sm:block">STATUS
                     <span [class.text-dash-accent]="isOnline()" [class.text-red-500]="!isOnline()">
@@ -808,6 +813,182 @@
             </div>
             } <!-- End of Statistics View -->
 
+            <!-- FIXKOSTEN VIEW -->
+            @if (viewMode() === 'fixedcosts') {
+            <div class="flex flex-col gap-4">
+                <!-- Fixed Costs Header -->
+                <div class="bg-dash-card border border-dash-border rounded-sm p-3 md:p-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
+                        <h2 class="text-lg font-bold text-dash-text whitespace-nowrap">Fixkosten</h2>
+                        <button (click)="toggleFixedCostModal()"
+                            class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                            <span class="material-symbols-sharp text-lg">add</span>
+                            <span>Neue Fixkosten</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fixed Costs Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Fixed Income Card -->
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-sm bg-green-500/20 flex items-center justify-center">
+                                <span class="material-symbols-sharp text-green-500">trending_up</span>
+                            </div>
+                            <div>
+                                <div class="text-xs text-dash-text-dim uppercase tracking-wider">Fixe Einnahmen</div>
+                                <div class="text-xl font-bold text-green-500">+{{ formatCurrency(getFixedIncomeTotal())
+                                    }}</div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-dash-text-dim">
+                            {{ getFixedIncomeCount() }} Einträge
+                        </div>
+                    </div>
+
+                    <!-- Fixed Expenses Card -->
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-sm bg-red-500/20 flex items-center justify-center">
+                                <span class="material-symbols-sharp text-red-500">trending_down</span>
+                            </div>
+                            <div>
+                                <div class="text-xs text-dash-text-dim uppercase tracking-wider">Fixe Ausgaben</div>
+                                <div class="text-xl font-bold text-red-500">-{{ formatCurrency(getFixedCostsTotal()) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-dash-text-dim">
+                            {{ getFixedExpenseCount() }} Einträge
+                        </div>
+                    </div>
+
+                    <!-- Net Fixed Costs Card -->
+                    <div class="bg-dash-card border border-dash-border rounded-sm p-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-sm bg-dash-accent/20 flex items-center justify-center">
+                                <span class="material-symbols-sharp text-dash-accent">account_balance</span>
+                            </div>
+                            <div>
+                                <div class="text-xs text-dash-text-dim uppercase tracking-wider">Netto Fixkosten</div>
+                                <div class="text-xl font-bold"
+                                    [class.text-green-500]="getFixedIncomeTotal() - getFixedCostsTotal() >= 0"
+                                    [class.text-red-500]="getFixedIncomeTotal() - getFixedCostsTotal() < 0">
+                                    {{ getFixedIncomeTotal() - getFixedCostsTotal() >= 0 ? '+' : '' }}{{
+                                    formatCurrency(getFixedIncomeTotal() - getFixedCostsTotal()) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-dash-text-dim">
+                            Differenz Einnahmen - Ausgaben
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fixed Costs List Container -->
+                <div class="bg-dash-card border border-dash-border rounded-sm">
+                    @if (getFixedCosts().length === 0) {
+                    <div class="p-8 text-center">
+                        <span class="material-symbols-sharp text-4xl text-dash-text-dim mb-4 block">bookmark</span>
+                        <p class="text-dash-text-dim text-sm">Keine Fixkosten definiert.</p>
+                        <p class="text-dash-text-dim text-xs mt-2">Klicken Sie auf "Neue Fixkosten" um welche
+                            hinzuzufügen.</p>
+                    </div>
+                    }
+                    @for (fixedCost of getFixedCosts(); track fixedCost.id; let last = $last) {
+                    <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors" [class.border-b]="!last"
+                        [class.border-dash-border]="!last">
+                        <!-- Fixed Cost Row - Mobile Layout -->
+                        <div class="flex flex-col gap-2 md:hidden">
+                            <!-- Top row: Name and Amount -->
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="font-medium text-dash-text truncate flex-1" title="{{ fixedCost.name }}">
+                                    {{ fixedCost.name }}
+                                </div>
+                                <div class="font-mono font-bold text-sm whitespace-nowrap"
+                                    [class.text-green-500]="fixedCost.type === 'income'"
+                                    [class.text-red-500]="fixedCost.type === 'expense'">
+                                    {{ fixedCost.type === 'income' ? '+' : '-' }}{{ formatCurrency(fixedCost.amount) }}
+                                </div>
+                            </div>
+                            <!-- Bottom row: Account, Category -->
+                            <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-dash-text-dim">
+                                <span class="truncate">{{ getAccountById(fixedCost.account)?.name || 'Unbekannt'
+                                    }}</span>
+                                <span class="truncate">{{ getCategoryFullName(fixedCost.category) }}</span>
+                            </div>
+                            <!-- Action Buttons -->
+                            <div class="flex justify-end gap-1 mt-2 pt-2 border-t border-dash-border">
+                                <button (click)="createTransactionFromFixedCost(fixedCost)"
+                                    class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
+                                    title="Als Transaktion hinzufügen">
+                                    <span class="material-symbols-sharp text-sm">add</span>
+                                    <span>Buchen</span>
+                                </button>
+                                <button (click)="openEditFixedCostModal(fixedCost)"
+                                    class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                    title="Bearbeiten">
+                                    <span class="material-symbols-sharp text-sm">edit</span>
+                                </button>
+                                <button (click)="deleteFixedCost(fixedCost.id)"
+                                    class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                    title="Löschen">
+                                    <span class="material-symbols-sharp text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Fixed Cost Row - Desktop Layout -->
+                        <div class="hidden md:grid grid-cols-12 gap-4 items-center">
+                            <!-- Name -->
+                            <div class="col-span-4 font-medium text-dash-text truncate" title="{{ fixedCost.name }}">
+                                {{ fixedCost.name }}
+                            </div>
+
+                            <!-- Account -->
+                            <div class="col-span-2 text-dash-text-dim truncate">
+                                {{ getAccountById(fixedCost.account)?.name || 'Unbekannt' }}
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-span-2 flex items-center gap-2 text-dash-text-dim truncate">
+                                <span class="truncate">{{ getCategoryFullName(fixedCost.category) }}</span>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-span-2 text-right font-mono font-bold"
+                                [class.text-green-500]="fixedCost.type === 'income'"
+                                [class.text-red-500]="fixedCost.type === 'expense'">
+                                {{ fixedCost.type === 'income' ? '+' : '-' }}{{ formatCurrency(fixedCost.amount) }}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="col-span-2 flex justify-end gap-1">
+                                <button (click)="createTransactionFromFixedCost(fixedCost)"
+                                    class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
+                                    title="Als Transaktion hinzufügen">
+                                    <span class="material-symbols-sharp text-sm">add</span>
+                                    <span>Buchen</span>
+                                </button>
+                                <button (click)="openEditFixedCostModal(fixedCost)"
+                                    class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                    title="Bearbeiten">
+                                    <span class="material-symbols-sharp text-sm">edit</span>
+                                </button>
+                                <button (click)="deleteFixedCost(fixedCost.id)"
+                                    class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                    title="Löschen">
+                                    <span class="material-symbols-sharp text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+            } <!-- End of Fixkosten View -->
+
         </main>
 
         <!-- Sidebar -->
@@ -862,81 +1043,6 @@
                         Keine Konten erstellt.
                     </div>
                 </div>
-            </div>
-
-            <!-- Fixed Costs Card -->
-            <div class="bg-dash-card border border-dash-border rounded-sm p-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Fixkosten</h3>
-                    <button (click)="toggleFixedCostModal()"
-                        class="text-dash-accent hover:text-dash-accent-hover transition-colors"
-                        title="Neue Fixkosten hinzufügen">
-                        <span class="material-symbols-sharp text-lg">add</span>
-                    </button>
-                </div>
-
-                <!-- Fixed Costs List -->
-                <div class="space-y-2">
-                    @for (fixedCost of getFixedCosts(); track fixedCost.id) {
-                    <div
-                        class="bg-dash-bg rounded-sm border border-dash-border p-3 group hover:border-dash-text-dim transition-colors">
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-medium text-dash-text truncate">{{ fixedCost.name }}</div>
-                                <div class="text-xs text-dash-text-dim truncate">
-                                    {{ getCategoryFullName(fixedCost.category) }} • {{
-                                    getAccountById(fixedCost.account)?.name }}
-                                </div>
-                            </div>
-                            <div class="font-mono text-sm font-bold whitespace-nowrap"
-                                [class.text-red-500]="fixedCost.type === 'expense'"
-                                [class.text-green-500]="fixedCost.type === 'income'">
-                                {{ fixedCost.type === 'expense' ? '-' : '+' }}{{ formatCurrency(fixedCost.amount) }}
-                            </div>
-                        </div>
-                        <!-- Action Buttons -->
-                        <div class="flex justify-end gap-1 mt-2 pt-2 border-t border-dash-border">
-                            <button (click)="createTransactionFromFixedCost(fixedCost)"
-                                class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
-                                title="Als Transaktion hinzufügen">
-                                <span class="material-symbols-sharp text-sm">add</span>
-                                <span>Buchen</span>
-                            </button>
-                            <button (click)="openEditFixedCostModal(fixedCost)"
-                                class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
-                                title="Bearbeiten">
-                                <span class="material-symbols-sharp text-sm">edit</span>
-                            </button>
-                            <button (click)="deleteFixedCost(fixedCost.id)"
-                                class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
-                                title="Löschen">
-                                <span class="material-symbols-sharp text-sm">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                    }
-
-                    @if (getFixedCosts().length === 0) {
-                    <div class="text-center py-4 text-dash-text-dim text-sm italic">
-                        Keine Fixkosten definiert.
-                    </div>
-                    }
-                </div>
-
-                <!-- Fixed Costs Summary -->
-                @if (getFixedCosts().length > 0) {
-                <div class="mt-4 pt-4 border-t border-dash-border">
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-dash-text-dim font-medium">Summe Fixkosten</span>
-                        <span class="font-mono font-bold"
-                            [class.text-green-500]="getFixedIncomeTotal() - getFixedCostsTotal() >= 0"
-                            [class.text-red-500]="getFixedIncomeTotal() - getFixedCostsTotal() < 0">
-                            {{ getFixedIncomeTotal() - getFixedCostsTotal() >= 0 ? '+' : '' }}{{
-                            formatCurrency(getFixedIncomeTotal() - getFixedCostsTotal()) }}
-                        </span>
-                    </div>
-                </div>
-                }
             </div>
 
         </aside>

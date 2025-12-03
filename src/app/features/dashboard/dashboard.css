@@ -33,3 +33,11 @@
     visibility: visible;
     transform: translateX(-50%) translateY(0);
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    /* Hide tooltips on mobile (touch devices) */
+    .tooltip-bubble {
+        display: none;
+    }
+}
