@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PwaService } from '../pwa.service';
@@ -14,12 +14,25 @@ import { MusicPlayerComponent } from '../music-player/music-player.component';
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.css'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
     pwa = inject(PwaService);
     bookmarkService = inject(BookmarkService);
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
     private router = inject(Router);
+
+    private exportHandler = () => this.exportAllData();
+    private importHandler = () => this.triggerImportAll();
+
+    ngOnInit() {
+        window.addEventListener('app:export', this.exportHandler);
+        window.addEventListener('app:import', this.importHandler);
+    }
+
+    ngOnDestroy() {
+        window.removeEventListener('app:export', this.exportHandler);
+        window.removeEventListener('app:import', this.importHandler);
+    }
 
     toggleSidebar() {
         this.sidebarService.toggle();
