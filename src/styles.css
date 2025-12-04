@@ -80,7 +80,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+    background: linear-gradient(135deg, #121214 0%, #161618 50%, #121214 100%);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -96,5 +96,5 @@ body {
 /* Firefox Scrollbar - Sehr dezent */
 * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.1) #121214;
 }

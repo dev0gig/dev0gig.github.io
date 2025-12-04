@@ -10,12 +10,204 @@
         <h2 class="text-lg font-bold text-dash-text">Widgets</h2>
     </div>
 
-    <!-- Placeholder Content -->
-    <div class="flex-1 flex items-center justify-center text-dash-text-dim">
+    <!-- Clock Widget -->
+    <div class="gradient-card p-4">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-sharp text-dash-accent">schedule</span>
+            <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Uhrzeit</span>
+        </div>
+
+        <!-- Time Display -->
         <div class="text-center">
-            <span class="material-symbols-sharp text-4xl mb-2 opacity-50">inbox</span>
-            <p class="text-sm">Noch leer</p>
-            <p class="text-xs opacity-60">Wird später befüllt</p>
+            <div class="text-4xl font-bold text-white tracking-wider font-mono">
+                {{ currentTime() }}
+            </div>
+            <div class="text-base text-dash-accent font-medium capitalize mt-1">
+                {{ currentDay() }}
+            </div>
+            <div class="flex justify-center items-center gap-2 text-sm text-dash-text-dim mt-1">
+                <span>{{ currentDate() }}</span>
+                <span class="opacity-50">•</span>
+                <span>KW {{ currentWeek() }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weather Widget -->
+    <div class="gradient-card p-4">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-sharp text-dash-accent">cloud</span>
+                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Wetter</span>
+            </div>
+            <button (click)="loadWeather()" class="text-dash-text-dim hover:text-dash-accent transition-colors"
+                [class.animate-spin]="weatherLoading()">
+                <span class="material-symbols-sharp text-lg">refresh</span>
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        @if (weatherLoading()) {
+        <div class="flex items-center justify-center py-6">
+            <div class="animate-pulse flex flex-col items-center gap-2">
+                <span class="material-symbols-sharp text-4xl text-dash-text-dim">cloud</span>
+                <span class="text-sm text-dash-text-dim">Wird geladen...</span>
+            </div>
+        </div>
+        }
+
+        <!-- Error State -->
+        @if (weatherError() && !weatherLoading()) {
+        <div class="flex items-center justify-center py-4 text-center">
+            <div class="flex flex-col items-center gap-2">
+                <span class="material-symbols-sharp text-3xl text-red-400">error</span>
+                <span class="text-sm text-dash-text-dim">{{ weatherError() }}</span>
+            </div>
+        </div>
+        }
+
+        <!-- Weather Content -->
+        @if (currentWeather() && !weatherLoading() && !weatherError()) {
+        <!-- Current Weather -->
+        <div class="text-center mb-4">
+            <div class="flex items-center justify-center gap-2 text-dash-text-dim text-xs mb-2">
+                <span class="material-symbols-sharp text-sm">location_on</span>
+                <span>{{ currentWeather()!.location }}</span>
+            </div>
+            <div class="flex items-center justify-center gap-3">
+                <span class="material-symbols-sharp text-5xl text-dash-accent">
+                    {{ getWeatherIcon(currentWeather()!.weatherCode) }}
+                </span>
+                <div class="text-left">
+                    <div class="text-4xl font-bold text-white">{{ currentWeather()!.temperature }}°</div>
+                    <div class="text-sm text-dash-text-dim">{{ getWeatherDescription(currentWeather()!.weatherCode) }}
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center gap-4 mt-3 text-xs text-dash-text-dim">
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-sharp text-sm">air</span>
+                    <span>{{ currentWeather()!.windSpeed }} km/h</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-sharp text-sm">humidity_percentage</span>
+                    <span>{{ currentWeather()!.humidity }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Divider -->
+        <div class="border-t border-dash-border my-3"></div>
+
+        <!-- 3-Day Forecast -->
+        <div class="flex justify-between">
+            @for (day of forecast(); track day.date; let i = $index) {
+            <div class="flex flex-col items-center gap-1 flex-1">
+                <span class="text-xs text-dash-text-dim font-medium">{{ getDayName(day.date, i) }}</span>
+                <span class="material-symbols-sharp text-xl text-dash-accent">
+                    {{ getWeatherIcon(day.weatherCode) }}
+                </span>
+                <div class="text-xs">
+                    <span class="text-white font-semibold">{{ day.tempMax }}°</span>
+                    <span class="text-dash-text-dim">/{{ day.tempMin }}°</span>
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+
+    <!-- Journal Widget -->
+    <div class="gradient-card p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-sharp text-dash-accent">book</span>
+                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Journal</span>
+            </div>
+            <a routerLink="/journal" class="text-dash-text-dim hover:text-dash-accent transition-colors">
+                <span class="material-symbols-sharp text-lg">arrow_forward</span>
+            </a>
+        </div>
+
+        <!-- Entry Count Display -->
+        <div class="text-center mt-3">
+            <div class="text-3xl font-bold text-white">{{ totalJournalEntries() }}</div>
+            <div class="text-xs text-dash-text-dim">Einträge</div>
+        </div>
+    </div>
+
+    <!-- Budget Widget -->
+    <div class="gradient-card p-4">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-sharp text-dash-accent">account_balance_wallet</span>
+                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Budget</span>
+            </div>
+            <a routerLink="/budget" class="text-dash-text-dim hover:text-dash-accent transition-colors">
+                <span class="material-symbols-sharp text-lg">arrow_forward</span>
+            </a>
+        </div>
+
+        <!-- Total Balance -->
+        <div class="text-center mb-3">
+            <div class="text-xs text-dash-text-dim mb-1">Gesamtguthaben</div>
+            <div class="text-2xl font-bold" [class.text-green-400]="budgetStats().totalBalance >= 0"
+                [class.text-red-400]="budgetStats().totalBalance < 0">
+                {{ formatCurrency(budgetStats().totalBalance) }}
+            </div>
+        </div>
+
+        <!-- Trend Chart -->
+        @if (budgetTrendData().length > 1) {
+        <div class="bg-black/20 rounded-lg p-2 mb-3">
+            <div class="text-xs text-dash-text-dim text-center mb-2">Trend (letzte 7 Tage)</div>
+            <svg viewBox="0 0 100 40" class="w-full h-12" preserveAspectRatio="none">
+                <!-- Grid lines -->
+                <line x1="0" y1="20" x2="100" y2="20" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"
+                    stroke-dasharray="2,2" />
+
+                <!-- Area fill -->
+                <polygon [attr.points]="getBudgetTrendAreaPoints()"
+                    [attr.fill]="budgetStats().totalBalance >= 0 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(248, 113, 113, 0.2)'" />
+
+                <!-- Trend line -->
+                <polyline [attr.points]="getBudgetTrendLinePoints()" fill="none"
+                    [attr.stroke]="budgetStats().totalBalance >= 0 ? '#4ade80' : '#f87171'" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round" />
+
+                <!-- End point dot -->
+                @let lastPoint = getLastTrendPoint();
+                @if (lastPoint) {
+                <circle [attr.cx]="lastPoint.x" [attr.cy]="lastPoint.y" r="2"
+                    [attr.fill]="budgetStats().totalBalance >= 0 ? '#4ade80' : '#f87171'" />
+                }
+            </svg>
+        </div>
+        }
+
+        <!-- Monthly Stats -->
+        <div class="border-t border-dash-border pt-3">
+            <div class="text-xs text-dash-text-dim text-center mb-2">{{ getCurrentMonthName() }}</div>
+            <div class="flex justify-between gap-2">
+                <div class="flex-1 bg-black/20 rounded-lg p-2 text-center">
+                    <div class="flex items-center justify-center gap-1 text-green-400 mb-1">
+                        <span class="material-symbols-sharp text-sm">trending_up</span>
+                        <span class="text-xs">Einnahmen</span>
+                    </div>
+                    <div class="text-sm font-semibold text-green-400">
+                        {{ formatCurrency(budgetStats().income) }}
+                    </div>
+                </div>
+                <div class="flex-1 bg-black/20 rounded-lg p-2 text-center">
+                    <div class="flex items-center justify-center gap-1 text-red-400 mb-1">
+                        <span class="material-symbols-sharp text-sm">trending_down</span>
+                        <span class="text-xs">Ausgaben</span>
+                    </div>
+                    <div class="text-sm font-semibold text-red-400">
+                        {{ formatCurrency(budgetStats().expenses) }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
