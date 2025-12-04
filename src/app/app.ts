@@ -37,7 +37,7 @@ export class App {
           break;
         case 's':
           event.preventDefault();
-          this.sidebarService.toggle();
+          this.sidebarService.toggleBoth();
           break;
       }
     }

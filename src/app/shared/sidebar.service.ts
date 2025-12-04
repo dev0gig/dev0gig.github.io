@@ -143,4 +143,17 @@ export class SidebarService {
             this.savePreference(this.STORAGE_KEY_RIGHT, false);
         }
     }
+
+    // Toggle both sidebars
+    toggleBoth() {
+        // If either is open, close both
+        if (this.isOpen() || this.isRightOpen()) {
+            this.close();
+            this.closeRight();
+        } else {
+            // If both are closed, open both
+            this.open();
+            this.openRight();
+        }
+    }
 }
