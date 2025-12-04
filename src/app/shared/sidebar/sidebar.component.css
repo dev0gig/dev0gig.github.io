@@ -4,3 +4,15 @@
     background: linear-gradient(135deg, rgba(30, 30, 35, 0.95) 0%, rgba(20, 20, 25, 0.95) 100%);
     backdrop-filter: blur(10px);
 }
+
+/* Music Player Wrapper - Fixed at bottom */
+.music-player-wrapper {
+    flex-shrink: 0;
+    background: inherit;
+}
+
+/* Credits Footer */
+.credits-footer {
+    flex-shrink: 0;
+    background: inherit;
+}

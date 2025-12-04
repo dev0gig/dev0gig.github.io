@@ -1,0 +1,21 @@
+/* Music Player Styles */
+.music-player-container {
+    border-top: 1px solid rgba(var(--color-accent-rgb), 0.1);
+    padding-top: 0.75rem;
+}
+
+.play-button {
+    box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.3);
+}
+
+.play-button:hover {
+    box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.4);
+}
+
+.hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}

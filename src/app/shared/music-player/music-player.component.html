@@ -1,0 +1,32 @@
+<!-- Music Player - Bottom of Sidebar -->
+<div class="music-player-container">
+    <!-- Hidden YouTube Player Container -->
+    <div id="youtube-player-container" class="hidden"></div>
+
+    <!-- Player UI -->
+    <div class="flex items-center gap-3 p-3 bg-dash-bg/50 rounded-lg border border-dash-border/30">
+        <!-- Play/Pause Button -->
+        <button (click)="togglePlay()"
+            class="play-button flex items-center justify-center w-10 h-10 rounded-full bg-dash-accent hover:bg-dash-accent/80 text-white transition-all duration-200 hover:scale-105 active:scale-95"
+            [class.animate-pulse]="youtubePlayer.isLoading()" [title]="youtubePlayer.isPlaying() ? 'Pause' : 'Play'">
+            <span class="material-symbols-sharp text-xl">
+                {{ youtubePlayer.isPlaying() ? 'pause' : 'play_arrow' }}
+            </span>
+        </button>
+
+        <!-- Stream Info -->
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+                <span class="material-symbols-sharp text-xs text-red-500">
+                    {{ youtubePlayer.isPlaying() ? 'radio_button_checked' : 'radio_button_unchecked' }}
+                </span>
+                <span class="text-[10px] uppercase tracking-wider text-dash-text-dim font-medium">
+                    {{ youtubePlayer.isPlaying() ? 'Live' : 'Stream' }}
+                </span>
+            </div>
+            <p class="text-xs text-dash-text truncate" [title]="youtubePlayer.currentTitle()">
+                {{ youtubePlayer.currentTitle() }}
+            </p>
+        </div>
+    </div>
+</div>
