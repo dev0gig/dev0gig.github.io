@@ -35,6 +35,12 @@
                 </div>
                 <div class="hidden sm:block">TRANSACTIONS <span class="text-white">{{ transactions().length }}</span>
                 </div>
+                <!-- Right Sidebar Toggle -->
+                <button (click)="toggleRightSidebar()"
+                    class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
+                    title="Rechte Sidebar">
+                    <span class="material-symbols-sharp text-xl">menu_open</span>
+                </button>
             </div>
         </header>
 

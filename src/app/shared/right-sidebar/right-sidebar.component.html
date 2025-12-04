@@ -1,0 +1,21 @@
+<!-- Right Sidebar (Permanent, toggleable) -->
+<div class="sidebar-container fixed top-0 right-0 h-full w-72 z-[60] flex flex-col gap-4 p-4 overflow-y-auto transform transition-transform duration-300 ease-in-out"
+    [class.translate-x-0]="sidebarService.isRightOpen()" [class.translate-x-full]="!sidebarService.isRightOpen()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-2 border-b border-dash-border">
+        <button (click)="toggleSidebar()" class="text-dash-text-dim hover:text-white transition-colors">
+            <span class="material-symbols-sharp">chevron_right</span>
+        </button>
+        <h2 class="text-lg font-bold text-dash-text">Widgets</h2>
+    </div>
+
+    <!-- Placeholder Content -->
+    <div class="flex-1 flex items-center justify-center text-dash-text-dim">
+        <div class="text-center">
+            <span class="material-symbols-sharp text-4xl mb-2 opacity-50">inbox</span>
+            <p class="text-sm">Noch leer</p>
+            <p class="text-xs opacity-60">Wird später befüllt</p>
+        </div>
+    </div>
+</div>

@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './shared/theme.service';
+import { SidebarComponent } from './shared/sidebar/sidebar.component';
+import { RightSidebarComponent } from './shared/right-sidebar/right-sidebar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, SidebarComponent, RightSidebarComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

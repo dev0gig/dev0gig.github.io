@@ -1,10 +1,12 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { BudgetCalendar } from './calendar/calendar';
 import { ThemeService } from '../../shared/theme.service';
+import { SidebarService } from '../../shared/sidebar.service';
+import { SettingsService } from '../../shared/settings.service';
 
 interface Transaction {
     id: string;
@@ -48,6 +50,9 @@ interface Category {
 })
 export class BudgetPage {
     themeService = inject(ThemeService);
+    sidebarService = inject(SidebarService);
+    settingsService = inject(SettingsService);
+    router = inject(Router);
     transactions = signal<Transaction[]>([]);
     accounts = signal<Account[]>([]);
     fixedCosts = signal<FixedCost[]>([]);
@@ -77,6 +82,10 @@ export class BudgetPage {
         }
     }
 
+    toggleRightSidebar() {
+        this.sidebarService.toggleRight();
+    }
+
     currentTransactionType = signal<'income' | 'expense' | 'transfer'>('expense');
 
     constructor() {
@@ -86,6 +95,23 @@ export class BudgetPage {
 
         window.addEventListener('blur', () => this.isOnline.set(false));
         window.addEventListener('focus', () => this.isOnline.set(true));
+
+        // Close settings modal on route change
+        this.router.events.subscribe(() => {
+            if (this.showSettingsModal()) {
+                this.showSettingsModal.set(false);
+            }
+        });
+
+        // Listen to settings service trigger - only react to NEW changes (not existing trigger value)
+        let previousTrigger = this.settingsService.trigger();
+        effect(() => {
+            const trigger = this.settingsService.trigger();
+            if (trigger > previousTrigger) {
+                this.showSettingsModal.set(true);
+                previousTrigger = trigger;
+            }
+        });
     }
 
     private loadData() {

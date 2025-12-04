@@ -1,4 +1,4 @@
-import { Component, signal, inject, computed } from '@angular/core';
+import { Component, signal, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +7,8 @@ import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { BookmarkService } from '../../shared/bookmark.service';
 import { JournalService } from '../journal/journal';
 import { ThemeService, ACCENT_COLORS, AccentColor } from '../../shared/theme.service';
+import { SidebarService } from '../../shared/sidebar.service';
+import { SettingsService } from '../../shared/settings.service';
 
 interface ProjectSelection {
     bookmarks: boolean;
@@ -26,6 +28,8 @@ export class Dashboard {
     bookmarkService = inject(BookmarkService);
     journalService = inject(JournalService);
     themeService = inject(ThemeService);
+    sidebarService = inject(SidebarService);
+    settingsService = inject(SettingsService);
     router = inject(Router);
     isOnline = signal(true);
     showSettingsModal = signal(false);
@@ -74,6 +78,10 @@ export class Dashboard {
 
     toggleSettingsModal() {
         this.showSettingsModal.update(v => !v);
+    }
+
+    toggleRightSidebar() {
+        this.sidebarService.toggleRight();
     }
 
     isEditMode = signal(false);
@@ -534,5 +542,22 @@ export class Dashboard {
     constructor() {
         window.addEventListener('blur', () => this.isOnline.set(false));
         window.addEventListener('focus', () => this.isOnline.set(true));
+
+        // Close settings modal on route change
+        this.router.events.subscribe(() => {
+            if (this.showSettingsModal()) {
+                this.showSettingsModal.set(false);
+            }
+        });
+
+        // Listen to settings service trigger - only react to NEW changes (not existing trigger value)
+        let previousTrigger = this.settingsService.trigger();
+        effect(() => {
+            const trigger = this.settingsService.trigger();
+            if (trigger > previousTrigger) {
+                this.showSettingsModal.set(true);
+                previousTrigger = trigger;
+            }
+        });
     }
 }
