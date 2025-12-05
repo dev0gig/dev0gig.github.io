@@ -1,4 +1,4 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarService } from '../sidebar.service';
 
@@ -11,7 +11,6 @@ import { SidebarService } from '../sidebar.service';
 })
 export class AppsLauncher {
     sidebarService = inject(SidebarService);
-    openSettings = output<void>();
 
     toggleSidebar() {
         this.sidebarService.toggle();

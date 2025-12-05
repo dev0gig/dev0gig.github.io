@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { PwaService } from '../pwa.service';
 import { BookmarkService } from '../bookmark.service';
 import { SidebarService } from '../sidebar.service';
@@ -19,7 +19,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     bookmarkService = inject(BookmarkService);
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
-    private router = inject(Router);
 
     private exportHandler = () => this.exportAllData();
     private importHandler = () => this.triggerImportAll();

@@ -173,9 +173,6 @@ export class JournalPage {
     }
 
     constructor() {
-        window.addEventListener('blur', () => this.isOnline.set(false));
-        window.addEventListener('focus', () => this.isOnline.set(true));
-
         // Close settings modal on route change
         this.router.events.subscribe(() => {
             if (this.showSettingsModal()) {

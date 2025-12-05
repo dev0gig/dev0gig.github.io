@@ -1,8 +1,8 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+
 import { SidebarService } from '../sidebar.service';
-import { JournalService, JournalEntry } from '../../features/journal/journal';
+import { JournalService } from '../../features/journal/journal';
 
 interface WeatherData {
     temperature: number;
@@ -40,7 +40,7 @@ interface Account {
 @Component({
     selector: 'app-right-sidebar',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule],
     templateUrl: './right-sidebar.component.html',
     styleUrl: './right-sidebar.component.css'
 })

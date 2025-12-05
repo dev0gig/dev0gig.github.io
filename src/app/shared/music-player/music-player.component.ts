@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, inject, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { YoutubePlayerService } from '../youtube-player.service';
 

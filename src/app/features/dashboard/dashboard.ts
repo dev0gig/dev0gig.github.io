@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { BookmarkService } from '../../shared/bookmark.service';
 import { JournalService } from '../journal/journal';
-import { ThemeService, ACCENT_COLORS, AccentColor } from '../../shared/theme.service';
+import { ThemeService, ACCENT_COLORS } from '../../shared/theme.service';
 import { SidebarService } from '../../shared/sidebar.service';
 import { SettingsService } from '../../shared/settings.service';
 
@@ -518,7 +518,7 @@ export class Dashboard {
 
         // Delete Bookmarks
         if (selection.bookmarks) {
-            localStorage.removeItem('dashboard_bookmarks');
+            localStorage.removeItem('dev0gig_bookmarks');
         }
 
         // Delete Journal
@@ -540,9 +540,6 @@ export class Dashboard {
     }
 
     constructor() {
-        window.addEventListener('blur', () => this.isOnline.set(false));
-        window.addEventListener('focus', () => this.isOnline.set(true));
-
         // Close settings modal on route change
         this.router.events.subscribe(() => {
             if (this.showSettingsModal()) {
