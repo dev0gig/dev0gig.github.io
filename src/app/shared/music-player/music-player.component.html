@@ -3,6 +3,72 @@
     <!-- Hidden YouTube Player Container -->
     <div id="youtube-player-container" class="hidden"></div>
 
+    <!-- Custom URL Input -->
+    @if (showUrlInput()) {
+    <div class="url-input-container mb-3 p-3 bg-dash-bg/50 rounded-lg border border-dash-border/30">
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-sharp text-red-500 text-lg">smart_display</span>
+                <span class="text-xs text-dash-text-dim uppercase tracking-wider font-medium">YouTube URL</span>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" [(ngModel)]="youtubeUrl" placeholder="https://youtube.com/watch?v=..."
+                    (keyup.enter)="loadCustomUrl()"
+                    class="flex-1 px-3 py-2 text-xs bg-dash-bg border border-dash-border/50 rounded-md text-dash-text placeholder-dash-text-dim/50 focus:outline-none focus:border-dash-accent/50 focus:ring-1 focus:ring-dash-accent/30 transition-all" />
+                <button (click)="loadCustomUrl()"
+                    class="px-3 py-2 bg-dash-accent hover:bg-dash-accent/80 text-white text-xs font-medium rounded-md transition-all hover:scale-105 active:scale-95"
+                    title="Laden">
+                    <span class="material-symbols-sharp text-sm">check</span>
+                </button>
+            </div>
+            @if (urlError()) {
+            <p class="text-[10px] text-red-400">{{ urlError() }}</p>
+            }
+            <p class="text-[10px] text-dash-text-dim">Video wird in Dauerschleife abgespielt 🔁</p>
+        </div>
+    </div>
+    }
+
+    <!-- URL History -->
+    @if (youtubePlayer.urlHistory().length > 0) {
+    <div class="url-history mb-3 bg-dash-bg/50 rounded-lg border border-dash-border/30 overflow-hidden">
+        <!-- Collapsible Header -->
+        <button (click)="toggleHistory()"
+            class="w-full flex items-center justify-between p-3 hover:bg-dash-accent/5 transition-colors">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-sharp text-dash-accent text-sm">history</span>
+                <span class="text-[10px] text-dash-text-dim uppercase tracking-wider font-medium">Zuletzt
+                    gespielt</span>
+                <span class="text-[10px] px-1.5 py-0.5 bg-dash-accent/20 text-dash-accent rounded-full">{{
+                    youtubePlayer.urlHistory().length }}</span>
+            </div>
+            <span class="material-symbols-sharp text-dash-text-dim text-sm transition-transform duration-200"
+                [class.rotate-180]="historyExpanded()">expand_more</span>
+        </button>
+
+        <!-- Collapsible Content -->
+        @if (historyExpanded()) {
+        <div class="history-content px-3 pb-3">
+            <div class="flex flex-col gap-1">
+                @for (item of youtubePlayer.urlHistory(); track item.videoId) {
+                <button (click)="loadFromHistory(item)"
+                    class="history-item flex items-center gap-2 p-2 rounded-md hover:bg-dash-accent/10 transition-all text-left group"
+                    [class.bg-dash-accent/20]="youtubePlayer.getCurrentVideoId() === item.videoId" [title]="item.title">
+                    <span
+                        class="material-symbols-sharp text-xs text-dash-text-dim group-hover:text-dash-accent transition-colors">
+                        {{ youtubePlayer.getCurrentVideoId() === item.videoId && youtubePlayer.isPlaying() ? 'equalizer'
+                        :
+                        'play_circle' }}
+                    </span>
+                    <span class="text-xs text-dash-text truncate flex-1">{{ item.title }}</span>
+                </button>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    }
+
     <!-- Player UI -->
     <div class="flex items-center gap-3 p-3 bg-dash-bg/50 rounded-lg border border-dash-border/30">
         <!-- Play/Pause Button -->
@@ -23,10 +89,33 @@
                 <span class="text-[10px] uppercase tracking-wider text-dash-text-dim font-medium">
                     {{ youtubePlayer.isPlaying() ? 'Live' : 'Stream' }}
                 </span>
+                @if (youtubePlayer.isCustomVideo()) {
+                <span class="text-[10px] px-1.5 py-0.5 bg-dash-accent/20 text-dash-accent rounded-full">Custom</span>
+                }
             </div>
             <p class="text-xs text-dash-text truncate" [title]="youtubePlayer.currentTitle()">
                 {{ youtubePlayer.currentTitle() }}
             </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-1">
+            <!-- Add URL Button -->
+            <button (click)="toggleUrlInput()"
+                class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-dash-accent/20 text-dash-text-dim hover:text-dash-accent transition-all"
+                [class.text-dash-accent]="showUrlInput()" [class.bg-dash-accent/20]="showUrlInput()"
+                title="YouTube URL hinzufügen">
+                <span class="material-symbols-sharp text-lg">add_link</span>
+            </button>
+
+            <!-- Reset Button (only visible when custom video is playing) -->
+            @if (youtubePlayer.isCustomVideo()) {
+            <button (click)="resetToDefault()"
+                class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-red-500/20 text-dash-text-dim hover:text-red-400 transition-all"
+                title="Zurück zum Standard">
+                <span class="material-symbols-sharp text-lg">replay</span>
+            </button>
+            }
         </div>
     </div>
 </div>

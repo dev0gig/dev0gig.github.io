@@ -19,3 +19,47 @@
     overflow: hidden;
     pointer-events: none;
 }
+
+/* URL Input Styles */
+.url-input-container {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.url-input-container input:focus {
+    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.1);
+}
+
+/* URL History Styles */
+.url-history {
+    animation: slideDown 0.2s ease-out;
+}
+
+.history-item {
+    min-height: 36px;
+}
+
+.history-item:active {
+    transform: scale(0.98);
+}
+
+/* Rotation for expand/collapse arrow */
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* Expandable content animation */
+.history-content {
+    animation: slideDown 0.2s ease-out;
+}
