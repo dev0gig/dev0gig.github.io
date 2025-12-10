@@ -33,6 +33,14 @@
 
         <div class="border-t border-dash-border"></div>
 
+        <!-- Settings Button - Full Width -->
+        <button (click)="onSettingsClick()"
+            class="w-full bg-dash-bg rounded-md flex items-center gap-3 px-3 py-2.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+            title="Settings">
+            <span class="material-symbols-sharp text-xl">settings</span>
+            <span class="text-sm font-medium">Settings</span>
+        </button>
+
         <!-- Projects Section -->
         <div>
             <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2 px-1">Projekte</h3>
@@ -61,13 +69,6 @@
                     <span class="text-[10px] font-medium">Budget</span>
                     <span class="text-[9px] opacity-60">Alt+B</span>
                 </a>
-                <!-- Settings -->
-                <button (click)="onSettingsClick()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Settings">
-                    <span class="material-symbols-sharp text-2xl">settings</span>
-                    <span class="text-[10px] font-medium">Settings</span>
-                </button>
                 <!-- Manga Builder -->
                 <a routerLink="/manga-builder"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
