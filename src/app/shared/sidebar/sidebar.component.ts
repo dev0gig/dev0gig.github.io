@@ -39,6 +39,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     onSettingsClick() {
         this.settingsService.openSettings();
+        this.closeSidebarOnMobile();
+    }
+
+    closeSidebarOnMobile() {
+        if (window.innerWidth < 768) {
+            this.sidebarService.close();
+        }
     }
 
     installPwa() {
