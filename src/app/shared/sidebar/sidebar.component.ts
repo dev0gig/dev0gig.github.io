@@ -102,6 +102,30 @@ export class SidebarComponent implements OnInit, OnDestroy {
         };
         zip.file('budget.json', JSON.stringify(budgetData, null, 2));
 
+        // Export AudioNotes
+        const audioNotes = localStorage.getItem('audio_notes_entries');
+        if (audioNotes) {
+            const audioNotesData = {
+                exportDate,
+                version: '1.0',
+                project: 'audioNotes',
+                data: JSON.parse(audioNotes)
+            };
+            zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
+        }
+
+        // Export RecentlyPlayed (YouTube URL History)
+        const urlHistory = localStorage.getItem('youtube_url_history');
+        if (urlHistory) {
+            const recentlyPlayedData = {
+                exportDate,
+                version: '1.0',
+                project: 'recentlyPlayed',
+                data: JSON.parse(urlHistory)
+            };
+            zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
+        }
+
         // Generate and download
         const blob = await zip.generateAsync({ type: 'blob' });
         const url = window.URL.createObjectURL(blob);
@@ -110,8 +134,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         a.download = `dashboard_backup_${new Date().toISOString().split('T')[0]}.zip`;
         a.click();
         window.URL.revokeObjectURL(url);
-
-        this.sidebarService.close();
     }
 
     triggerImportAll() {
@@ -138,8 +160,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
             const bookmarksFile = zip.file('bookmarks.json');
             const journalFile = zip.file('journal.json');
             const budgetFile = zip.file('budget.json');
+            const audioNotesFile = zip.file('audionotes.json');
+            const recentlyPlayedFile = zip.file('recentlyplayed.json');
 
-            if (!bookmarksFile && !journalFile && !budgetFile) {
+            if (!bookmarksFile && !journalFile && !budgetFile && !audioNotesFile && !recentlyPlayedFile) {
                 alert('Keine passenden Daten in der Backup-Datei gefunden.');
                 return;
             }
@@ -192,8 +216,27 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 importedProjects.push('Budget');
             }
 
-            this.sidebarService.close();
-            alert(`Import erfolgreich!\\nImportierte Projekte: ${importedProjects.join(', ')}\\n\\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
+            // Import AudioNotes
+            if (audioNotesFile) {
+                const content = await audioNotesFile.async('string');
+                const audioNotesData = JSON.parse(content);
+                const notes = (audioNotesData.data || []).map((n: any) => ({
+                    ...n,
+                    timestamp: new Date(n.timestamp)
+                }));
+                localStorage.setItem('audio_notes_entries', JSON.stringify(notes));
+                importedProjects.push('AudioNotes');
+            }
+
+            // Import RecentlyPlayed (YouTube URL History)
+            if (recentlyPlayedFile) {
+                const content = await recentlyPlayedFile.async('string');
+                const recentlyPlayedData = JSON.parse(content);
+                localStorage.setItem('youtube_url_history', JSON.stringify(recentlyPlayedData.data || []));
+                importedProjects.push('Zuletzt gespielt');
+            }
+
+            alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
 
             // Reload to apply changes
             window.location.reload();

@@ -14,6 +14,8 @@ interface ProjectSelection {
     bookmarks: boolean;
     journal: boolean;
     budget: boolean;
+    audioNotes: boolean;
+    recentlyPlayed: boolean;
 }
 
 @Component({
@@ -41,7 +43,9 @@ export class Dashboard {
     projectSelection = signal<ProjectSelection>({
         bookmarks: true,
         journal: true,
-        budget: true
+        budget: true,
+        audioNotes: true,
+        recentlyPlayed: true
     });
 
     newBookmarkUrl = '';
@@ -229,7 +233,9 @@ export class Dashboard {
         this.projectSelection.set({
             bookmarks: true,
             journal: true,
-            budget: true
+            budget: true,
+            audioNotes: true,
+            recentlyPlayed: true
         });
     }
 
@@ -237,13 +243,15 @@ export class Dashboard {
         this.projectSelection.set({
             bookmarks: false,
             journal: false,
-            budget: false
+            budget: false,
+            audioNotes: false,
+            recentlyPlayed: false
         });
     }
 
     hasAnyProjectSelected(): boolean {
         const sel = this.projectSelection();
-        return sel.bookmarks || sel.journal || sel.budget;
+        return sel.bookmarks || sel.journal || sel.budget || sel.audioNotes || sel.recentlyPlayed;
     }
 
     async exportAllData() {
@@ -303,6 +311,30 @@ export class Dashboard {
             zip.file('budget.json', JSON.stringify(budgetData, null, 2));
         }
 
+        // Export AudioNotes as separate JSON file
+        if (selection.audioNotes) {
+            const audioNotes = localStorage.getItem('audio_notes_entries');
+            const audioNotesData = {
+                exportDate,
+                version: '1.0',
+                project: 'audioNotes',
+                data: audioNotes ? JSON.parse(audioNotes) : []
+            };
+            zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
+        }
+
+        // Export RecentlyPlayed (YouTube URL History) as separate JSON file
+        if (selection.recentlyPlayed) {
+            const urlHistory = localStorage.getItem('youtube_url_history');
+            const recentlyPlayedData = {
+                exportDate,
+                version: '1.0',
+                project: 'recentlyPlayed',
+                data: urlHistory ? JSON.parse(urlHistory) : []
+            };
+            zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
+        }
+
         // Generate and download
         const blob = await zip.generateAsync({ type: 'blob' });
         const url = window.URL.createObjectURL(blob);
@@ -316,6 +348,8 @@ export class Dashboard {
         if (selection.bookmarks) selectedProjects.push('Lesezeichen');
         if (selection.journal) selectedProjects.push('Journal');
         if (selection.budget) selectedProjects.push('Budget');
+        if (selection.audioNotes) selectedProjects.push('AudioNotes');
+        if (selection.recentlyPlayed) selectedProjects.push('Zuletzt gespielt');
 
         alert(`Export erfolgreich!\nExportierte Projekte: ${selectedProjects.join(', ')}`);
     }
@@ -346,6 +380,8 @@ export class Dashboard {
             const bookmarksFile = zip.file('bookmarks.json');
             const journalFile = zip.file('journal.json');
             const budgetFile = zip.file('budget.json');
+            const audioNotesFile = zip.file('audionotes.json');
+            const recentlyPlayedFile = zip.file('recentlyplayed.json');
 
             // Also check for legacy format (dashboard_backup.json)
             const legacyFile = zip.file('dashboard_backup.json');
@@ -354,6 +390,8 @@ export class Dashboard {
             if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
             if (selection.journal && journalFile) projectsToImport.push('Journal');
             if (selection.budget && budgetFile) projectsToImport.push('Budget');
+            if (selection.audioNotes && audioNotesFile) projectsToImport.push('AudioNotes');
+            if (selection.recentlyPlayed && recentlyPlayedFile) projectsToImport.push('Zuletzt gespielt');
 
             // If no new format files found, try legacy format
             if (projectsToImport.length === 0 && legacyFile) {
@@ -412,6 +450,26 @@ export class Dashboard {
                     localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
                 }
                 importedProjects.push('Budget');
+            }
+
+            // Import AudioNotes
+            if (selection.audioNotes && audioNotesFile) {
+                const content = await audioNotesFile.async('string');
+                const audioNotesData = JSON.parse(content);
+                const notes = (audioNotesData.data || []).map((n: any) => ({
+                    ...n,
+                    timestamp: new Date(n.timestamp)
+                }));
+                localStorage.setItem('audio_notes_entries', JSON.stringify(notes));
+                importedProjects.push('AudioNotes');
+            }
+
+            // Import RecentlyPlayed (YouTube URL History)
+            if (selection.recentlyPlayed && recentlyPlayedFile) {
+                const content = await recentlyPlayedFile.async('string');
+                const recentlyPlayedData = JSON.parse(content);
+                localStorage.setItem('youtube_url_history', JSON.stringify(recentlyPlayedData.data || []));
+                importedProjects.push('Zuletzt gespielt');
             }
 
             this.toggleSettingsModal();
@@ -506,6 +564,8 @@ export class Dashboard {
         if (selection.bookmarks) projectsToDelete.push('Lesezeichen');
         if (selection.journal) projectsToDelete.push('Journal');
         if (selection.budget) projectsToDelete.push('Budget');
+        if (selection.audioNotes) projectsToDelete.push('AudioNotes');
+        if (selection.recentlyPlayed) projectsToDelete.push('Zuletzt gespielt');
 
         if (!confirm(`WARNUNG: Dies löscht ALLE Daten für:\n${projectsToDelete.join(', ')}\n\nDiese Aktion kann nicht rückgängig gemacht werden!\n\nFortfahren?`)) {
             return;
@@ -532,6 +592,16 @@ export class Dashboard {
             localStorage.removeItem('mybudget_accounts');
             localStorage.removeItem('mybudget_categories');
             localStorage.removeItem('mybudget_fixedcosts');
+        }
+
+        // Delete AudioNotes
+        if (selection.audioNotes) {
+            localStorage.removeItem('audio_notes_entries');
+        }
+
+        // Delete RecentlyPlayed (YouTube URL History)
+        if (selection.recentlyPlayed) {
+            localStorage.removeItem('youtube_url_history');
         }
 
         this.toggleSettingsModal();

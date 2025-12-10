@@ -75,7 +75,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-5 gap-2">
                         <button (click)="toggleProjectSelection('bookmarks')"
                             [class]="projectSelection().bookmarks ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                             <span class="material-symbols-sharp text-xl">bookmarks</span>
@@ -90,6 +90,16 @@
                             [class]="projectSelection().budget ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                             <span class="material-symbols-sharp text-xl">payments</span>
                             <span class="text-xs font-medium">Budget</span>
+                        </button>
+                        <button (click)="toggleProjectSelection('audioNotes')"
+                            [class]="projectSelection().audioNotes ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
+                            <span class="material-symbols-sharp text-xl">mic</span>
+                            <span class="text-xs font-medium">AudioNotes</span>
+                        </button>
+                        <button (click)="toggleProjectSelection('recentlyPlayed')"
+                            [class]="projectSelection().recentlyPlayed ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
+                            <span class="material-symbols-sharp text-xl">history</span>
+                            <span class="text-xs font-medium">Zuletzt</span>
                         </button>
                     </div>
                 </div>
