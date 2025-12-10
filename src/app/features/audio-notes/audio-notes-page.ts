@@ -1,4 +1,4 @@
-import { Component, signal, inject, effect, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal, inject, effect, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -39,6 +39,7 @@ interface SpeechRecognition extends EventTarget {
     onresult: ((event: SpeechRecognitionEvent) => void) | null;
     onerror: ((event: Event) => void) | null;
     onend: (() => void) | null;
+    onstart: (() => void) | null;
     start(): void;
     stop(): void;
     abort(): void;
@@ -58,7 +59,7 @@ declare global {
     templateUrl: './audio-notes-page.html',
     styleUrl: './audio-notes-page.css'
 })
-export class AudioNotesPage {
+export class AudioNotesPage implements OnDestroy {
     audioNotes = inject(AudioNotesService);
     journal = inject(JournalService);
     sidebarService = inject(SidebarService);
@@ -69,15 +70,28 @@ export class AudioNotesPage {
     showSettingsModal = signal(false);
     editMode = signal(false);
     isRecording = signal(false);
+    isListening = signal(false); // New: listening for voice before recording
     recordingText = signal('');
     inputText = signal('');
     editingNoteId = signal<string | null>(null);
     editingNoteText = signal('');
     importStatus = signal<{ success: boolean; message: string } | null>(null);
+    recordingStatus = signal<string>(''); // Status text for user feedback
 
     // Speech recognition
     private recognition: SpeechRecognition | null = null;
     speechSupported = signal(false);
+
+    // Voice Activity Detection (VAD)
+    private audioContext: AudioContext | null = null;
+    private analyser: AnalyserNode | null = null;
+    private mediaStream: MediaStream | null = null;
+    private vadCheckInterval: number | null = null;
+    private silenceTimeout: number | null = null;
+    private readonly SILENCE_THRESHOLD = 15; // Volume threshold (0-255)
+    private readonly SILENCE_DURATION = 1000; // 1 second of silence to stop
+    private hasDetectedVoice = false;
+    private recognitionStarted = false;
 
     constructor() {
         // Check for speech recognition support
@@ -104,12 +118,20 @@ export class AudioNotesPage {
         });
     }
 
+    ngOnDestroy(): void {
+        this.stopAllRecording();
+    }
+
     private initSpeechRecognition(): void {
         const SpeechRecognitionClass = window.webkitSpeechRecognition || window.SpeechRecognition;
         this.recognition = new SpeechRecognitionClass();
-        this.recognition.continuous = true;
+        this.recognition.continuous = false; // Changed: no continuous mode
         this.recognition.interimResults = true;
         this.recognition.lang = 'de-DE';
+
+        this.recognition.onstart = () => {
+            this.recognitionStarted = true;
+        };
 
         this.recognition.onresult = (event: SpeechRecognitionEvent) => {
             let finalTranscript = '';
@@ -127,42 +149,180 @@ export class AudioNotesPage {
             if (finalTranscript) {
                 this.recordingText.update(t => t + finalTranscript);
             }
-            // Show interim results for feedback
-            if (interimTranscript) {
-                // Could show interim in UI
+
+            // Reset silence timer when we get results
+            if (finalTranscript || interimTranscript) {
+                this.resetSilenceTimer();
             }
         };
 
         this.recognition.onerror = (event: Event) => {
             console.error('Speech recognition error', event);
-            this.isRecording.set(false);
+            // Don't stop on no-speech error, just continue listening
+            const errorEvent = event as any;
+            if (errorEvent.error !== 'no-speech') {
+                this.stopAllRecording();
+            }
         };
 
         this.recognition.onend = () => {
-            if (this.isRecording()) {
-                // Auto-restart if still recording
-                this.recognition?.start();
-            }
+            this.recognitionStarted = false;
+            // Don't auto-restart - VAD will control when to start/stop
         };
+    }
+
+    private async startVAD(): Promise<void> {
+        try {
+            // Get microphone access
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // Create audio context and analyser
+            this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 256;
+
+            const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+            source.connect(this.analyser);
+
+            // Start monitoring audio levels
+            this.hasDetectedVoice = false;
+            this.isListening.set(true);
+            this.recordingStatus.set('Höre zu...');
+
+            this.vadCheckInterval = window.setInterval(() => this.checkVoiceActivity(), 100);
+        } catch (error) {
+            console.error('Failed to start VAD:', error);
+            this.recordingStatus.set('Mikrofon-Fehler');
+            this.stopAllRecording();
+        }
+    }
+
+    private checkVoiceActivity(): void {
+        if (!this.analyser) return;
+
+        const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+        this.analyser.getByteFrequencyData(dataArray);
+
+        // Calculate average volume
+        const average = dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
+
+        if (average > this.SILENCE_THRESHOLD) {
+            // Voice detected
+            if (!this.hasDetectedVoice) {
+                this.hasDetectedVoice = true;
+                this.isRecording.set(true);
+                this.recordingStatus.set('Aufnahme läuft...');
+
+                // Start speech recognition if not already running
+                if (this.recognition && !this.recognitionStarted) {
+                    try {
+                        this.recognition.start();
+                    } catch (e) {
+                        // Already started, ignore
+                    }
+                }
+            }
+
+            // Reset silence timer
+            this.resetSilenceTimer();
+        }
+    }
+
+    private resetSilenceTimer(): void {
+        // Clear existing timer
+        if (this.silenceTimeout !== null) {
+            window.clearTimeout(this.silenceTimeout);
+        }
+
+        // Set new timer - stop after SILENCE_DURATION of silence
+        if (this.hasDetectedVoice) {
+            this.silenceTimeout = window.setTimeout(() => {
+                this.finishRecording();
+            }, this.SILENCE_DURATION);
+        }
+    }
+
+    private finishRecording(): void {
+        // Stop recognition and save note
+        if (this.recognition && this.recognitionStarted) {
+            this.recognition.stop();
+        }
+
+        const text = this.recordingText();
+        if (text.trim()) {
+            this.audioNotes.addNote(text);
+            this.recordingStatus.set('Notiz gespeichert!');
+        } else {
+            this.recordingStatus.set('Keine Sprache erkannt');
+        }
+
+        // Reset and continue listening for next note
+        this.recordingText.set('');
+        this.hasDetectedVoice = false;
+        this.isRecording.set(false);
+
+        // Clear status after delay
+        setTimeout(() => {
+            if (this.isListening()) {
+                this.recordingStatus.set('Höre zu...');
+            }
+        }, 1500);
+    }
+
+    private stopAllRecording(): void {
+        // Stop VAD interval
+        if (this.vadCheckInterval !== null) {
+            window.clearInterval(this.vadCheckInterval);
+            this.vadCheckInterval = null;
+        }
+
+        // Clear silence timeout
+        if (this.silenceTimeout !== null) {
+            window.clearTimeout(this.silenceTimeout);
+            this.silenceTimeout = null;
+        }
+
+        // Stop speech recognition
+        if (this.recognition && this.recognitionStarted) {
+            this.recognition.stop();
+        }
+
+        // Stop media stream
+        if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach(track => track.stop());
+            this.mediaStream = null;
+        }
+
+        // Close audio context
+        if (this.audioContext) {
+            this.audioContext.close();
+            this.audioContext = null;
+            this.analyser = null;
+        }
+
+        // Reset state
+        this.isListening.set(false);
+        this.isRecording.set(false);
+        this.hasDetectedVoice = false;
+        this.recordingStatus.set('');
+
+        // Save any pending text
+        const text = this.recordingText();
+        if (text.trim()) {
+            this.audioNotes.addNote(text);
+        }
+        this.recordingText.set('');
     }
 
     toggleRecording(): void {
         if (!this.recognition) return;
 
-        if (this.isRecording()) {
-            this.isRecording.set(false);
-            this.recognition.stop();
-
-            // Save the recorded text as a new note
-            const text = this.recordingText();
-            if (text.trim()) {
-                this.audioNotes.addNote(text);
-            }
-            this.recordingText.set('');
+        if (this.isListening() || this.isRecording()) {
+            // Stop everything
+            this.stopAllRecording();
         } else {
-            this.isRecording.set(true);
-            this.recordingText.set('');
-            this.recognition.start();
+            // Start VAD listening
+            this.startVAD();
         }
     }
 
