@@ -1,0 +1,84 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()">
+    </div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-dash-text">{{ editingFixedCost ? 'Fixkosten bearbeiten' : 'Neue
+                Fixkosten' }}</h2>
+            <button (click)="onClose()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+        <form (submit)="onSubmit($event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Name</label>
+                <input type="text" name="fixedCostName" required [value]="editingFixedCost?.name || ''"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                    placeholder="z.B. Miete, Strom, Netflix">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
+                    (€)</label>
+                <input type="number" name="fixedCostAmount" step="0.01" required
+                    [value]="editingFixedCost?.amount || ''"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                    placeholder="0,00">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                <div class="flex gap-2">
+                    <label class="flex-1">
+                        <input type="radio" name="fixedCostType" value="expense"
+                            [checked]="!editingFixedCost || editingFixedCost?.type === 'expense'" class="sr-only peer">
+                        <div class="w-full text-center px-4 py-2 rounded-sm text-sm font-medium transition-colors border cursor-pointer
+                            peer-checked:bg-red-500/20 peer-checked:text-red-500 peer-checked:border-red-500
+                            bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-text-dim">
+                            Ausgabe
+                        </div>
+                    </label>
+                    <label class="flex-1">
+                        <input type="radio" name="fixedCostType" value="income"
+                            [checked]="editingFixedCost?.type === 'income'" class="sr-only peer">
+                        <div class="w-full text-center px-4 py-2 rounded-sm text-sm font-medium transition-colors border cursor-pointer
+                            peer-checked:bg-green-500/20 peer-checked:text-green-500 peer-checked:border-green-500
+                            bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-text-dim">
+                            Einnahme
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label
+                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
+                <select name="fixedCostCategory" required
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                    <option value="">Kategorie wählen</option>
+                    @for (category of getSortedCategories(); track category.id) {
+                    <option [value]="category.id" [selected]="editingFixedCost?.category === category.id">{{
+                        category.name }}</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Konto</label>
+                <select name="fixedCostAccount" required
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                    <option value="">Konto wählen</option>
+                    @for (account of accounts; track account.id) {
+                    <option [value]="account.id" [selected]="editingFixedCost?.account === account.id">{{
+                        account.name }}</option>
+                    }
+                </select>
+            </div>
+            <div class="flex gap-2 pt-4">
+                <button type="button" (click)="onClose()"
+                    class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
+                    Abbrechen
+                </button>
+                <button type="submit" class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
+                    Speichern
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

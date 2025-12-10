@@ -1,0 +1,114 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()"></div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-dash-text">
+                {{ editingTransaction ? 'Transaktion bearbeiten' : (prefillFromFixedCost ? 'Fixkosten
+                buchen' : 'Neue Transaktion') }}
+            </h2>
+            <button (click)="onClose()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+        <!-- Prefill Info Banner -->
+        @if (prefillFromFixedCost) {
+        <div class="mb-4 p-3 bg-dash-accent/10 border border-dash-accent/30 rounded-sm">
+            <div class="flex items-center gap-2 text-dash-accent text-sm">
+                <span class="material-symbols-sharp text-lg">info</span>
+                <span>Vorausgefüllt aus Fixkosten: <strong>{{ prefillFromFixedCost.name }}</strong></span>
+            </div>
+        </div>
+        }
+        <form (submit)="onSubmit($event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                <div class="flex gap-2">
+                    <button type="button" (click)="setTransactionType('expense')"
+                        [class]="currentTransactionType() === 'expense' ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border'">
+                        Ausgabe
+                    </button>
+                    <button type="button" (click)="setTransactionType('income')"
+                        [class]="currentTransactionType() === 'income' ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border'">
+                        Einnahme
+                    </button>
+                    <button type="button" (click)="setTransactionType('transfer')"
+                        [class]="currentTransactionType() === 'transfer' ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border'">
+                        Transfer
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
+                    (€)</label>
+                <input type="number" name="amount" step="0.01" required
+                    [ngModel]="editingTransaction?.amount || prefillFromFixedCost?.amount"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                    placeholder="0,00">
+            </div>
+            <div>
+                <label
+                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Beschreibung</label>
+                <input type="text" name="description" required
+                    [ngModel]="editingTransaction?.description || prefillFromFixedCost?.name"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                    placeholder="z.B. Einkauf bei Supermarkt">
+            </div>
+            <div>
+                <label
+                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
+                <select name="category" required
+                    [ngModel]="editingTransaction?.category || prefillFromFixedCost?.category"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                    <option value="">Kategorie wählen</option>
+                    @for (category of getSortedCategories(); track category.id) {
+                    <option [value]="category.id">{{ category.name }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
+                        {{ currentTransactionType() === 'transfer' ? 'Von Konto' : 'Konto' }}
+                    </label>
+                    <select name="account" required
+                        [ngModel]="editingTransaction?.account || prefillFromFixedCost?.account"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                        <option value="">Wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id">{{ account.name }}</option>
+                        }
+                    </select>
+                </div>
+
+                <div *ngIf="currentTransactionType() === 'transfer'">
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
+                        Konto</label>
+                    <select name="toAccount" required [ngModel]="editingTransaction?.toAccount"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                        <option value="">Wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id">{{ account.name }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Datum</label>
+                <input type="date" id="transactionDate" name="date" required
+                    [value]="editingTransaction?.date || getTodayDateString()"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+            </div>
+            <div class="flex gap-2 pt-4">
+                <button type="button" (click)="onClose()"
+                    class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
+                    Abbrechen
+                </button>
+                <button type="submit" class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
+                    {{ editingTransaction ? 'Speichern' : 'Hinzufügen' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,157 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()">
+    </div>
+    <div
+        class="relative gradient-card rounded-sm shadow-2xl w-full max-w-4xl flex flex-col h-[80vh] overflow-hidden accent-glow">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-dash-border gradient-header">
+            <h2 class="text-lg font-bold text-dash-text">Settings</h2>
+            <button (click)="onClose()" class="text-dash-text-dim hover:text-white transition-colors font-bold px-2">
+                X
+            </button>
+        </div>
+
+        <!-- Modal Body (Split View) -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar (Menu) -->
+            <div class="w-1/3 border-r border-dash-border bg-dash-bg/50 p-4 flex flex-col gap-2 overflow-y-auto">
+                <button (click)="settingsView.set('main')"
+                    [class]="settingsView() === 'main' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                    class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                    Daten
+                </button>
+                <button (click)="settingsView.set('accounts')"
+                    [class]="settingsView() === 'accounts' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                    class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                    Konten
+                </button>
+                <button (click)="settingsView.set('categories')"
+                    [class]="settingsView() === 'categories' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                    class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                    Kategorien
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="w-2/3 p-6 overflow-y-auto">
+
+                <!-- Main / Data View -->
+                <div *ngIf="settingsView() === 'main'" class="flex flex-col gap-6">
+                    <div class="flex flex-col gap-3">
+                        <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Daten Import /
+                            Export
+                        </h3>
+                        <p class="text-sm text-dash-text-dim">Importieren oder exportieren Sie Ihre
+                            Transaktionen als JSON-Datei.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button (click)="onImportData()"
+                                class="flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                                JSON Importieren
+                            </button>
+                            <button (click)="onExportData()"
+                                class="flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                                JSON Exportieren
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 pt-6 border-t border-dash-border">
+                        <h3 class="text-xs font-bold text-red-500 uppercase tracking-wider">Gefahrenzone</h3>
+                        <p class="text-sm text-dash-text-dim">Hier können Sie alle Ihre Transaktionsdaten
+                            unwiderruflich löschen.</p>
+                        <button (click)="onDeleteAllTransactions()"
+                            class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-sm transition-colors text-sm w-full">
+                            Alle Transaktionen löschen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Accounts View -->
+                <div *ngIf="settingsView() === 'accounts'" class="flex flex-col gap-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-base font-bold text-dash-text">Konten verwalten</h3>
+                        <button (click)="onAddAccount()"
+                            class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
+                            Neues Konto
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <div *ngFor="let account of accounts"
+                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-dash-text">{{ account.name }}</span>
+                                <span class="text-xs text-dash-text-dim font-mono">{{
+                                    formatCurrency(account.balance) }}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button (click)="onEditAccount(account)"
+                                    class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                    title="Bearbeiten">
+                                    Bearbeiten
+                                </button>
+                                <button (click)="onDeleteAccount(account.id)"
+                                    class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                    title="Löschen">
+                                    Löschen
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="accounts.length === 0" class="text-center py-8 text-dash-text-dim text-sm italic">
+                            Keine Konten erstellt.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories View -->
+                <div *ngIf="settingsView() === 'categories'" class="flex flex-col gap-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-base font-bold text-dash-text">Kategorien verwalten</h3>
+                        <button (click)="onAddCategory()"
+                            class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
+                            Neue Kategorie
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <!-- Categories (sorted alphabetically) -->
+                        <div *ngFor="let category of getSortedCategories()"
+                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
+                            <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                                <div class="flex flex-col overflow-hidden">
+                                    <span class="text-sm font-medium text-dash-text truncate">{{
+                                        category.name }}</span>
+                                    <span class="text-[10px] uppercase tracking-wider font-bold"
+                                        [class.text-green-500]="category.type === 'income'"
+                                        [class.text-red-500]="category.type === 'expense'"
+                                        [class.text-dash-text-dim]="category.type === 'both'">
+                                        {{ category.type === 'income' ? 'Einnahme' : (category.type ===
+                                        'expense' ? 'Ausgabe' : 'Beides') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex gap-1">
+                                <button (click)="onEditCategory(category)"
+                                    class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                    title="Bearbeiten">
+                                    Bearbeiten
+                                </button>
+                                <button (click)="onDeleteCategory(category.id)"
+                                    class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                    title="Löschen">
+                                    Löschen
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="categories.length === 0" class="text-center py-8 text-dash-text-dim text-sm italic">
+                            Keine Kategorien erstellt.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

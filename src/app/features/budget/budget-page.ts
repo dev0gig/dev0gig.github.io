@@ -1,9 +1,8 @@
 import { Component, signal, inject, effect } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
-import { BudgetCalendar } from './calendar/calendar';
 import { ThemeService } from '../../shared/theme.service';
 import { SidebarService } from '../../shared/sidebar.service';
 import { SettingsService } from '../../shared/settings.service';
@@ -12,10 +11,38 @@ import { BudgetStateService } from './budget.state.service';
 import { BudgetUtilityService } from './budget.utility.service';
 import { BudgetStatsService } from './budget.stats.service';
 
+// Sub-components
+import {
+    TransactionsViewComponent,
+    StatisticsViewComponent,
+    FixedCostsViewComponent,
+    BudgetSidebarComponent,
+    TransactionModalComponent,
+    AccountModalComponent,
+    CategoryModalComponent,
+    FixedCostModalComponent,
+    SettingsModalComponent
+} from './components';
+
 @Component({
     selector: 'app-budget-page',
     standalone: true,
-    imports: [CommonModule, RouterLink, FormsModule, AppsLauncher, BudgetCalendar, DecimalPipe],
+    imports: [
+        CommonModule,
+        FormsModule,
+        AppsLauncher,
+        // View components
+        TransactionsViewComponent,
+        StatisticsViewComponent,
+        FixedCostsViewComponent,
+        BudgetSidebarComponent,
+        // Modal components
+        TransactionModalComponent,
+        AccountModalComponent,
+        CategoryModalComponent,
+        FixedCostModalComponent,
+        SettingsModalComponent
+    ],
     templateUrl: './budget-page.html',
     styleUrls: ['./budget-page.css']
 })
@@ -549,5 +576,83 @@ export class BudgetPage {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // ==================== Modal Submit Handlers (for sub-components) ====================
+
+    onTransactionModalSubmit(data: {
+        type: 'income' | 'expense' | 'transfer';
+        amount: number;
+        description: string;
+        category: string;
+        account: string;
+        date: string;
+        toAccount?: string;
+    }) {
+        const transactionData = {
+            type: data.type,
+            amount: data.amount,
+            description: data.description,
+            category: data.category,
+            account: data.account,
+            toAccount: data.type === 'transfer' ? data.toAccount : undefined,
+            date: data.date
+        };
+
+        if (this.editingTransaction()) {
+            const oldTransaction = this.editingTransaction()!;
+            this.stateService.updateTransaction(oldTransaction.id, transactionData, oldTransaction);
+        } else {
+            this.stateService.addTransaction(transactionData);
+        }
+
+        this.toggleTransactionModal();
+        this.editingTransaction.set(null);
+        this.prefillFromFixedCost.set(null);
+    }
+
+    onAccountModalSubmit(data: { name: string; balance: number }) {
+        if (this.editingAccount()) {
+            this.stateService.updateAccount(this.editingAccount()!.id, data.name, data.balance);
+        } else {
+            this.stateService.addAccount(data.name, data.balance);
+        }
+
+        this.toggleAccountModal();
+        this.editingAccount.set(null);
+    }
+
+    onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) {
+        if (this.editingCategory()) {
+            this.stateService.updateCategory(this.editingCategory()!.id, data.name, data.type);
+        } else {
+            this.stateService.addCategory(data.name, data.type);
+        }
+
+        this.toggleCategoryModal();
+        this.editingCategory.set(null);
+    }
+
+    onFixedCostModalSubmit(data: {
+        name: string;
+        amount: number;
+        type: 'income' | 'expense';
+        category: string;
+        account: string;
+    }) {
+        if (this.editingFixedCost()) {
+            this.stateService.updateFixedCost(
+                this.editingFixedCost()!.id,
+                data.name,
+                data.amount,
+                data.type,
+                data.category,
+                data.account
+            );
+        } else {
+            this.stateService.addFixedCost(data.name, data.amount, data.type, data.category, data.account);
+        }
+
+        this.toggleFixedCostModal();
     }
 }

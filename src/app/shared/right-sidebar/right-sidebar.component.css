@@ -3,4 +3,15 @@
     border-left: 1px solid rgba(var(--color-accent-rgb), 0.1);
     background: linear-gradient(135deg, rgba(30, 30, 35, 0.95) 0%, rgba(20, 20, 25, 0.95) 100%);
     backdrop-filter: blur(10px);
+
+    /* Hide scrollbar while keeping scroll functionality */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.sidebar-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
 }

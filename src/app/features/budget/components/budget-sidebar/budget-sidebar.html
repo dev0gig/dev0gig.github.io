@@ -1,0 +1,55 @@
+<aside class="flex flex-col gap-4">
+    <!-- Stats Card -->
+    <div class="gradient-card p-4 rounded-sm">
+        <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-4">Übersicht</h3>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-dash-text-dim text-sm">Bilanz</span>
+                <span class="font-mono font-bold text-dash-text">{{ formatCurrency(stats.balance) }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-dash-text-dim text-sm">Einnahmen</span>
+                <span class="font-mono font-bold text-green-500">+{{ formatCurrency(stats.income) }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-dash-text-dim text-sm">Ausgaben</span>
+                <span class="font-mono font-bold text-red-500">-{{ formatCurrency(stats.expenses) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <app-budget-calendar [transactions]="transactions" (monthChange)="onMonthChange($event)">
+    </app-budget-calendar>
+
+    <!-- Accounts Card -->
+    <div class="gradient-card p-4 rounded-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Konten</h3>
+        </div>
+        <div class="space-y-2">
+            <!-- All Accounts Button -->
+            <button (click)="onSelectAccount(null)"
+                [class]="!selectedAccountId ? 'w-full flex justify-between items-center p-3 rounded-sm bg-dash-accent text-white transition-colors' : 'w-full flex justify-between items-center p-3 rounded-sm bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white transition-colors border border-dash-border'">
+                <span class="text-sm font-medium">Alle Konten</span>
+                <span class="font-mono text-xs">{{ formatCurrency(totalBalance) }}</span>
+            </button>
+
+            @for (account of accounts; track account.id) {
+            <button (click)="onSelectAccount(account.id)"
+                [class]="selectedAccountId === account.id ? 'w-full flex justify-between items-center p-3 rounded-sm bg-dash-accent text-white transition-colors' : 'w-full flex justify-between items-center p-3 rounded-sm bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white transition-colors border border-dash-border'">
+                <span class="text-sm font-medium truncate">{{ account.name }}</span>
+                <span class="font-mono text-xs"
+                    [class.text-green-400]="account.balance > 0 && selectedAccountId !== account.id"
+                    [class.text-red-400]="account.balance < 0 && selectedAccountId !== account.id">
+                    {{ formatCurrency(account.balance) }}
+                </span>
+            </button>
+            }
+
+            <div *ngIf="accounts.length === 0" class="text-center py-4 text-dash-text-dim text-sm italic">
+                Keine Konten erstellt.
+            </div>
+        </div>
+    </div>
+</aside>
