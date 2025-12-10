@@ -39,6 +39,10 @@ export class App {
           event.preventDefault();
           this.router.navigate(['/manga-builder']);
           break;
+        case 'a':
+          event.preventDefault();
+          this.router.navigate(['/audio-notes']);
+          break;
         case 's':
           event.preventDefault();
           this.sidebarService.toggleBoth();

@@ -14,5 +14,9 @@ export const routes: Routes = [
     {
         path: 'manga-reader',
         loadComponent: () => import('./features/manga-reader/manga-reader-page').then(m => m.MangaReaderPage)
+    },
+    {
+        path: 'audio-notes',
+        loadComponent: () => import('./features/audio-notes/audio-notes-page').then(m => m.AudioNotesPage)
     }
 ];

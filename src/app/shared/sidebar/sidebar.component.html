@@ -77,13 +77,14 @@
                     <span class="text-[10px] font-medium text-center leading-tight">Manga<br>Builder</span>
                     <span class="text-[9px] opacity-60">Alt+M</span>
                 </a>
-                <!-- AudioNotes Download -->
-                <button (click)="downloadAudioNotes()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-1 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="AudioNotes (.apk)">
+                <!-- AudioNotes -->
+                <a routerLink="/audio-notes"
+                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                    title="AudioNotes (Alt+A)">
                     <span class="material-symbols-sharp text-2xl">mic</span>
-                    <span class="text-[10px] font-medium text-center leading-tight">Audio<br>Notes.apk</span>
-                </button>
+                    <span class="text-[10px] font-medium text-center leading-tight">Audio<br>Notes</span>
+                    <span class="text-[9px] opacity-60">Alt+A</span>
+                </a>
                 <!-- Install PWA -->
                 <button *ngIf="pwa.canInstall()" (click)="installPwa()"
                     class="aspect-square bg-dash-bg/50 hover:bg-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
