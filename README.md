@@ -1,16 +1,40 @@
-# Journal App
+# My Personal OS
 
-Eine moderne, minimalistische Journal-Anwendung mit Angular.
+Eine vielseitige All-in-One Webanwendung, die als dein persönlicher, digitaler Begleiter dient. Sie vereint Produktivität, Kreativität und Unterhaltung in einer einzigen, aufgeräumten Oberfläche.
 
-## 🚀 Features
+## ✨ Was kann die App?
 
-- 📝 Tägliche Journal-Einträge
-- 📅 Kalenderansicht mit Markierungen für Einträge
-- 🔍 Suchfunktion
-- 💾 Import/Export von Daten
-- 🌙 Dark Mode
-- 📱 Responsive Design
-- 🔒 Offline-fähig (PWA)
+Die App ist modular aufgebaut und bietet verschiedene Werkzeuge für deinen Alltag:
+
+### 📔 Journal & Termine
+Dein persönliches Tagebuch für Gedanken, Ideen und tägliche Einträge.
+- **Kalenderansicht**: Navigiere einfach durch deine vergangenen Einträge.
+- **Suche**: Finde alte Notizen in Sekundenschnelle wieder.
+
+### � Finanzmanager (Budget)
+Behalte deine Finanzen voll im Griff.
+- **Einnahmen & Ausgaben**: Erfasse alle Transaktionen.
+- **Trends**: Visuelle Grafiken zeigen dir, wie sich dein Vermögen entwickelt.
+- **Sparziele**: Setze dir Budgets für verschiedene Kategorien.
+
+### 🎙️ AudioNotes
+Diktieren statt tippen – besonders praktisch für unterwegs.
+- **Spracherkennung**: Sprich einfach los, die App wandelt deine Stimme automatisch in Text um.
+- **Android-Optimiert**: Auf dem Smartphone startet die App direkt in diesem Modus, damit du sofort aufnehmen kannst.
+
+### 🎨 Manga Studio
+Für die kreative Pause.
+- **Reader**: Lies deine Manga-Sammlung direkt in der App.
+- **Builder**: Erstelle eigene einfache Manga-Seiten und Geschichten.
+
+### 🎵 Musik & Atmosphäre
+- **Integrierter Player**: Spiele deine Lieblings-YouTube-Playlists (z.B. Lofi Beats) direkt in der Seitenleiste ab, während du arbeitest.
+- **Zuletzt gehört**: Schnellzugriff auf deine ständigen Begleiter.
+
+### 🔒 Deine Daten
+- **Vollständige Kontrolle**: Alle Daten werden lokal in deinem Browser gespeichert.
+- **Backup**: Du kannst jederzeit all deine Daten (Journal, Finanzen, Einstellungen) als Datei exportieren und sichern.
+- **Offline-Fähig**: Die App funktioniert auch ohne Internetverbindung (PWA).
 
 ## 🛠️ Entwicklung
 
