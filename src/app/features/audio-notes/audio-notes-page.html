@@ -99,8 +99,8 @@
             <div class="flex flex-col gap-4">
                 <!-- Text Input -->
                 <div class="flex gap-2">
-                    <textarea [(ngModel)]="inputText" (keydown)="onInputKeydown($event)" placeholder="Notiz eingeben..."
-                        rows="2"
+                    <textarea #noteInput [(ngModel)]="inputText" (keydown)="onInputKeydown($event)"
+                        placeholder="Notiz eingeben..." rows="2"
                         class="flex-1 bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:outline-none focus:border-dash-accent resize-none">
                     </textarea>
                     <button (click)="submitTextNote()"

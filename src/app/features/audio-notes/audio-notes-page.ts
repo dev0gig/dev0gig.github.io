@@ -1,4 +1,4 @@
-import { Component, signal, inject, effect, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, signal, inject, effect, ElementRef, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -59,7 +59,7 @@ declare global {
     templateUrl: './audio-notes-page.html',
     styleUrl: './audio-notes-page.css'
 })
-export class AudioNotesPage implements OnDestroy {
+export class AudioNotesPage implements OnDestroy, AfterViewInit {
     audioNotes = inject(AudioNotesService);
     journal = inject(JournalService);
     sidebarService = inject(SidebarService);
@@ -78,6 +78,8 @@ export class AudioNotesPage implements OnDestroy {
     editingNoteText = signal('');
     importStatus = signal<{ success: boolean; message: string } | null>(null);
     recordingStatus = signal<string>(''); // Status text for user feedback
+
+    @ViewChild('noteInput') noteInput!: ElementRef<HTMLTextAreaElement>;
 
     // Speech recognition
     private recognition: SpeechRecognition | null = null;
@@ -121,6 +123,15 @@ export class AudioNotesPage implements OnDestroy {
 
     ngOnDestroy(): void {
         this.stopAllRecording();
+    }
+
+    ngAfterViewInit() {
+        // Auto-focus input to trigger keyboard on mobile
+        setTimeout(() => {
+            if (this.noteInput?.nativeElement) {
+                this.noteInput.nativeElement.focus();
+            }
+        }, 500);
     }
 
     private initSpeechRecognition(): void {

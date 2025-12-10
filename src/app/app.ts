@@ -1,9 +1,10 @@
-import { Component, inject, HostListener } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, inject, HostListener, OnInit } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { ThemeService } from './shared/theme.service';
 import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { RightSidebarComponent } from './shared/right-sidebar/right-sidebar.component';
 import { SidebarService } from './shared/sidebar.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -12,11 +13,32 @@ import { SidebarService } from './shared/sidebar.service';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit {
   // Inject ThemeService to ensure it's initialized on app start
   private themeService = inject(ThemeService);
   private router = inject(Router);
   private sidebarService = inject(SidebarService);
+
+  ngOnInit() {
+    // Auto-redirect Android devices to AudioNotes on initial load
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      take(1) // Only check on first navigation
+    ).subscribe((event: any) => {
+      // Only redirect if we're on the home page (initial load)
+      if (event.url === '/' && this.isAndroidDevice()) {
+        this.router.navigate(['/audio-notes']);
+      }
+    });
+  }
+
+  /**
+   * Detect if the user is on an Android device
+   */
+  private isAndroidDevice(): boolean {
+    const userAgent = navigator.userAgent.toLowerCase();
+    return userAgent.includes('android');
+  }
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
