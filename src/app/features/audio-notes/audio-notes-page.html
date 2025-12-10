@@ -139,10 +139,11 @@
                     </div>
                     }
 
-                    @if ((isRecording() || isListening()) && recordingText()) {
+                    @if ((isRecording() || isListening()) && (recordingText() || interimText())) {
                     <div
                         class="w-full bg-dash-bg/50 border border-dash-border rounded-sm p-3 text-dash-text-dim text-sm">
-                        {{ recordingText() }}
+                        <span>{{ recordingText() }}</span><span class="italic text-dash-accent/70">{{ interimText()
+                            }}</span>
                     </div>
                     }
                 </div>

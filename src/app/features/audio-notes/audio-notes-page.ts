@@ -72,6 +72,7 @@ export class AudioNotesPage implements OnDestroy {
     isRecording = signal(false);
     isListening = signal(false); // New: listening for voice before recording
     recordingText = signal('');
+    interimText = signal(''); // Live preview of currently spoken text
     inputText = signal('');
     editingNoteId = signal<string | null>(null);
     editingNoteText = signal('');
@@ -148,7 +149,11 @@ export class AudioNotesPage implements OnDestroy {
 
             if (finalTranscript) {
                 this.recordingText.update(t => t + finalTranscript);
+                this.interimText.set(''); // Clear interim when we get final
             }
+
+            // Update interim text for live preview
+            this.interimText.set(interimTranscript);
 
             // Reset silence timer when we get results
             if (finalTranscript || interimTranscript) {
@@ -167,7 +172,10 @@ export class AudioNotesPage implements OnDestroy {
 
         this.recognition.onend = () => {
             this.recognitionStarted = false;
-            // Don't auto-restart - VAD will control when to start/stop
+            // If we were recording, finish the recording
+            if (this.hasDetectedVoice) {
+                this.finishRecording();
+            }
         };
     }
 
@@ -222,9 +230,8 @@ export class AudioNotesPage implements OnDestroy {
                     }
                 }
             }
-
-            // Reset silence timer
-            this.resetSilenceTimer();
+            // Note: Don't reset silence timer here - only speech recognition results should control that
+            // This prevents background noise from keeping the recording alive
         }
     }
 
@@ -243,30 +250,36 @@ export class AudioNotesPage implements OnDestroy {
     }
 
     private finishRecording(): void {
-        // Stop recognition and save note
+        // Stop recognition
         if (this.recognition && this.recognitionStarted) {
             this.recognition.stop();
         }
 
         const text = this.recordingText();
+        let statusMessage = '';
+
         if (text.trim()) {
             this.audioNotes.addNote(text);
-            this.recordingStatus.set('Notiz gespeichert!');
+            statusMessage = 'Notiz gespeichert!';
         } else {
-            this.recordingStatus.set('Keine Sprache erkannt');
+            statusMessage = 'Keine Sprache erkannt';
         }
 
-        // Reset and continue listening for next note
+        // Clear the text before stopping to prevent double-save in stopAllRecording
         this.recordingText.set('');
-        this.hasDetectedVoice = false;
-        this.isRecording.set(false);
 
-        // Clear status after delay
+        // Stop everything completely - no automatic restart
+        this.stopAllRecording();
+
+        // Restore status message after stopAllRecording clears it
+        this.recordingStatus.set(statusMessage);
+
+        // Clear status message after delay
         setTimeout(() => {
-            if (this.isListening()) {
-                this.recordingStatus.set('Höre zu...');
+            if (!this.isListening() && !this.isRecording()) {
+                this.recordingStatus.set('');
             }
-        }, 1500);
+        }, 2000);
     }
 
     private stopAllRecording(): void {
@@ -312,6 +325,7 @@ export class AudioNotesPage implements OnDestroy {
             this.audioNotes.addNote(text);
         }
         this.recordingText.set('');
+        this.interimText.set('');
     }
 
     toggleRecording(): void {
