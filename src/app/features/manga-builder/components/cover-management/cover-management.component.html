@@ -1,0 +1,63 @@
+<div class="flex flex-col gap-3">
+    <h3 class="flex items-center gap-2 text-xs font-bold text-dash-text-dim uppercase tracking-wider">
+        <span class="material-symbols-sharp text-sm">image</span>
+        Cover
+    </h3>
+
+    <!-- Preview -->
+    <div *ngIf="cover; else noCover" class="relative flex justify-center bg-dash-bg rounded-sm p-3">
+        <img [src]="cover.previewUrl" alt="Cover Preview" class="max-w-full max-h-[200px] object-contain rounded-sm">
+        <button (click)="removeCover()"
+            class="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors"
+            title="Cover entfernen">
+            <span class="material-symbols-sharp text-sm">close</span>
+        </button>
+    </div>
+
+    <ng-template #noCover>
+        <div class="border-2 border-dashed border-dash-border rounded-sm p-6 text-center cursor-pointer transition-all duration-200 hover:border-dash-accent hover:bg-dash-bg/50"
+            (drop)="onDrop($event)" (dragover)="onDragOver($event)" (click)="fileInput.click()">
+            <span class="material-symbols-sharp text-2xl text-dash-text-dim mb-2 block">add_photo_alternate</span>
+            <span class="text-xs text-dash-text-dim">Bild wählen oder hierher ziehen</span>
+            <input #fileInput type="file" accept="image/*" (change)="onFileSelect($event)" class="hidden">
+        </div>
+    </ng-template>
+
+    <!-- URL Input -->
+    <div class="flex gap-2">
+        <input type="text" [(ngModel)]="urlInput" placeholder="Oder URL eingeben..." (keyup.enter)="loadFromUrl()"
+            class="flex-1 bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent text-xs">
+        <button (click)="loadFromUrl()" [disabled]="!urlInput.trim() || isLoading"
+            class="px-3 py-2 gradient-btn text-white rounded-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="material-symbols-sharp text-sm">download</span>
+        </button>
+    </div>
+
+    <!-- Resize Options -->
+    <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2 text-xs text-dash-text-dim cursor-pointer">
+            <input type="checkbox" [(ngModel)]="resizeOptions.enabled" class="accent-dash-accent">
+            <span>Größe anpassen</span>
+        </label>
+        <div *ngIf="resizeOptions.enabled" class="flex items-center gap-2 text-xs">
+            <input type="number" [(ngModel)]="resizeOptions.width" placeholder="Breite" min="1"
+                class="w-20 bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent text-center">
+            <span class="text-dash-text-dim">×</span>
+            <input type="number" [(ngModel)]="resizeOptions.height" placeholder="Höhe" min="1"
+                class="w-20 bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent text-center">
+            <button *ngIf="cover" (click)="applyResize()"
+                class="px-2 py-1.5 gradient-btn text-white rounded-sm text-xs">
+                Anwenden
+            </button>
+        </div>
+    </div>
+
+    <!-- Error / Loading -->
+    <div *ngIf="errorMessage" class="text-xs text-red-400 flex items-center gap-2">
+        {{ errorMessage }}
+    </div>
+    <div *ngIf="isLoading" class="text-xs text-dash-accent flex items-center gap-2">
+        <span class="material-symbols-sharp text-sm animate-spin">refresh</span>
+        Laden...
+    </div>
+</div>

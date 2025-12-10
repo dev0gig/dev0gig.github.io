@@ -6,5 +6,13 @@ import { BudgetPage } from './features/budget/budget-page';
 export const routes: Routes = [
     { path: '', component: Dashboard },
     { path: 'journal', component: JournalPage },
-    { path: 'budget', component: BudgetPage }
+    { path: 'budget', component: BudgetPage },
+    {
+        path: 'manga-builder',
+        loadComponent: () => import('./features/manga-builder/manga-builder-page').then(m => m.MangaBuilderPage)
+    },
+    {
+        path: 'manga-reader',
+        loadComponent: () => import('./features/manga-reader/manga-reader-page').then(m => m.MangaReaderPage)
+    }
 ];

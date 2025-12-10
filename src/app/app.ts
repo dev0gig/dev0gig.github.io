@@ -124,6 +124,10 @@ export class App implements OnInit, OnDestroy {
           event.preventDefault();
           this.router.navigate(['/budget']);
           break;
+        case 'm':
+          event.preventDefault();
+          this.router.navigate(['/manga-builder']);
+          break;
         case 's':
           event.preventDefault();
           this.sidebarService.toggleBoth();

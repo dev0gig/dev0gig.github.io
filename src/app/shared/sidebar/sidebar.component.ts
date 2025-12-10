@@ -46,16 +46,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.sidebarService.close();
     }
 
-    downloadMangaBuilder() {
-        if (confirm('Möchten Sie das Manga Builder Tool herunterladen?')) {
-            const link = document.createElement('a');
-            link.href = 'manga_builder_gui.exe';
-            link.download = 'manga_builder_gui.exe';
-            link.click();
-            this.sidebarService.close();
-        }
-    }
-
     downloadAudioNotes() {
         if (confirm('Möchten Sie die AudioNotes App herunterladen?')) {
             const link = document.createElement('a');
