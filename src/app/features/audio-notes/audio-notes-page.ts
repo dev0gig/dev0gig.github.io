@@ -186,6 +186,12 @@ export class AudioNotesPage implements OnDestroy {
 
             // Create audio context and analyser
             this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+            // Resume AudioContext - wichtig für Android, wo der Context im suspended State startet
+            if (this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+            }
+
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.fftSize = 256;
 
