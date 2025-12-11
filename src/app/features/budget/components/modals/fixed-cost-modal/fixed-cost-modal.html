@@ -1,7 +1,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()">
     </div>
-    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-bold text-dash-text">{{ editingFixedCost ? 'Fixkosten bearbeiten' : 'Neue
                 Fixkosten' }}</h2>
@@ -27,24 +27,24 @@
             <div>
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
                 <div class="flex gap-2">
-                    <label class="flex-1">
-                        <input type="radio" name="fixedCostType" value="expense"
-                            [checked]="!editingFixedCost || editingFixedCost?.type === 'expense'" class="sr-only peer">
-                        <div class="w-full text-center px-4 py-2 rounded-sm text-sm font-medium transition-colors border cursor-pointer
-                            peer-checked:bg-red-500/20 peer-checked:text-red-500 peer-checked:border-red-500
-                            bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-text-dim">
-                            Ausgabe
-                        </div>
-                    </label>
-                    <label class="flex-1">
-                        <input type="radio" name="fixedCostType" value="income"
-                            [checked]="editingFixedCost?.type === 'income'" class="sr-only peer">
-                        <div class="w-full text-center px-4 py-2 rounded-sm text-sm font-medium transition-colors border cursor-pointer
-                            peer-checked:bg-green-500/20 peer-checked:text-green-500 peer-checked:border-green-500
-                            bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-text-dim">
-                            Einnahme
-                        </div>
-                    </label>
+                    <button type="button" (click)="setType('expense')"
+                        [class]="currentType() === 'expense' 
+                            ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-3 py-2 rounded-sm text-sm font-medium transition-colors' 
+                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border hover:border-dash-text-dim'">
+                        Ausgabe
+                    </button>
+                    <button type="button" (click)="setType('income')"
+                        [class]="currentType() === 'income' 
+                            ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-3 py-2 rounded-sm text-sm font-medium transition-colors' 
+                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border hover:border-dash-text-dim'">
+                        Einnahme
+                    </button>
+                    <button type="button" (click)="setType('transfer')"
+                        [class]="currentType() === 'transfer' 
+                            ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-3 py-2 rounded-sm text-sm font-medium transition-colors' 
+                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border hover:border-dash-text-dim'">
+                        Transfer
+                    </button>
                 </div>
             </div>
             <div>
@@ -59,16 +59,63 @@
                     }
                 </select>
             </div>
+            <div class="grid grid-cols-1 gap-4" [class.sm:grid-cols-2]="currentType() === 'transfer'">
+                <div>
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
+                        {{ currentType() === 'transfer' ? 'Von Konto' : 'Konto' }}
+                    </label>
+                    <select name="fixedCostAccount" required
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                        <option value="">Konto wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id" [selected]="editingFixedCost?.account === account.id">{{
+                            account.name }}</option>
+                        }
+                    </select>
+                </div>
+                @if (currentType() === 'transfer') {
+                <div>
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
+                        Konto</label>
+                    <select name="fixedCostToAccount" required
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
+                        <option value="">Konto wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id" [selected]="editingFixedCost?.toAccount === account.id">{{
+                            account.name }}</option>
+                        }
+                    </select>
+                </div>
+                }
+            </div>
+            @if (groups.length > 0) {
             <div>
-                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Konto</label>
-                <select name="fixedCostAccount" required
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Gruppe
+                    (optional)</label>
+                <select name="fixedCostGroup"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
-                    <option value="">Konto wählen</option>
-                    @for (account of accounts; track account.id) {
-                    <option [value]="account.id" [selected]="editingFixedCost?.account === account.id">{{
-                        account.name }}</option>
+                    <option value="">Keine Gruppe</option>
+                    @for (group of getSortedGroups(); track group.id) {
+                    <option [value]="group.id" [selected]="editingFixedCost?.groupId === group.id">{{
+                        group.name }}</option>
                     }
                 </select>
+            </div>
+            }
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Notiz
+                    (optional)</label>
+                <textarea name="fixedCostNote" rows="2"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent resize-none"
+                    placeholder="Optionale Notiz...">{{ editingFixedCost?.note || '' }}</textarea>
+            </div>
+            <div class="flex items-center gap-3">
+                <input type="checkbox" name="fixedCostExclude" id="fixedCostExclude"
+                    [checked]="editingFixedCost?.excludeFromTotal"
+                    class="w-4 h-4 bg-dash-bg border border-dash-border rounded accent-dash-accent">
+                <label for="fixedCostExclude" class="text-sm text-dash-text-dim cursor-pointer">
+                    Nicht in Summe einrechnen
+                </label>
             </div>
             <div class="flex gap-2 pt-4">
                 <button type="button" (click)="onClose()"

@@ -3,167 +3,560 @@
     <div class="gradient-card p-3 md:p-4 rounded-sm">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4">
             <h2 class="text-lg font-bold text-dash-text whitespace-nowrap">Fixkosten</h2>
-            <button (click)="onAddFixedCost()"
-                class="gradient-btn text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap">
-                <span class="material-symbols-sharp text-lg">add</span>
-                <span>Neue Fixkosten</span>
-            </button>
+            <div class="flex gap-2">
+                <button (click)="exportPdf()"
+                    class="bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap border border-dash-border transition-colors"
+                    title="Als PDF exportieren">
+                    <span class="material-symbols-sharp text-lg">picture_as_pdf</span>
+                    <span class="hidden sm:inline">PDF Export</span>
+                </button>
+                <button (click)="onAddGroup()"
+                    class="bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap border border-dash-border transition-colors">
+                    <span class="material-symbols-sharp text-lg">folder_open</span>
+                    <span class="hidden sm:inline">Neue Gruppe</span>
+                </button>
+                <button (click)="onAddFixedCost()"
+                    class="gradient-btn text-white px-3 md:px-4 py-2 rounded-sm text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap">
+                    <span class="material-symbols-sharp text-lg">add</span>
+                    <span>Neue Fixkosten</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Fixed Costs Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <!-- Fixed Income Card -->
-        <div class="gradient-card p-4 rounded-sm">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-10 h-10 rounded-sm bg-green-500/20 flex items-center justify-center">
-                    <span class="material-symbols-sharp text-green-500">trending_up</span>
+        <div class="gradient-card p-3 md:p-4 rounded-sm">
+            <div class="flex items-center gap-2 md:gap-3 mb-2">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-green-500/20 flex items-center justify-center">
+                    <span class="material-symbols-sharp text-green-500 text-lg md:text-2xl">trending_up</span>
                 </div>
-                <div>
-                    <div class="text-xs text-dash-text-dim uppercase tracking-wider">Fixe Einnahmen</div>
-                    <div class="text-xl font-bold text-green-500">+{{ formatCurrency(fixedIncomeTotal) }}</div>
-                </div>
-            </div>
-            <div class="text-xs text-dash-text-dim">
-                {{ fixedIncomeCount }} Einträge
-            </div>
-        </div>
-
-        <!-- Fixed Expenses Card -->
-        <div class="gradient-card p-4 rounded-sm">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-10 h-10 rounded-sm bg-red-500/20 flex items-center justify-center">
-                    <span class="material-symbols-sharp text-red-500">trending_down</span>
-                </div>
-                <div>
-                    <div class="text-xs text-dash-text-dim uppercase tracking-wider">Fixe Ausgaben</div>
-                    <div class="text-xl font-bold text-red-500">-{{ formatCurrency(fixedCostsTotal) }}</div>
-                </div>
-            </div>
-            <div class="text-xs text-dash-text-dim">
-                {{ fixedExpenseCount }} Einträge
-            </div>
-        </div>
-
-        <!-- Net Fixed Costs Card -->
-        <div class="gradient-card p-4 rounded-sm">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="w-10 h-10 rounded-sm bg-dash-accent/20 flex items-center justify-center">
-                    <span class="material-symbols-sharp text-dash-accent">account_balance</span>
-                </div>
-                <div>
-                    <div class="text-xs text-dash-text-dim uppercase tracking-wider">Netto Fixkosten</div>
-                    <div class="text-xl font-bold" [class.text-green-500]="fixedIncomeTotal - fixedCostsTotal >= 0"
-                        [class.text-red-500]="fixedIncomeTotal - fixedCostsTotal < 0">
-                        {{ fixedIncomeTotal - fixedCostsTotal >= 0 ? '+' : '' }}{{
-                        formatCurrency(fixedIncomeTotal - fixedCostsTotal) }}
+                <div class="min-w-0">
+                    <div class="text-[10px] md:text-xs text-dash-text-dim uppercase tracking-wider truncate">Einnahmen
+                    </div>
+                    <div class="text-base md:text-xl font-bold text-green-500">+{{ formatCurrency(fixedIncomeTotal) }}
                     </div>
                 </div>
             </div>
-            <div class="text-xs text-dash-text-dim">
-                Differenz Einnahmen - Ausgaben
+            <div class="text-xs text-dash-text-dim">{{ fixedIncomeCount }} Einträge</div>
+        </div>
+
+        <!-- Fixed Expenses Card -->
+        <div class="gradient-card p-3 md:p-4 rounded-sm">
+            <div class="flex items-center gap-2 md:gap-3 mb-2">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-red-500/20 flex items-center justify-center">
+                    <span class="material-symbols-sharp text-red-500 text-lg md:text-2xl">trending_down</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] md:text-xs text-dash-text-dim uppercase tracking-wider truncate">Ausgaben
+                    </div>
+                    <div class="text-base md:text-xl font-bold text-red-500">-{{ formatCurrency(fixedCostsTotal) }}
+                    </div>
+                </div>
             </div>
+            <div class="text-xs text-dash-text-dim">{{ fixedExpenseCount }} Einträge</div>
+        </div>
+
+        <!-- Fixed Transfers Card -->
+        <div class="gradient-card p-3 md:p-4 rounded-sm">
+            <div class="flex items-center gap-2 md:gap-3 mb-2">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-purple-500/20 flex items-center justify-center">
+                    <span class="material-symbols-sharp text-purple-500 text-lg md:text-2xl">swap_horiz</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] md:text-xs text-dash-text-dim uppercase tracking-wider truncate">Transfers
+                    </div>
+                    <div class="text-base md:text-xl font-bold text-purple-500">{{ formatCurrency(fixedTransferTotal) }}
+                    </div>
+                </div>
+            </div>
+            <div class="text-xs text-dash-text-dim">{{ fixedTransferCount }} Einträge</div>
+        </div>
+
+        <!-- Net Fixed Costs Card -->
+        <div class="gradient-card p-3 md:p-4 rounded-sm">
+            <div class="flex items-center gap-2 md:gap-3 mb-2">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-dash-accent/20 flex items-center justify-center">
+                    <span class="material-symbols-sharp text-dash-accent text-lg md:text-2xl">account_balance</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] md:text-xs text-dash-text-dim uppercase tracking-wider truncate">Netto</div>
+                    <div class="text-base md:text-xl font-bold"
+                        [class.text-green-500]="fixedIncomeTotal - fixedCostsTotal >= 0"
+                        [class.text-red-500]="fixedIncomeTotal - fixedCostsTotal < 0">
+                        {{ fixedIncomeTotal - fixedCostsTotal >= 0 ? '+' : '' }}{{ formatCurrency(fixedIncomeTotal -
+                        fixedCostsTotal) }}
+                    </div>
+                </div>
+            </div>
+            <div class="text-xs text-dash-text-dim">Differenz</div>
         </div>
     </div>
 
     <!-- Fixed Costs List Container -->
-    <div class="gradient-card rounded-sm">
+    <div class="gradient-card rounded-sm" cdkDropListGroup>
         @if (fixedCosts.length === 0) {
         <div class="p-8 text-center">
             <span class="material-symbols-sharp text-4xl text-dash-text-dim mb-4 block">bookmark</span>
             <p class="text-dash-text-dim text-sm">Keine Fixkosten definiert.</p>
-            <p class="text-dash-text-dim text-xs mt-2">Klicken Sie auf "Neue Fixkosten" um welche
-                hinzuzufügen.</p>
+            <p class="text-dash-text-dim text-xs mt-2">Klicken Sie auf "Neue Fixkosten" um welche hinzuzufügen.</p>
+        </div>
+        } @else {
+
+        <!-- Ungrouped Fixed Costs -->
+        @if (getFixedCostsByGroup(null).length > 0) {
+        <div class="border-b border-dash-border">
+            <div class="p-3 md:p-4 bg-dash-bg/50 border-b border-dash-border">
+                <div class="flex items-center gap-2 text-dash-text-dim">
+                    <span class="material-symbols-sharp text-lg">list</span>
+                    <span class="font-medium text-sm">Ohne Gruppe</span>
+                    <span class="text-xs">({{ getFixedCostsByGroup(null).length }})</span>
+                </div>
+            </div>
+            <div cdkDropList [cdkDropListData]="getFixedCostsByGroup(null)" (cdkDropListDropped)="onDrop($event)"
+                data-group-id="null" class="min-h-[20px]">
+                @for (fixedCost of getFixedCostsByGroup(null); track fixedCost.id; let last = $last) {
+                <!-- INLINE FIXED COST ITEM -->
+                <div class="fixed-cost-item border-b border-dash-border last:border-b-0" cdkDrag
+                    [cdkDragData]="fixedCost" [cdkDragDisabled]="expandedFixedCostId() === fixedCost.id">
+
+                    <!-- Drag Placeholder -->
+                    <div class="fixed-cost-placeholder" *cdkDragPlaceholder></div>
+
+                    <!-- Row Content -->
+                    <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors cursor-pointer"
+                        (click)="toggleExpansion(fixedCost.id)">
+                        <div class="flex items-center gap-3">
+                            <!-- Drag Handle -->
+                            <div class="cursor-grab active:cursor-grabbing text-dash-text-dim hover:text-dash-accent flex-shrink-0"
+                                cdkDragHandle (click)="$event.stopPropagation()">
+                                <span class="material-symbols-sharp text-xl">drag_indicator</span>
+                            </div>
+
+                            <!-- Type Icon -->
+                            <div class="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                                [ngClass]="getTypeBgColor(fixedCost.type)">
+                                <span class="material-symbols-sharp text-base"
+                                    [ngClass]="getTypeColor(fixedCost.type)">{{ getTypeIcon(fixedCost.type) }}</span>
+                            </div>
+
+                            <!-- Name -->
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-dash-text truncate" title="{{ fixedCost.name }}">{{
+                                    fixedCost.name }}</div>
+                                <div class="text-xs text-dash-text-dim truncate">
+                                    @if (fixedCost.type === 'transfer') {
+                                    {{ getAccountById(fixedCost.account)?.name || '?' }} → {{
+                                    getAccountById(fixedCost.toAccount)?.name || '?' }}
+                                    } @else {
+                                    {{ getAccountById(fixedCost.account)?.name || 'Unbekannt' }} · {{
+                                    getCategoryFullName(fixedCost.category) }}
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Note Indicator -->
+                            @if (fixedCost.note) {
+                            <span class="material-symbols-sharp text-sm text-dash-text-dim"
+                                title="Hat Notiz">note</span>
+                            }
+
+                            <!-- Amount -->
+                            <div class="font-mono font-bold text-right whitespace-nowrap"
+                                [ngClass]="getTypeColor(fixedCost.type)">
+                                {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
+                                formatCurrency(fixedCost.amount) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expanded Edit Form -->
+                    @if (expandedFixedCostId() === fixedCost.id) {
+                    <div class="px-3 md:px-4 pb-3 md:pb-4 border-t border-dash-border"
+                        (click)="$event.stopPropagation()">
+                        <form (submit)="onInlineFixedCostEdit($event, fixedCost.id)" class="space-y-4 pt-4">
+
+                            <!-- Type Selection -->
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                                <div class="flex gap-2">
+                                    <button type="button" (click)="setInlineFixedCostType(fixedCost.id, 'expense')"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        [class]="getInlineFixedCostType(fixedCost.id) === 'expense' 
+                                            ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-3 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' 
+                                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                        Ausgabe
+                                    </button>
+                                    <button type="button" (click)="setInlineFixedCostType(fixedCost.id, 'income')"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        [class]="getInlineFixedCostType(fixedCost.id) === 'income' 
+                                            ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-3 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' 
+                                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                        Einnahme
+                                    </button>
+                                    <button type="button" (click)="setInlineFixedCostType(fixedCost.id, 'transfer')"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        [class]="getInlineFixedCostType(fixedCost.id) === 'transfer' 
+                                            ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-3 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' 
+                                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                                        Transfer
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Name and Amount -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Name</label>
+                                    <input type="text" name="name" required [value]="fixedCost.name"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
+                                        (€)</label>
+                                    <input type="number" name="amount" step="0.01" required [value]="fixedCost.amount"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                </div>
+                            </div>
+
+                            <!-- Category -->
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
+                                <select name="category" required [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                    @for (category of getSortedCategories(); track category.id) {
+                                    <option [value]="category.id" [selected]="category.id === fixedCost.category">{{
+                                        category.name }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Accounts -->
+                            <div class="grid grid-cols-1 gap-4"
+                                [class.sm:grid-cols-2]="getInlineFixedCostType(fixedCost.id) === 'transfer'">
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
+                                        {{ getInlineFixedCostType(fixedCost.id) === 'transfer' ? 'Von Konto' : 'Konto'
+                                        }}
+                                    </label>
+                                    <select name="account" required [disabled]="!isEditingInline(fixedCost.id)"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                        @for (account of accounts; track account.id) {
+                                        <option [value]="account.id" [selected]="account.id === fixedCost.account">{{
+                                            account.name }}</option>
+                                        }
+                                    </select>
+                                </div>
+                                @if (getInlineFixedCostType(fixedCost.id) === 'transfer') {
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
+                                        Konto</label>
+                                    <select name="toAccount" required [disabled]="!isEditingInline(fixedCost.id)"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                        @for (account of accounts; track account.id) {
+                                        <option [value]="account.id" [selected]="account.id === fixedCost.toAccount">{{
+                                            account.name }}</option>
+                                        }
+                                    </select>
+                                </div>
+                                }
+                            </div>
+
+                            <!-- Group -->
+                            @if (groups.length > 0) {
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Gruppe</label>
+                                <select name="groupId" [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <option value="">Keine Gruppe</option>
+                                    @for (group of getSortedGroups(); track group.id) {
+                                    <option [value]="group.id" [selected]="group.id === fixedCost.groupId">{{ group.name
+                                        }}</option>
+                                    }
+                                </select>
+                            </div>
+                            }
+
+                            <!-- Note -->
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Notiz</label>
+                                <textarea name="note" rows="2" [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed resize-none">{{ fixedCost.note || '' }}</textarea>
+                            </div>
+
+                            <!-- Exclude from Total -->
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="excludeFromTotal" id="excludeFromTotal_{{ fixedCost.id }}"
+                                    [checked]="fixedCost.excludeFromTotal" [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-4 h-4 bg-dash-bg border border-dash-border rounded accent-dash-accent disabled:opacity-50">
+                                <label for="excludeFromTotal_{{ fixedCost.id }}"
+                                    class="text-sm text-dash-text-dim cursor-pointer">
+                                    Nicht in Summe einrechnen
+                                </label>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap justify-end gap-2 pt-2">
+                                @if (!isEditingInline(fixedCost.id)) {
+                                <button type="button" (click)="toggleInlineEdit(fixedCost.id)"
+                                    class="px-3 py-1.5 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-sharp text-sm">edit</span>
+                                    <span>Bearbeiten</span>
+                                </button>
+                                }
+
+                                @if (isEditingInline(fixedCost.id)) {
+                                <button type="button" (click)="cancelInlineEdit(fixedCost.id)"
+                                    class="px-3 py-1.5 bg-dash-bg hover:bg-dash-border text-dash-text-dim hover:text-white text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-sharp text-sm">close</span>
+                                    <span>Abbrechen</span>
+                                </button>
+                                <button type="submit"
+                                    class="px-3 py-1.5 bg-dash-accent hover:bg-dash-accent-hover text-white text-xs rounded-sm transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-sharp text-sm">save</span>
+                                    <span>Speichern</span>
+                                </button>
+                                }
+
+                                <button type="button" (click)="onDeleteFixedCost(fixedCost.id)"
+                                    class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs rounded-sm border border-red-500/30 transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-sharp text-sm">delete</span>
+                                    <span>Löschen</span>
+                                </button>
+
+                                <button type="button" (click)="onCreateTransaction(fixedCost)"
+                                    class="px-3 py-1.5 bg-dash-accent/10 hover:bg-dash-accent/20 text-dash-accent text-xs rounded-sm border border-dash-accent/30 transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-sharp text-sm">add</span>
+                                    <span>Buchen</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
         </div>
         }
-        @for (fixedCost of fixedCosts; track fixedCost.id; let last = $last) {
-        <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors" [class.border-b]="!last"
-            [class.border-dash-border]="!last">
-            <!-- Fixed Cost Row - Mobile Layout -->
-            <div class="flex flex-col gap-2 md:hidden">
-                <!-- Top row: Name and Amount -->
-                <div class="flex justify-between items-start gap-2">
-                    <div class="font-medium text-dash-text truncate flex-1" title="{{ fixedCost.name }}">
-                        {{ fixedCost.name }}
-                    </div>
-                    <div class="font-mono font-bold text-sm whitespace-nowrap"
-                        [class.text-green-500]="fixedCost.type === 'income'"
-                        [class.text-red-500]="fixedCost.type === 'expense'">
-                        {{ fixedCost.type === 'income' ? '+' : '-' }}{{ formatCurrency(fixedCost.amount) }}
-                    </div>
+
+        <!-- Grouped Fixed Costs -->
+        @for (group of getSortedGroups(); track group.id) {
+        <div class="border-b border-dash-border last:border-b-0">
+            <div class="p-3 md:p-4 bg-dash-bg/50 border-b border-dash-border flex items-center justify-between cursor-pointer hover:bg-dash-card-hover transition-colors"
+                (click)="toggleGroupCollapsed(group.id)">
+                <div class="flex items-center gap-2 text-dash-text">
+                    <span class="material-symbols-sharp text-lg transition-transform"
+                        [class.rotate-0]="!isGroupCollapsed(group.id)"
+                        [class.-rotate-90]="isGroupCollapsed(group.id)">expand_more</span>
+                    <span class="material-symbols-sharp text-lg text-dash-accent">folder</span>
+                    <span class="font-medium text-sm">{{ group.name }}</span>
+                    <span class="text-xs text-dash-text-dim">({{ getFixedCostsByGroup(group.id).length }})</span>
                 </div>
-                <!-- Bottom row: Account, Category -->
-                <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-dash-text-dim">
-                    <span class="truncate">{{ getAccountById(fixedCost.account)?.name || 'Unbekannt'
-                        }}</span>
-                    <span class="truncate">{{ getCategoryFullName(fixedCost.category) }}</span>
-                </div>
-                <!-- Action Buttons -->
-                <div class="flex justify-end gap-1 mt-2 pt-2 border-t border-dash-border">
-                    <button (click)="onCreateTransaction(fixedCost)"
-                        class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
-                        title="Als Transaktion hinzufügen">
-                        <span class="material-symbols-sharp text-sm">add</span>
-                        <span>Buchen</span>
-                    </button>
-                    <button (click)="onEditFixedCost(fixedCost)"
-                        class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
-                        title="Bearbeiten">
+                <div class="flex items-center gap-2">
+                    <button (click)="onEditGroup(group); $event.stopPropagation()"
+                        class="p-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors">
                         <span class="material-symbols-sharp text-sm">edit</span>
                     </button>
-                    <button (click)="onDeleteFixedCost(fixedCost.id)"
-                        class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
-                        title="Löschen">
+                    <button (click)="onDeleteGroup(group.id); $event.stopPropagation()"
+                        class="p-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors">
                         <span class="material-symbols-sharp text-sm">delete</span>
                     </button>
                 </div>
             </div>
-
-            <!-- Fixed Cost Row - Desktop Layout -->
-            <div class="hidden md:grid grid-cols-12 gap-4 items-center">
-                <!-- Name -->
-                <div class="col-span-3 font-medium text-dash-text truncate" title="{{ fixedCost.name }}">
-                    {{ fixedCost.name }}
+            @if (!isGroupCollapsed(group.id)) {
+            <div cdkDropList [cdkDropListData]="getFixedCostsByGroup(group.id)" (cdkDropListDropped)="onDrop($event)"
+                [attr.data-group-id]="group.id" class="min-h-[20px]">
+                @for (fixedCost of getFixedCostsByGroup(group.id); track fixedCost.id; let last = $last) {
+                <!-- INLINE GROUPED FIXED COST ITEM (same structure) -->
+                <div class="fixed-cost-item border-b border-dash-border last:border-b-0" cdkDrag
+                    [cdkDragData]="fixedCost" [cdkDragDisabled]="expandedFixedCostId() === fixedCost.id">
+                    <div class="fixed-cost-placeholder" *cdkDragPlaceholder></div>
+                    <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors cursor-pointer"
+                        (click)="toggleExpansion(fixedCost.id)">
+                        <div class="flex items-center gap-3">
+                            <div class="cursor-grab active:cursor-grabbing text-dash-text-dim hover:text-dash-accent flex-shrink-0"
+                                cdkDragHandle (click)="$event.stopPropagation()">
+                                <span class="material-symbols-sharp text-xl">drag_indicator</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                                [ngClass]="getTypeBgColor(fixedCost.type)">
+                                <span class="material-symbols-sharp text-base"
+                                    [ngClass]="getTypeColor(fixedCost.type)">{{ getTypeIcon(fixedCost.type) }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-dash-text truncate">{{ fixedCost.name }}</div>
+                                <div class="text-xs text-dash-text-dim truncate">
+                                    @if (fixedCost.type === 'transfer') {
+                                    {{ getAccountById(fixedCost.account)?.name || '?' }} → {{
+                                    getAccountById(fixedCost.toAccount)?.name || '?' }}
+                                    } @else {
+                                    {{ getAccountById(fixedCost.account)?.name || 'Unbekannt' }} · {{
+                                    getCategoryFullName(fixedCost.category) }}
+                                    }
+                                </div>
+                            </div>
+                            @if (fixedCost.note) {
+                            <span class="material-symbols-sharp text-sm text-dash-text-dim">note</span>
+                            }
+                            <div class="font-mono font-bold text-right whitespace-nowrap"
+                                [ngClass]="getTypeColor(fixedCost.type)">
+                                {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
+                                formatCurrency(fixedCost.amount) }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Expanded form would go here (copy from above if needed) -->
+                    @if (expandedFixedCostId() === fixedCost.id) {
+                    <div class="px-3 md:px-4 pb-3 md:pb-4 border-t border-dash-border"
+                        (click)="$event.stopPropagation()">
+                        <form (submit)="onInlineFixedCostEdit($event, fixedCost.id)" class="space-y-4 pt-4">
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                                <div class="flex gap-2">
+                                    <button type="button" (click)="setInlineFixedCostType(fixedCost.id, 'expense')"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        [class]="getInlineFixedCostType(fixedCost.id) === 'expense' ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-3 py-2 rounded-sm text-sm font-medium disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium border border-dash-border disabled:opacity-50'">Ausgabe</button>
+                                    <button type="button" (click)="setInlineFixedCostType(fixedCost.id, 'income')"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        [class]="getInlineFixedCostType(fixedCost.id) === 'income' ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-3 py-2 rounded-sm text-sm font-medium disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium border border-dash-border disabled:opacity-50'">Einnahme</button>
+                                    <button type="button" (click)="setInlineFixedCostType(fixedCost.id, 'transfer')"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        [class]="getInlineFixedCostType(fixedCost.id) === 'transfer' ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-3 py-2 rounded-sm text-sm font-medium disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-2 rounded-sm text-sm font-medium border border-dash-border disabled:opacity-50'">Transfer</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div><label
+                                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2">Name</label><input
+                                        type="text" name="name" required [value]="fixedCost.name"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm disabled:opacity-50">
+                                </div>
+                                <div><label
+                                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2">Betrag</label><input
+                                        type="number" name="amount" step="0.01" required [value]="fixedCost.amount"
+                                        [disabled]="!isEditingInline(fixedCost.id)"
+                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm disabled:opacity-50">
+                                </div>
+                            </div>
+                            <div><label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2">Kategorie</label><select
+                                    name="category" required [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm disabled:opacity-50">@for
+                                    (cat of getSortedCategories(); track cat.id) {<option [value]="cat.id"
+                                        [selected]="cat.id === fixedCost.category">{{ cat.name }}</option>}</select>
+                            </div>
+                            <div><label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2">Konto</label><select
+                                    name="account" required [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm disabled:opacity-50">@for
+                                    (acc of accounts; track acc.id) {<option [value]="acc.id"
+                                        [selected]="acc.id === fixedCost.account">{{ acc.name }}</option>}</select>
+                            </div>
+                            @if (groups.length > 0) {<div><label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2">Gruppe</label><select
+                                    name="groupId" [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm disabled:opacity-50">
+                                    <option value="">Keine</option>@for (g of getSortedGroups(); track g.id) {<option
+                                        [value]="g.id" [selected]="g.id === fixedCost.groupId">{{ g.name }}</option>}
+                                </select></div>}
+                            <div><label
+                                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2">Notiz</label><textarea
+                                    name="note" rows="2" [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-2 rounded-sm disabled:opacity-50 resize-none">{{ fixedCost.note || '' }}</textarea>
+                            </div>
+                            <div class="flex items-center gap-3"><input type="checkbox" name="excludeFromTotal"
+                                    [checked]="fixedCost.excludeFromTotal" [disabled]="!isEditingInline(fixedCost.id)"
+                                    class="w-4 h-4"><label class="text-sm text-dash-text-dim">Nicht in Summe</label>
+                            </div>
+                            <div class="flex flex-wrap justify-end gap-2 pt-2">
+                                @if (!isEditingInline(fixedCost.id)) {<button type="button"
+                                    (click)="toggleInlineEdit(fixedCost.id)"
+                                    class="px-3 py-1.5 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border flex items-center gap-1"><span
+                                        class="material-symbols-sharp text-sm">edit</span>Bearbeiten</button>}
+                                @if (isEditingInline(fixedCost.id)) {<button type="button"
+                                    (click)="cancelInlineEdit(fixedCost.id)"
+                                    class="px-3 py-1.5 bg-dash-bg text-dash-text-dim text-xs rounded-sm border border-dash-border flex items-center gap-1"><span
+                                        class="material-symbols-sharp text-sm">close</span>Abbrechen</button><button
+                                    type="submit"
+                                    class="px-3 py-1.5 bg-dash-accent text-white text-xs rounded-sm flex items-center gap-1"><span
+                                        class="material-symbols-sharp text-sm">save</span>Speichern</button>}
+                                <button type="button" (click)="onDeleteFixedCost(fixedCost.id)"
+                                    class="px-3 py-1.5 bg-red-500/10 text-red-500 text-xs rounded-sm border border-red-500/30 flex items-center gap-1"><span
+                                        class="material-symbols-sharp text-sm">delete</span>Löschen</button>
+                                <button type="button" (click)="onCreateTransaction(fixedCost)"
+                                    class="px-3 py-1.5 bg-dash-accent/10 text-dash-accent text-xs rounded-sm border border-dash-accent/30 flex items-center gap-1"><span
+                                        class="material-symbols-sharp text-sm">add</span>Buchen</button>
+                            </div>
+                        </form>
+                    </div>
+                    }
                 </div>
+                }
+                @if (getFixedCostsByGroup(group.id).length === 0) {
+                <div class="p-4 text-center text-dash-text-dim text-sm">Keine Fixkosten in dieser Gruppe</div>
+                }
+            </div>
+            }
+        </div>
+        }
 
-                <!-- Account -->
-                <div class="col-span-2 text-dash-text-dim truncate">
-                    {{ getAccountById(fixedCost.account)?.name || 'Unbekannt' }}
+        <!-- Excluded Fixed Costs Section -->
+        @if (getExcludedFixedCosts().length > 0) {
+        <div class="border-t-2 border-dash-border">
+            <div class="p-3 md:p-4 bg-yellow-500/5 border-b border-dash-border">
+                <div class="flex items-center gap-2 text-yellow-500">
+                    <span class="material-symbols-sharp text-lg">visibility_off</span>
+                    <span class="font-medium text-sm">Nicht in Summe</span>
+                    <span class="text-xs">({{ excludedCount }})</span>
+                    <span class="ml-auto text-xs">Summe: {{ formatCurrency(Math.abs(excludedTotal)) }}</span>
                 </div>
-
-                <!-- Category -->
-                <div class="col-span-2 flex items-center gap-2 text-dash-text-dim truncate">
-                    <span class="truncate">{{ getCategoryFullName(fixedCost.category) }}</span>
+            </div>
+            <div cdkDropList [cdkDropListData]="getExcludedFixedCosts()" (cdkDropListDropped)="onDrop($event)"
+                data-group-id="excluded" class="min-h-[20px]">
+                @for (fixedCost of getExcludedFixedCosts(); track fixedCost.id) {
+                <div class="fixed-cost-item opacity-60 border-b border-dash-border last:border-b-0" cdkDrag
+                    [cdkDragData]="fixedCost" [cdkDragDisabled]="expandedFixedCostId() === fixedCost.id">
+                    <div class="fixed-cost-placeholder" *cdkDragPlaceholder></div>
+                    <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors cursor-pointer"
+                        (click)="toggleExpansion(fixedCost.id)">
+                        <div class="flex items-center gap-3">
+                            <div class="cursor-grab text-dash-text-dim hover:text-dash-accent flex-shrink-0"
+                                cdkDragHandle (click)="$event.stopPropagation()">
+                                <span class="material-symbols-sharp text-xl">drag_indicator</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                                [ngClass]="getTypeBgColor(fixedCost.type)">
+                                <span class="material-symbols-sharp text-base"
+                                    [ngClass]="getTypeColor(fixedCost.type)">{{ getTypeIcon(fixedCost.type) }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-dash-text truncate">{{ fixedCost.name }}</div>
+                                <div class="text-xs text-dash-text-dim truncate">{{
+                                    getAccountById(fixedCost.account)?.name || 'Unbekannt' }}</div>
+                            </div>
+                            <div class="font-mono font-bold whitespace-nowrap" [ngClass]="getTypeColor(fixedCost.type)">
+                                {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
+                                formatCurrency(fixedCost.amount) }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- Amount -->
-                <div class="col-span-2 text-right font-mono font-bold"
-                    [class.text-green-500]="fixedCost.type === 'income'"
-                    [class.text-red-500]="fixedCost.type === 'expense'">
-                    {{ fixedCost.type === 'income' ? '+' : '-' }}{{ formatCurrency(fixedCost.amount) }}
-                </div>
-
-                <!-- Actions -->
-                <div class="col-span-3 flex justify-end gap-1">
-                    <button (click)="onCreateTransaction(fixedCost)"
-                        class="px-2 py-1 bg-dash-accent/20 hover:bg-dash-accent/30 text-dash-accent rounded-sm transition-colors text-xs flex items-center gap-1"
-                        title="Als Transaktion hinzufügen">
-                        <span class="material-symbols-sharp text-sm">add</span>
-                        <span>Buchen</span>
-                    </button>
-                    <button (click)="onEditFixedCost(fixedCost)"
-                        class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
-                        title="Bearbeiten">
-                        <span class="material-symbols-sharp text-sm">edit</span>
-                    </button>
-                    <button (click)="onDeleteFixedCost(fixedCost.id)"
-                        class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
-                        title="Löschen">
-                        <span class="material-symbols-sharp text-sm">delete</span>
-                    </button>
-                </div>
+                }
             </div>
         </div>
+        }
         }
     </div>
 </div>

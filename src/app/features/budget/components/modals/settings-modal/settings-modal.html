@@ -31,6 +31,11 @@
                     class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
                     Kategorien
                 </button>
+                <button (click)="settingsView.set('groups')"
+                    [class]="settingsView() === 'groups' ? 'bg-dash-accent text-white' : 'hover:bg-dash-card-hover text-dash-text-dim hover:text-white'"
+                    class="text-left px-4 py-3 rounded-sm text-sm font-medium transition-colors flex items-center gap-3">
+                    Gruppen
+                </button>
             </div>
 
             <!-- Content Area -->
@@ -146,6 +151,68 @@
                         </div>
                         <div *ngIf="categories.length === 0" class="text-center py-8 text-dash-text-dim text-sm italic">
                             Keine Kategorien erstellt.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Groups View -->
+                <div *ngIf="settingsView() === 'groups'" class="flex flex-col gap-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-base font-bold text-dash-text">Gruppen verwalten</h3>
+                        <button (click)="onAddGroup()"
+                            class="bg-dash-accent hover:bg-dash-accent-hover text-white px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-2">
+                            Neue Gruppe
+                        </button>
+                    </div>
+
+                    <!-- Groups List with Drag & Drop -->
+                    <div cdkDropList (cdkDropListDropped)="onGroupDrop($event)" class="flex flex-col gap-2">
+                        <div *ngFor="let group of getSortedGroups()" cdkDrag
+                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors cursor-move"
+                            [class.border-dash-accent]="isGroupSelected(group.id)"
+                            [class.bg-dash-accent/10]="isGroupSelected(group.id)">
+                            <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                                <!-- Checkbox for selection -->
+                                <input type="checkbox" [checked]="isGroupSelected(group.id)"
+                                    (change)="toggleGroupSelection(group.id)"
+                                    class="w-4 h-4 rounded border-dash-border bg-dash-bg text-dash-accent focus:ring-dash-accent cursor-pointer">
+                                <!-- Drag handle -->
+                                <span class="material-symbols-sharp text-dash-text-dim text-sm cursor-move"
+                                    cdkDragHandle>drag_indicator</span>
+                                <!-- Group name -->
+                                <span class="text-sm font-medium text-dash-text truncate">{{ group.name }}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button (click)="onEditGroup(group)"
+                                    class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
+                                    title="Bearbeiten">
+                                    Bearbeiten
+                                </button>
+                                <button (click)="onDeleteGroup(group.id)"
+                                    class="px-2 py-1 hover:bg-red-500/20 text-dash-text-dim hover:text-red-500 rounded-sm transition-colors text-xs"
+                                    title="Löschen">
+                                    Löschen
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="groups.length === 0" class="text-center py-8 text-dash-text-dim text-sm italic">
+                            Keine Gruppen erstellt.
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div *ngIf="groups.length > 0" class="flex flex-col gap-3 pt-4 border-t border-dash-border">
+                        <div class="grid grid-cols-2 gap-3">
+                            <button (click)="onDeleteSelectedGroups()" [disabled]="!hasSelectedGroups()"
+                                [class.opacity-50]="!hasSelectedGroups()"
+                                [class.cursor-not-allowed]="!hasSelectedGroups()"
+                                class="flex items-center justify-center gap-2 px-4 py-3 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-500 rounded-sm transition-colors text-sm">
+                                Ausgewählte löschen ({{ selectedGroupIds().size }})
+                            </button>
+                            <button (click)="onDeleteAllGroups()"
+                                class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-sm transition-colors text-sm">
+                                Alle löschen
+                            </button>
                         </div>
                     </div>
                 </div>

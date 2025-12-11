@@ -27,6 +27,7 @@ export class TransactionModalComponent {
         account: string;
         date: string;
         toAccount?: string;
+        note?: string;
     }>();
 
     currentTransactionType = signal<'income' | 'expense' | 'transfer'>('expense');
@@ -63,7 +64,8 @@ export class TransactionModalComponent {
             category: formData.get('category') as string,
             account: formData.get('account') as string,
             date: formData.get('date') as string,
-            toAccount: this.currentTransactionType() === 'transfer' ? formData.get('toAccount') as string : undefined
+            toAccount: this.currentTransactionType() === 'transfer' ? formData.get('toAccount') as string : undefined,
+            note: formData.get('note') as string || undefined
         });
     }
 

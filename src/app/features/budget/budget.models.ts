@@ -12,15 +12,28 @@ export interface Transaction {
     toAccount?: string; // For transfers
     date: string;
     isFixedCost?: boolean; // Mark as fixed cost
+    note?: string; // Optional note
 }
 
 export interface FixedCost {
     id: string;
     name: string;
     amount: number;
-    type: 'income' | 'expense';
+    type: 'income' | 'expense' | 'transfer';
     category: string;
     account: string;
+    toAccount?: string; // For transfers
+    groupId?: string; // Group assignment
+    order: number; // Sort order
+    note?: string; // Optional note
+    excludeFromTotal?: boolean; // Exclude from total calculation
+}
+
+export interface FixedCostGroup {
+    id: string;
+    name: string;
+    order: number;
+    collapsed?: boolean;
 }
 
 export interface Account {

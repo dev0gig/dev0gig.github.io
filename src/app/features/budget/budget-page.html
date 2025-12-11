@@ -46,12 +46,16 @@
 
         <!-- Settings Modal -->
         @if (showSettingsModal()) {
-        <app-settings-modal [accounts]="accounts()" [categories]="categories()" (close)="toggleSettingsModal()"
-            (importData)="triggerImport()" (exportData)="triggerExport()"
-            (deleteAllTransactions)="deleteAllTransactions()" (addAccount)="toggleAccountModal()"
-            (editAccount)="openEditAccountModal($event)" (deleteAccount)="deleteAccount($event)"
-            (addCategory)="toggleCategoryModal()" (editCategory)="openEditCategoryModal($event)"
-            (deleteCategory)="deleteCategory($event)">
+        <app-settings-modal [accounts]="accounts()" [categories]="categories()"
+            [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleSettingsModal()" (importData)="triggerImport()"
+            (exportData)="triggerExport()" (deleteAllTransactions)="deleteAllTransactions()"
+            (addAccount)="toggleAccountModal()" (editAccount)="openEditAccountModal($event)"
+            (deleteAccount)="deleteAccount($event)" (addCategory)="toggleCategoryModal()"
+            (editCategory)="openEditCategoryModal($event)" (deleteCategory)="deleteCategory($event)"
+            (addGroup)="toggleFixedCostGroupModal()" (editGroup)="openEditFixedCostGroupModal($event)"
+            (deleteGroup)="deleteFixedCostGroup($event)" (deleteAllGroups)="deleteAllFixedCostGroups()"
+            (deleteSelectedGroups)="deleteSelectedFixedCostGroups($event)"
+            (reorderGroups)="reorderFixedCostGroups($event)">
         </app-settings-modal>
         }
 
@@ -87,12 +91,16 @@
 
             <!-- FIXKOSTEN VIEW -->
             @if (viewMode() === 'fixedcosts') {
-            <app-fixed-costs-view [fixedCosts]="getFixedCostsSortedByCategory()" [accounts]="accounts()"
-                [categories]="categories()" [fixedIncomeTotal]="getFixedIncomeTotal()"
-                [fixedCostsTotal]="getFixedCostsTotal()" [fixedIncomeCount]="getFixedIncomeCount()"
-                [fixedExpenseCount]="getFixedExpenseCount()" (addFixedCost)="toggleFixedCostModal()"
-                (editFixedCost)="openEditFixedCostModal($event)" (deleteFixedCost)="deleteFixedCost($event)"
-                (createTransaction)="createTransactionFromFixedCost($event)">
+            <app-fixed-costs-view [fixedCosts]="getFixedCostsSortedByOrder()" [accounts]="accounts()"
+                [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()"
+                [fixedIncomeTotal]="getFixedIncomeTotal()" [fixedCostsTotal]="getFixedCostsTotal()"
+                [fixedTransferTotal]="getFixedTransferTotal()" [fixedIncomeCount]="getFixedIncomeCount()"
+                [fixedExpenseCount]="getFixedExpenseCount()" [fixedTransferCount]="getFixedTransferCount()"
+                [excludedTotal]="getExcludedFixedCostsTotal()" [excludedCount]="getExcludedFixedCostsCount()"
+                (addFixedCost)="toggleFixedCostModal()" (editFixedCost)="openEditFixedCostModal($event)"
+                (deleteFixedCost)="deleteFixedCost($event)" (createTransaction)="createTransactionFromFixedCost($event)"
+                (addGroup)="toggleFixedCostGroupModal()" (editGroup)="openEditFixedCostGroupModal($event)"
+                (deleteGroup)="deleteFixedCostGroup($event)" (reorderFixedCosts)="reorderFixedCosts($event)">
             </app-fixed-costs-view>
             }
 
@@ -132,8 +140,34 @@
         <!-- Fixed Cost Modal -->
         @if (showFixedCostModal()) {
         <app-fixed-cost-modal [editingFixedCost]="editingFixedCost()" [accounts]="accounts()"
-            [categories]="categories()" (close)="toggleFixedCostModal()" (submit)="onFixedCostModalSubmit($event)">
+            [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleFixedCostModal()"
+            (submit)="onFixedCostModalSubmit($event)">
         </app-fixed-cost-modal>
+        }
+
+        <!-- Fixed Cost Group Modal -->
+        @if (showFixedCostGroupModal()) {
+        <app-fixed-cost-group-modal [editingGroup]="editingFixedCostGroup()" (close)="toggleFixedCostGroupModal()"
+            (groupSubmit)="onFixedCostGroupModalSubmit($event)">
+        </app-fixed-cost-group-modal>
+        }
+
+        <!-- Toast Notification -->
+        @if (toastMessage()) {
+        <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">
+            <div class="bg-gradient-to-r from-green-600 to-emerald-500 p-5 rounded-lg shadow-2xl border-2 border-green-400/50 flex items-center gap-4 max-w-lg"
+                style="box-shadow: 0 0 30px rgba(34, 197, 94, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3);">
+                <div
+                    class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
+                    <span class="material-symbols-sharp text-white text-3xl">check_circle</span>
+                </div>
+                <div class="flex-1 text-base font-semibold text-white">{{ toastMessage() }}</div>
+                <button (click)="hideToast()"
+                    class="text-white/70 hover:text-white transition-colors flex-shrink-0 hover:scale-110">
+                    <span class="material-symbols-sharp text-xl">close</span>
+                </button>
+            </div>
+        </div>
         }
     </div>
 </div>

@@ -98,3 +98,49 @@ body {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.1) #121214;
 }
+
+/* CDK Drag Drop Styles */
+.cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(145deg, #1a1a1d 0%, #1c1c1f 50%, #1a1a1d 100%);
+    border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+}
+
+.cdk-drag-placeholder {
+    opacity: 0;
+}
+
+.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .cdk-drag {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Fixed cost item placeholder */
+.fixed-cost-placeholder {
+    background: rgba(var(--color-accent-rgb), 0.1);
+    border: 2px dashed rgba(var(--color-accent-rgb), 0.5);
+    border-radius: 4px;
+    min-height: 60px;
+}
+
+/* Toast animation */
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in-up {
+    animation: slideInUp 0.3s ease-out forwards;
+}

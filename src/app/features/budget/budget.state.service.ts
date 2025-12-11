@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Transaction, FixedCost, Account, Category } from './budget.models';
+import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
 import { BudgetUtilityService } from './budget.utility.service';
 
 /**
@@ -15,6 +15,7 @@ export class BudgetStateService {
     accounts = signal<Account[]>([]);
     categories = signal<Category[]>([]);
     fixedCosts = signal<FixedCost[]>([]);
+    fixedCostGroups = signal<FixedCostGroup[]>([]);
 
     // Filter signals
     selectedAccountId = signal<string | null>(null);
@@ -32,11 +33,28 @@ export class BudgetStateService {
         const accountsData = localStorage.getItem('mybudget_accounts');
         const categoriesData = localStorage.getItem('mybudget_categories');
         const fixedCostsData = localStorage.getItem('mybudget_fixedcosts');
+        const fixedCostGroupsData = localStorage.getItem('mybudget_fixedcostgroups');
 
         if (transactionsData) this.transactions.set(JSON.parse(transactionsData));
         if (accountsData) this.accounts.set(JSON.parse(accountsData));
         if (categoriesData) this.categories.set(JSON.parse(categoriesData));
-        if (fixedCostsData) this.fixedCosts.set(JSON.parse(fixedCostsData));
+        if (fixedCostsData) {
+            let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
+            // Migration: Add order field to existing fixed costs if missing
+            let needsMigration = false;
+            parsedFixedCosts = parsedFixedCosts.map((fc, index) => {
+                if (fc.order === undefined) {
+                    needsMigration = true;
+                    return { ...fc, order: index };
+                }
+                return fc;
+            });
+            this.fixedCosts.set(parsedFixedCosts);
+            if (needsMigration) {
+                this.saveFixedCosts();
+            }
+        }
+        if (fixedCostGroupsData) this.fixedCostGroups.set(JSON.parse(fixedCostGroupsData));
     }
 
     saveTransactions() {
@@ -53,6 +71,10 @@ export class BudgetStateService {
 
     saveFixedCosts() {
         localStorage.setItem('mybudget_fixedcosts', JSON.stringify(this.fixedCosts()));
+    }
+
+    saveFixedCostGroups() {
+        localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(this.fixedCostGroups()));
     }
 
     // ==================== Lookups ====================
@@ -248,40 +270,104 @@ export class BudgetStateService {
 
     getFixedCostsTotal(): number {
         return this.fixedCosts()
-            .filter(fc => fc.type === 'expense')
+            .filter(fc => fc.type === 'expense' && !fc.excludeFromTotal)
             .reduce((sum, fc) => sum + fc.amount, 0);
     }
 
     getFixedIncomeTotal(): number {
         return this.fixedCosts()
-            .filter(fc => fc.type === 'income')
+            .filter(fc => fc.type === 'income' && !fc.excludeFromTotal)
             .reduce((sum, fc) => sum + fc.amount, 0);
     }
 
+    getFixedTransferTotal(): number {
+        return this.fixedCosts()
+            .filter(fc => fc.type === 'transfer' && !fc.excludeFromTotal)
+            .reduce((sum, fc) => sum + fc.amount, 0);
+    }
+
+    getExcludedFixedCostsTotal(): number {
+        return this.fixedCosts()
+            .filter(fc => fc.excludeFromTotal)
+            .reduce((sum, fc) => {
+                if (fc.type === 'income') return sum + fc.amount;
+                return sum - fc.amount;
+            }, 0);
+    }
+
     getFixedIncomeCount(): number {
-        return this.fixedCosts().filter(fc => fc.type === 'income').length;
+        return this.fixedCosts().filter(fc => fc.type === 'income' && !fc.excludeFromTotal).length;
     }
 
     getFixedExpenseCount(): number {
-        return this.fixedCosts().filter(fc => fc.type === 'expense').length;
+        return this.fixedCosts().filter(fc => fc.type === 'expense' && !fc.excludeFromTotal).length;
     }
 
-    addFixedCost(name: string, amount: number, type: 'income' | 'expense', category: string, account: string) {
+    getFixedTransferCount(): number {
+        return this.fixedCosts().filter(fc => fc.type === 'transfer' && !fc.excludeFromTotal).length;
+    }
+
+    getExcludedFixedCostsCount(): number {
+        return this.fixedCosts().filter(fc => fc.excludeFromTotal).length;
+    }
+
+    addFixedCost(data: {
+        name: string;
+        amount: number;
+        type: 'income' | 'expense' | 'transfer';
+        category: string;
+        account: string;
+        toAccount?: string;
+        groupId?: string;
+        note?: string;
+        excludeFromTotal?: boolean;
+    }) {
+        const currentFixedCosts = this.fixedCosts();
+        const maxOrder = currentFixedCosts.length > 0
+            ? Math.max(...currentFixedCosts.map(fc => fc.order))
+            : -1;
+
         const fixedCost: FixedCost = {
             id: this.utilityService.generateId(),
-            name,
-            amount,
-            type,
-            category,
-            account
+            name: data.name,
+            amount: data.amount,
+            type: data.type,
+            category: data.category,
+            account: data.account,
+            toAccount: data.toAccount,
+            groupId: data.groupId,
+            order: maxOrder + 1,
+            note: data.note,
+            excludeFromTotal: data.excludeFromTotal
         };
         this.fixedCosts.update(fc => [...fc, fixedCost]);
         this.saveFixedCosts();
     }
 
-    updateFixedCost(id: string, name: string, amount: number, type: 'income' | 'expense', category: string, account: string) {
+    updateFixedCost(id: string, data: {
+        name: string;
+        amount: number;
+        type: 'income' | 'expense' | 'transfer';
+        category: string;
+        account: string;
+        toAccount?: string;
+        groupId?: string;
+        note?: string;
+        excludeFromTotal?: boolean;
+    }) {
         this.fixedCosts.update(fcs =>
-            fcs.map(fc => fc.id === id ? { ...fc, name, amount, type, category, account } : fc)
+            fcs.map(fc => fc.id === id ? {
+                ...fc,
+                name: data.name,
+                amount: data.amount,
+                type: data.type,
+                category: data.category,
+                account: data.account,
+                toAccount: data.toAccount,
+                groupId: data.groupId,
+                note: data.note,
+                excludeFromTotal: data.excludeFromTotal
+            } : fc)
         );
         this.saveFixedCosts();
     }
@@ -292,17 +378,128 @@ export class BudgetStateService {
     }
 
     copyTransactionToFixedCost(transaction: Transaction) {
+        const currentFixedCosts = this.fixedCosts();
+        const maxOrder = currentFixedCosts.length > 0
+            ? Math.max(...currentFixedCosts.map(fc => fc.order))
+            : -1;
+
         const fixedCost: FixedCost = {
             id: this.utilityService.generateId(),
             name: transaction.description,
             amount: transaction.amount,
-            type: transaction.type === 'transfer' ? 'expense' : transaction.type,
+            type: transaction.type,
             category: transaction.category,
-            account: transaction.account
+            account: transaction.account,
+            toAccount: transaction.toAccount,
+            order: maxOrder + 1,
+            note: transaction.note
         };
 
         this.fixedCosts.update(fc => [...fc, fixedCost]);
         this.saveFixedCosts();
+    }
+
+    // ==================== Fixed Cost Group Operations ====================
+
+    addFixedCostGroup(name: string) {
+        const currentGroups = this.fixedCostGroups();
+        const maxOrder = currentGroups.length > 0
+            ? Math.max(...currentGroups.map(g => g.order))
+            : -1;
+
+        const group: FixedCostGroup = {
+            id: this.utilityService.generateId(),
+            name,
+            order: maxOrder + 1,
+            collapsed: false
+        };
+        this.fixedCostGroups.update(g => [...g, group]);
+        this.saveFixedCostGroups();
+        return group;
+    }
+
+    updateFixedCostGroup(id: string, name: string) {
+        this.fixedCostGroups.update(groups =>
+            groups.map(g => g.id === id ? { ...g, name } : g)
+        );
+        this.saveFixedCostGroups();
+    }
+
+    deleteFixedCostGroup(id: string) {
+        // Remove group and unassign fixed costs from this group
+        this.fixedCostGroups.update(g => g.filter(group => group.id !== id));
+        this.fixedCosts.update(fcs =>
+            fcs.map(fc => fc.groupId === id ? { ...fc, groupId: undefined } : fc)
+        );
+        this.saveFixedCostGroups();
+        this.saveFixedCosts();
+    }
+
+    toggleFixedCostGroupCollapsed(id: string) {
+        this.fixedCostGroups.update(groups =>
+            groups.map(g => g.id === id ? { ...g, collapsed: !g.collapsed } : g)
+        );
+        this.saveFixedCostGroups();
+    }
+
+    reorderFixedCosts(fixedCostIds: string[]) {
+        // Get the minimum order value of the items being reordered
+        const currentFixedCosts = this.fixedCosts();
+        const reorderedItems = fixedCostIds.map(id => currentFixedCosts.find(fc => fc.id === id)).filter(Boolean) as FixedCost[];
+        const minOrder = reorderedItems.length > 0 ? Math.min(...reorderedItems.map(fc => fc.order)) : 0;
+
+        this.fixedCosts.update(fcs => {
+            return fcs.map(fc => {
+                const newIndex = fixedCostIds.indexOf(fc.id);
+                if (newIndex !== -1) {
+                    return { ...fc, order: minOrder + newIndex };
+                }
+                return fc;
+            });
+        });
+        this.saveFixedCosts();
+    }
+
+    reorderFixedCostGroups(groupIds: string[]) {
+        this.fixedCostGroups.update(groups => {
+            return groups.map(g => {
+                const newOrder = groupIds.indexOf(g.id);
+                return newOrder !== -1 ? { ...g, order: newOrder } : g;
+            });
+        });
+        this.saveFixedCostGroups();
+    }
+
+    deleteAllFixedCostGroups() {
+        // Unassign all fixed costs from groups
+        this.fixedCosts.update(fcs =>
+            fcs.map(fc => ({ ...fc, groupId: undefined }))
+        );
+        // Clear all groups
+        this.fixedCostGroups.set([]);
+        this.saveFixedCostGroups();
+        this.saveFixedCosts();
+    }
+
+    deleteSelectedFixedCostGroups(ids: string[]) {
+        // Unassign fixed costs from selected groups
+        this.fixedCosts.update(fcs =>
+            fcs.map(fc => ids.includes(fc.groupId || '') ? { ...fc, groupId: undefined } : fc)
+        );
+        // Remove selected groups
+        this.fixedCostGroups.update(groups =>
+            groups.filter(g => !ids.includes(g.id))
+        );
+        this.saveFixedCostGroups();
+        this.saveFixedCosts();
+    }
+
+    getFixedCostsSortedByOrder(): FixedCost[] {
+        return [...this.fixedCosts()].sort((a, b) => a.order - b.order);
+    }
+
+    getFixedCostGroupsSortedByOrder(): FixedCostGroup[] {
+        return [...this.fixedCostGroups()].sort((a, b) => a.order - b.order);
     }
 
     // ==================== Filtering ====================
@@ -442,7 +639,8 @@ export class BudgetStateService {
                     amount,
                     type,
                     category: categoryId,
-                    account: account.id
+                    account: account.id,
+                    order: newFixedCosts.length
                 };
 
                 newFixedCosts.push(fixedCost);

@@ -6,7 +6,7 @@ import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { ThemeService } from '../../shared/theme.service';
 import { SidebarService } from '../../shared/sidebar.service';
 import { SettingsService } from '../../shared/settings.service';
-import { Transaction, FixedCost, Account, Category } from './budget.models';
+import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
 import { BudgetStateService } from './budget.state.service';
 import { BudgetUtilityService } from './budget.utility.service';
 import { BudgetStatsService } from './budget.stats.service';
@@ -23,6 +23,7 @@ import {
     FixedCostModalComponent,
     SettingsModalComponent
 } from './components';
+import { FixedCostGroupModalComponent } from './components/modals/fixed-cost-group-modal/fixed-cost-group-modal';
 
 @Component({
     selector: 'app-budget-page',
@@ -36,12 +37,12 @@ import {
         StatisticsViewComponent,
         FixedCostsViewComponent,
         BudgetSidebarComponent,
-        // Modal components
         TransactionModalComponent,
         AccountModalComponent,
         CategoryModalComponent,
         FixedCostModalComponent,
-        SettingsModalComponent
+        SettingsModalComponent,
+        FixedCostGroupModalComponent
     ],
     templateUrl: './budget-page.html',
     styleUrls: ['./budget-page.css']
@@ -67,6 +68,7 @@ export class BudgetPage {
     showCategoryModal = signal(false);
     showSettingsModal = signal(false);
     showFixedCostModal = signal(false);
+    showFixedCostGroupModal = signal(false);
     settingsView = signal<'main' | 'accounts' | 'categories'>('main');
     viewMode = signal<'transactions' | 'statistics' | 'fixedcosts'>('transactions');
 
@@ -75,6 +77,7 @@ export class BudgetPage {
     editingFixedCost = signal<FixedCost | null>(null);
     editingTransaction = signal<Transaction | null>(null);
     editingAccount = signal<Account | null>(null);
+    editingFixedCostGroup = signal<FixedCostGroup | null>(null);
 
     // For pre-filling transaction from fixed cost
     prefillFromFixedCost = signal<FixedCost | null>(null);
@@ -86,6 +89,10 @@ export class BudgetPage {
     expandedTransactionId = signal<string | null>(null);
     inlineEditingTransactionId = signal<string | null>(null);
     inlineTransactionTypes = signal<Map<string, 'income' | 'expense' | 'transfer'>>(new Map());
+
+    // Toast notification
+    toastMessage = signal<string | null>(null);
+    private toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
     // Expose Math to template
     Math = Math;
@@ -120,6 +127,7 @@ export class BudgetPage {
     get accounts() { return this.stateService.accounts; }
     get categories() { return this.stateService.categories; }
     get fixedCosts() { return this.stateService.fixedCosts; }
+    get fixedCostGroups() { return this.stateService.fixedCostGroups; }
     get selectedAccountId() { return this.stateService.selectedAccountId; }
     get searchQuery() { return this.stateService.searchQuery; }
     get selectedMonth() { return this.stateService.selectedMonth; }
@@ -135,8 +143,14 @@ export class BudgetPage {
     getFixedCostsSortedByCategory() { return this.stateService.getFixedCostsSortedByCategory(); }
     getFixedCostsTotal() { return this.stateService.getFixedCostsTotal(); }
     getFixedIncomeTotal() { return this.stateService.getFixedIncomeTotal(); }
+    getFixedTransferTotal() { return this.stateService.getFixedTransferTotal(); }
     getFixedIncomeCount() { return this.stateService.getFixedIncomeCount(); }
     getFixedExpenseCount() { return this.stateService.getFixedExpenseCount(); }
+    getFixedTransferCount() { return this.stateService.getFixedTransferCount(); }
+    getExcludedFixedCostsTotal() { return this.stateService.getExcludedFixedCostsTotal(); }
+    getExcludedFixedCostsCount() { return this.stateService.getExcludedFixedCostsCount(); }
+    getFixedCostsSortedByOrder() { return this.stateService.getFixedCostsSortedByOrder(); }
+    getFixedCostGroupsSortedByOrder() { return this.stateService.getFixedCostGroupsSortedByOrder(); }
 
     // Utility service delegations
     formatCurrency(amount: number) { return this.utilityService.formatCurrency(amount); }
@@ -449,23 +463,22 @@ export class BudgetPage {
         const form = event.target as HTMLFormElement;
         const formData = new FormData(form);
 
-        const name = formData.get('fixedCostName') as string;
-        const amount = parseFloat(formData.get('fixedCostAmount') as string);
-        const type = formData.get('fixedCostType') as 'income' | 'expense';
-        const categoryId = formData.get('fixedCostCategory') as string;
-        const accountId = formData.get('fixedCostAccount') as string;
+        const data = {
+            name: formData.get('fixedCostName') as string,
+            amount: parseFloat(formData.get('fixedCostAmount') as string),
+            type: formData.get('fixedCostType') as 'income' | 'expense' | 'transfer',
+            category: formData.get('fixedCostCategory') as string,
+            account: formData.get('fixedCostAccount') as string,
+            toAccount: formData.get('fixedCostToAccount') as string || undefined,
+            groupId: formData.get('fixedCostGroup') as string || undefined,
+            note: formData.get('fixedCostNote') as string || undefined,
+            excludeFromTotal: (formData.get('fixedCostExclude') as string) === 'on'
+        };
 
         if (this.editingFixedCost()) {
-            this.stateService.updateFixedCost(
-                this.editingFixedCost()!.id,
-                name,
-                amount,
-                type,
-                categoryId,
-                accountId
-            );
+            this.stateService.updateFixedCost(this.editingFixedCost()!.id, data);
         } else {
-            this.stateService.addFixedCost(name, amount, type, categoryId, accountId);
+            this.stateService.addFixedCost(data);
         }
 
         this.toggleFixedCostModal();
@@ -636,23 +649,99 @@ export class BudgetPage {
     onFixedCostModalSubmit(data: {
         name: string;
         amount: number;
-        type: 'income' | 'expense';
+        type: 'income' | 'expense' | 'transfer';
         category: string;
         account: string;
+        toAccount?: string;
+        groupId?: string;
+        note?: string;
+        excludeFromTotal?: boolean;
     }) {
         if (this.editingFixedCost()) {
-            this.stateService.updateFixedCost(
-                this.editingFixedCost()!.id,
-                data.name,
-                data.amount,
-                data.type,
-                data.category,
-                data.account
-            );
+            this.stateService.updateFixedCost(this.editingFixedCost()!.id, data);
         } else {
-            this.stateService.addFixedCost(data.name, data.amount, data.type, data.category, data.account);
+            this.stateService.addFixedCost(data);
         }
 
         this.toggleFixedCostModal();
+    }
+
+    // ==================== Fixed Cost Group Methods ====================
+
+    toggleFixedCostGroupModal() {
+        this.showFixedCostGroupModal.set(!this.showFixedCostGroupModal());
+        if (!this.showFixedCostGroupModal()) {
+            this.editingFixedCostGroup.set(null);
+        }
+    }
+
+    openEditFixedCostGroupModal(group: FixedCostGroup) {
+        this.editingFixedCostGroup.set(group);
+        this.showFixedCostGroupModal.set(true);
+    }
+
+    deleteFixedCostGroup(id: string) {
+        if (confirm('Möchten Sie diese Gruppe wirklich löschen? Die Fixkosten bleiben erhalten.')) {
+            this.stateService.deleteFixedCostGroup(id);
+        }
+    }
+
+    onFixedCostGroupModalSubmit(data: { name: string }) {
+        const isEditing = !!this.editingFixedCostGroup();
+
+        if (isEditing) {
+            this.stateService.updateFixedCostGroup(this.editingFixedCostGroup()!.id, data.name);
+            this.showToast(`Gruppe "${data.name}" aktualisiert`);
+        } else {
+            this.stateService.addFixedCostGroup(data.name);
+            this.showToast(`Gruppe "${data.name}" erstellt - verschiebe jetzt Fixkosten in die Gruppe`);
+        }
+
+        // Explicitly close the modal
+        this.showFixedCostGroupModal.set(false);
+        this.editingFixedCostGroup.set(null);
+    }
+
+    showToast(message: string) {
+        // Clear any existing timeout
+        if (this.toastTimeout) {
+            clearTimeout(this.toastTimeout);
+        }
+
+        this.toastMessage.set(message);
+
+        // Auto-hide after 5 seconds
+        this.toastTimeout = setTimeout(() => {
+            this.toastMessage.set(null);
+        }, 5000);
+    }
+
+    hideToast() {
+        if (this.toastTimeout) {
+            clearTimeout(this.toastTimeout);
+        }
+        this.toastMessage.set(null);
+    }
+
+    reorderFixedCosts(ids: string[]) {
+        this.stateService.reorderFixedCosts(ids);
+    }
+
+    deleteAllFixedCostGroups() {
+        if (confirm('Möchten Sie wirklich ALLE Gruppen löschen? Die Fixkosten bleiben erhalten.')) {
+            this.stateService.deleteAllFixedCostGroups();
+            this.showToast('Alle Gruppen gelöscht');
+        }
+    }
+
+    deleteSelectedFixedCostGroups(ids: string[]) {
+        if (confirm(`Möchten Sie die ${ids.length} ausgewählten Gruppen wirklich löschen?`)) {
+            this.stateService.deleteSelectedFixedCostGroups(ids);
+            this.showToast(`${ids.length} Gruppen gelöscht`);
+        }
+    }
+
+    reorderFixedCostGroups(ids: string[]) {
+        this.stateService.reorderFixedCostGroups(ids);
     }
 }

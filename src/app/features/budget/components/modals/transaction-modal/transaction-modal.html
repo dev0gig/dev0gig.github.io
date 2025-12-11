@@ -100,6 +100,13 @@
                     [value]="editingTransaction?.date || getTodayDateString()"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent">
             </div>
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Notiz
+                    (optional)</label>
+                <textarea name="note" rows="2" [ngModel]="editingTransaction?.note || prefillFromFixedCost?.note"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent resize-none"
+                    placeholder="Optionale Notiz..."></textarea>
+            </div>
             <div class="flex gap-2 pt-4">
                 <button type="button" (click)="onClose()"
                     class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">

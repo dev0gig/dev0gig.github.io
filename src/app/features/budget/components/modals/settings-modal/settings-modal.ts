@@ -1,13 +1,14 @@
 import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Account, Category } from '../../../budget.models';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Account, Category, FixedCostGroup } from '../../../budget.models';
 import { BudgetUtilityService } from '../../../budget.utility.service';
 
 @Component({
     selector: 'app-settings-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, DragDropModule],
     templateUrl: './settings-modal.html'
 })
 export class SettingsModalComponent {
@@ -15,6 +16,7 @@ export class SettingsModalComponent {
 
     @Input() accounts: Account[] = [];
     @Input() categories: Category[] = [];
+    @Input() groups: FixedCostGroup[] = [];
 
     @Output() close = new EventEmitter<void>();
     @Output() importData = new EventEmitter<void>();
@@ -27,7 +29,18 @@ export class SettingsModalComponent {
     @Output() editCategory = new EventEmitter<Category>();
     @Output() deleteCategory = new EventEmitter<string>();
 
-    settingsView = signal<'main' | 'accounts' | 'categories'>('main');
+    // Group events
+    @Output() addGroup = new EventEmitter<void>();
+    @Output() editGroup = new EventEmitter<FixedCostGroup>();
+    @Output() deleteGroup = new EventEmitter<string>();
+    @Output() deleteAllGroups = new EventEmitter<void>();
+    @Output() deleteSelectedGroups = new EventEmitter<string[]>();
+    @Output() reorderGroups = new EventEmitter<string[]>();
+
+    settingsView = signal<'main' | 'accounts' | 'categories' | 'groups'>('main');
+
+    // Group selection state
+    selectedGroupIds = signal<Set<string>>(new Set());
 
     formatCurrency(amount: number): string {
         return this.utilityService.formatCurrency(amount);
@@ -35,6 +48,10 @@ export class SettingsModalComponent {
 
     getSortedCategories(): Category[] {
         return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    getSortedGroups(): FixedCostGroup[] {
+        return [...this.groups].sort((a, b) => a.order - b.order);
     }
 
     onClose(): void {
@@ -75,5 +92,58 @@ export class SettingsModalComponent {
 
     onDeleteCategory(id: string): void {
         this.deleteCategory.emit(id);
+    }
+
+    // Group methods
+    onAddGroup(): void {
+        this.addGroup.emit();
+    }
+
+    onEditGroup(group: FixedCostGroup): void {
+        this.editGroup.emit(group);
+    }
+
+    onDeleteGroup(id: string): void {
+        this.deleteGroup.emit(id);
+    }
+
+    onDeleteAllGroups(): void {
+        this.deleteAllGroups.emit();
+        this.selectedGroupIds.set(new Set());
+    }
+
+    onDeleteSelectedGroups(): void {
+        const ids = Array.from(this.selectedGroupIds());
+        if (ids.length > 0) {
+            this.deleteSelectedGroups.emit(ids);
+            this.selectedGroupIds.set(new Set());
+        }
+    }
+
+    toggleGroupSelection(id: string): void {
+        this.selectedGroupIds.update(set => {
+            const newSet = new Set(set);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    }
+
+    isGroupSelected(id: string): boolean {
+        return this.selectedGroupIds().has(id);
+    }
+
+    hasSelectedGroups(): boolean {
+        return this.selectedGroupIds().size > 0;
+    }
+
+    onGroupDrop(event: CdkDragDrop<FixedCostGroup[]>): void {
+        const sortedGroups = this.getSortedGroups();
+        moveItemInArray(sortedGroups, event.previousIndex, event.currentIndex);
+        const newOrder = sortedGroups.map(g => g.id);
+        this.reorderGroups.emit(newOrder);
     }
 }

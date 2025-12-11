@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FixedCost, Account, Category } from '../../../budget.models';
+import { FixedCost, Account, Category, FixedCostGroup } from '../../../budget.models';
 import { BudgetStateService } from '../../../budget.state.service';
 
 @Component({
@@ -10,24 +10,45 @@ import { BudgetStateService } from '../../../budget.state.service';
     imports: [CommonModule, FormsModule],
     templateUrl: './fixed-cost-modal.html'
 })
-export class FixedCostModalComponent {
+export class FixedCostModalComponent implements OnInit {
     private stateService = inject(BudgetStateService);
 
     @Input() editingFixedCost: FixedCost | null = null;
     @Input() accounts: Account[] = [];
     @Input() categories: Category[] = [];
+    @Input() groups: FixedCostGroup[] = [];
 
     @Output() close = new EventEmitter<void>();
     @Output() submit = new EventEmitter<{
         name: string;
         amount: number;
-        type: 'income' | 'expense';
+        type: 'income' | 'expense' | 'transfer';
         category: string;
         account: string;
+        toAccount?: string;
+        groupId?: string;
+        note?: string;
+        excludeFromTotal?: boolean;
     }>();
+
+    currentType = signal<'income' | 'expense' | 'transfer'>('expense');
+
+    ngOnInit(): void {
+        if (this.editingFixedCost) {
+            this.currentType.set(this.editingFixedCost.type);
+        }
+    }
+
+    setType(type: 'income' | 'expense' | 'transfer'): void {
+        this.currentType.set(type);
+    }
 
     getSortedCategories(): Category[] {
         return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    getSortedGroups(): FixedCostGroup[] {
+        return [...this.groups].sort((a, b) => a.order - b.order);
     }
 
     onSubmit(event: Event): void {
@@ -38,9 +59,13 @@ export class FixedCostModalComponent {
         this.submit.emit({
             name: formData.get('fixedCostName') as string,
             amount: parseFloat(formData.get('fixedCostAmount') as string),
-            type: formData.get('fixedCostType') as 'income' | 'expense',
+            type: this.currentType(),
             category: formData.get('fixedCostCategory') as string,
-            account: formData.get('fixedCostAccount') as string
+            account: formData.get('fixedCostAccount') as string,
+            toAccount: this.currentType() === 'transfer' ? formData.get('fixedCostToAccount') as string : undefined,
+            groupId: formData.get('fixedCostGroup') as string || undefined,
+            note: formData.get('fixedCostNote') as string || undefined,
+            excludeFromTotal: (formData.get('fixedCostExclude') as string) === 'on'
         });
     }
 
@@ -48,3 +73,4 @@ export class FixedCostModalComponent {
         this.close.emit();
     }
 }
+

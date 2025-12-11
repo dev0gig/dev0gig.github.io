@@ -1,0 +1,30 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()">
+    </div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-sm accent-glow">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-dash-text">{{ editingGroup ? 'Gruppe bearbeiten' : 'Neue Gruppe' }}</h2>
+            <button (click)="onClose()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+        <form (submit)="onSubmit($event)" class="space-y-4">
+            <div>
+                <label
+                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Gruppenname</label>
+                <input type="text" required [(ngModel)]="groupName" name="groupName"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
+                    placeholder="z.B. Wohnung, Abonnements, Versicherungen">
+            </div>
+            <div class="flex gap-2 pt-4">
+                <button type="button" (click)="onClose()"
+                    class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
+                    Abbrechen
+                </button>
+                <button type="submit" class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
+                    Speichern
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
