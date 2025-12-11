@@ -95,16 +95,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
         const accounts = localStorage.getItem('mybudget_accounts');
         const categories = localStorage.getItem('mybudget_categories');
         const fixedCosts = localStorage.getItem('mybudget_fixedcosts');
+        const fixedCostGroups = localStorage.getItem('mybudget_fixedcostgroups');
 
         const budgetData = {
             exportDate,
-            version: '1.1',
+            version: '1.2',
             project: 'budget',
             data: {
                 transactions: transactions ? JSON.parse(transactions) : [],
                 accounts: accounts ? JSON.parse(accounts) : [],
                 categories: categories ? JSON.parse(categories) : [],
-                fixedCosts: fixedCosts ? JSON.parse(fixedCosts) : []
+                fixedCosts: fixedCosts ? JSON.parse(fixedCosts) : [],
+                fixedCostGroups: fixedCostGroups ? JSON.parse(fixedCostGroups) : []
             }
         };
         zip.file('budget.json', JSON.stringify(budgetData, null, 2));
@@ -219,6 +221,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 }
                 if (budget.fixedCosts) {
                     localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
+                }
+                if (budget.fixedCostGroups) {
+                    localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
                 }
                 importedProjects.push('Budget');
             }
