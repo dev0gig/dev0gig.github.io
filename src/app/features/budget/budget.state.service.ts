@@ -40,6 +40,19 @@ export class BudgetStateService {
         if (categoriesData) this.categories.set(JSON.parse(categoriesData));
         if (fixedCostsData) {
             let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
+
+            // Filter out invalid fixed costs (missing name, NaN amount, or missing category/account)
+            const originalCount = parsedFixedCosts.length;
+            parsedFixedCosts = parsedFixedCosts.filter(fc =>
+                fc.name && fc.name.trim() !== '' &&
+                !isNaN(fc.amount) && fc.amount !== null && fc.amount !== undefined &&
+                fc.category && fc.account
+            );
+            const removedCount = originalCount - parsedFixedCosts.length;
+            if (removedCount > 0) {
+                console.warn(`loadData: Removed ${removedCount} invalid fixed cost entries`);
+            }
+
             // Migration: Add order field to existing fixed costs if missing
             let needsMigration = false;
             parsedFixedCosts = parsedFixedCosts.map((fc, index) => {
@@ -50,7 +63,7 @@ export class BudgetStateService {
                 return fc;
             });
             this.fixedCosts.set(parsedFixedCosts);
-            if (needsMigration) {
+            if (needsMigration || removedCount > 0) {
                 this.saveFixedCosts();
             }
         }
@@ -322,6 +335,20 @@ export class BudgetStateService {
         note?: string;
         excludeFromTotal?: boolean;
     }) {
+        // Validate data to prevent empty/invalid entries
+        if (!data.name || data.name.trim() === '') {
+            console.warn('addFixedCost: Invalid data - missing name');
+            return;
+        }
+        if (isNaN(data.amount) || data.amount === null || data.amount === undefined) {
+            console.warn('addFixedCost: Invalid data - invalid amount');
+            return;
+        }
+        if (!data.category || !data.account) {
+            console.warn('addFixedCost: Invalid data - missing category or account');
+            return;
+        }
+
         const currentFixedCosts = this.fixedCosts();
         const maxOrder = currentFixedCosts.length > 0
             ? Math.max(...currentFixedCosts.map(fc => fc.order))
@@ -329,7 +356,7 @@ export class BudgetStateService {
 
         const fixedCost: FixedCost = {
             id: this.utilityService.generateId(),
-            name: data.name,
+            name: data.name.trim(),
             amount: data.amount,
             type: data.type,
             category: data.category,

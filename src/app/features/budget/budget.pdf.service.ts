@@ -80,14 +80,14 @@ export class BudgetPdfService {
             }
         };
 
-        // Get ungrouped fixed costs (not excluded)
-        const ungrouped = fixedCosts.filter(fc => !fc.groupId && !fc.excludeFromTotal);
-        const excluded = fixedCosts.filter(fc => fc.excludeFromTotal);
+        // Get ungrouped fixed costs (not excluded, no transfers)
+        const ungrouped = fixedCosts.filter(fc => !fc.groupId && !fc.excludeFromTotal && fc.type !== 'transfer');
+        const excluded = fixedCosts.filter(fc => fc.excludeFromTotal && fc.type !== 'transfer');
 
-        // Group fixed costs by group
+        // Group fixed costs by group (no transfers)
         const fixedCostsByGroup = new Map<string, FixedCost[]>();
         groups.forEach(g => {
-            fixedCostsByGroup.set(g.id, fixedCosts.filter(fc => fc.groupId === g.id && !fc.excludeFromTotal));
+            fixedCostsByGroup.set(g.id, fixedCosts.filter(fc => fc.groupId === g.id && !fc.excludeFromTotal && fc.type !== 'transfer'));
         });
 
         // Generate fixed cost rows
@@ -168,7 +168,7 @@ export class BudgetPdfService {
         /* Summary Cards */
         .summary {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             margin-bottom: 24px;
         }
@@ -195,7 +195,6 @@ export class BudgetPdfService {
         
         .summary-card.income .value { color: #22c55e; }
         .summary-card.expense .value { color: #ef4444; }
-        .summary-card.transfer .value { color: #a855f7; }
         .summary-card.net .value { color: ${net >= 0 ? '#22c55e' : '#ef4444'}; }
         
         /* Groups */
@@ -365,10 +364,6 @@ export class BudgetPdfService {
             <div class="label">Ausgaben</div>
             <div class="value">-${formatCurrency(expenses)}</div>
         </div>
-        <div class="summary-card transfer">
-            <div class="label">Transfers</div>
-            <div class="value">${formatCurrency(transfers)}</div>
-        </div>
         <div class="summary-card net">
             <div class="label">Netto</div>
             <div class="value">${net >= 0 ? '+' : ''}${formatCurrency(net)}</div>
@@ -395,7 +390,7 @@ export class BudgetPdfService {
                 ${generateRows(ungrouped)}
                 <tr class="group-subtotal">
                     <td colspan="4">Summe</td>
-                    <td class="amount-cell">${formatCurrency(ungrouped.reduce((sum, fc) => {
+                    <td class="amount-cell">${formatCurrency(ungrouped.filter(fc => fc.type !== 'transfer').reduce((sum, fc) => {
             if (fc.type === 'income') return sum + fc.amount;
             if (fc.type === 'expense') return sum - fc.amount;
             return sum;
@@ -410,7 +405,7 @@ export class BudgetPdfService {
             const groupCosts = fixedCostsByGroup.get(group.id) || [];
             if (groupCosts.length === 0) return '';
 
-            const groupTotal = groupCosts.reduce((sum, fc) => {
+            const groupTotal = groupCosts.filter(fc => fc.type !== 'transfer').reduce((sum, fc) => {
                 if (fc.type === 'income') return sum + fc.amount;
                 if (fc.type === 'expense') return sum - fc.amount;
                 return sum;
