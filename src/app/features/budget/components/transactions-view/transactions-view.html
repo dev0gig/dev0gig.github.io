@@ -126,58 +126,41 @@
                     </div>
                 </div>
 
-                <!-- Amount and Description -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- All fields in compact responsive grid -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Betrag
-                            (€)</label>
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Betrag</label>
                         <input type="number" name="amount" step="0.01" required [value]="transaction.amount"
                             [disabled]="!isEditingInline(transaction.id)"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="0,00">
                     </div>
                     <div>
                         <label
-                            class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Datum</label>
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Datum</label>
                         <input type="date" name="date" required [value]="transaction.date"
                             [disabled]="!isEditingInline(transaction.id)"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                     </div>
-                </div>
-
-                <div>
-                    <label
-                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Beschreibung</label>
-                    <input type="text" name="description" required [value]="transaction.description"
-                        [disabled]="!isEditingInline(transaction.id)"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                        placeholder="z.B. Einkauf bei Supermarkt">
-                </div>
-
-                <!-- Category -->
-                <div>
-                    <label
-                        class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Kategorie</label>
-                    <select name="category" required [disabled]="!isEditingInline(transaction.id)"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
-                        <option value="">Kategorie wählen</option>
-                        @for (category of getSortedCategories(); track category.id) {
-                        <option [value]="category.id" [selected]="category.id === transaction.category">{{
-                            category.name }}</option>
-                        }
-                    </select>
-                </div>
-
-                <!-- Account(s) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
-                            {{ getInlineTransactionType(transaction.id) === 'transfer' ?
-                            'Von Konto'
-                            : 'Konto' }}
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
+                        <select name="category" required [disabled]="!isEditingInline(transaction.id)"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">Wählen</option>
+                            @for (category of getSortedCategories(); track category.id) {
+                            <option [value]="category.id" [selected]="category.id === transaction.category">{{
+                                category.name }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">
+                            {{ getInlineTransactionType(transaction.id) === 'transfer' ? 'Von Konto' : 'Konto' }}
                         </label>
                         <select name="account" required [disabled]="!isEditingInline(transaction.id)"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                             <option value="">Wählen</option>
                             @for (account of accounts; track account.id) {
                             <option [value]="account.id" [selected]="account.id === transaction.account">{{
@@ -185,13 +168,12 @@
                             }
                         </select>
                     </div>
-
                     <div *ngIf="getInlineTransactionType(transaction.id) === 'transfer'">
-                        <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Nach
+                        <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Nach
                             Konto</label>
                         <select name="toAccount" [required]="getInlineTransactionType(transaction.id) === 'transfer'"
                             [disabled]="!isEditingInline(transaction.id)"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 md:px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                             <option value="">Wählen</option>
                             @for (account of accounts; track account.id) {
                             <option [value]="account.id" [selected]="account.id === transaction.toAccount">
@@ -199,7 +181,20 @@
                             }
                         </select>
                     </div>
+                    <div class="col-span-2 md:col-span-3 lg:col-span-2"
+                        [class.lg:col-span-1]="getInlineTransactionType(transaction.id) === 'transfer'">
+                        <label
+                            class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Beschreibung</label>
+                        <input type="text" name="description" required [value]="transaction.description"
+                            [disabled]="!isEditingInline(transaction.id)"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                            placeholder="z.B. Einkauf bei Supermarkt">
+                    </div>
                 </div>
+
+                <!-- Hidden toAccount field for non-transfer (to keep form submission working) -->
+                <input type="hidden" name="toAccount" value=""
+                    *ngIf="getInlineTransactionType(transaction.id) !== 'transfer'">
 
                 <!-- Action Buttons -->
                 <div class="flex flex-wrap justify-end gap-2 pt-2">
