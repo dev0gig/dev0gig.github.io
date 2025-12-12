@@ -1,0 +1,247 @@
+import { signal } from '@angular/core';
+import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
+import { BudgetStateService } from './budget.state.service';
+
+/**
+ * Budget Page Modal Handlers - Manages modal state and entity editing
+ */
+export class BudgetPageModalHandlers {
+
+    constructor(
+        private stateService: BudgetStateService,
+        public showTransactionModal: ReturnType<typeof signal<boolean>>,
+        public showAccountModal: ReturnType<typeof signal<boolean>>,
+        public showCategoryModal: ReturnType<typeof signal<boolean>>,
+        public showSettingsModal: ReturnType<typeof signal<boolean>>,
+        public showFixedCostModal: ReturnType<typeof signal<boolean>>,
+        public showFixedCostGroupModal: ReturnType<typeof signal<boolean>>,
+        public settingsView: ReturnType<typeof signal<'main' | 'accounts' | 'categories'>>,
+        public editingCategory: ReturnType<typeof signal<Category | null>>,
+        public editingFixedCost: ReturnType<typeof signal<FixedCost | null>>,
+        public editingTransaction: ReturnType<typeof signal<Transaction | null>>,
+        public editingAccount: ReturnType<typeof signal<Account | null>>,
+        public editingFixedCostGroup: ReturnType<typeof signal<FixedCostGroup | null>>,
+        public prefillFromFixedCost: ReturnType<typeof signal<FixedCost | null>>,
+        public currentTransactionType: ReturnType<typeof signal<'income' | 'expense' | 'transfer'>>,
+        private showToastFn: (message: string) => void
+    ) { }
+
+    // ==================== Toggle Methods ====================
+
+    toggleSettingsModal() {
+        this.showSettingsModal.update(v => !v);
+        if (!this.showSettingsModal()) {
+            this.settingsView.set('main');
+        }
+    }
+
+    toggleTransactionModal() {
+        this.showTransactionModal.set(!this.showTransactionModal());
+    }
+
+    toggleAccountModal() {
+        this.showAccountModal.set(!this.showAccountModal());
+    }
+
+    toggleCategoryModal() {
+        const newState = !this.showCategoryModal();
+        console.log('[ModalHandlers] toggleCategoryModal called, new state:', newState, 'editingCategory:', this.editingCategory());
+        this.showCategoryModal.set(newState);
+    }
+
+    toggleFixedCostModal() {
+        this.showFixedCostModal.set(!this.showFixedCostModal());
+        if (!this.showFixedCostModal()) {
+            this.editingFixedCost.set(null);
+        }
+    }
+
+    toggleFixedCostGroupModal() {
+        this.showFixedCostGroupModal.set(!this.showFixedCostGroupModal());
+        if (!this.showFixedCostGroupModal()) {
+            this.editingFixedCostGroup.set(null);
+        }
+    }
+
+    // ==================== Open Modal Methods ====================
+
+    openNewTransactionModal() {
+        this.editingTransaction.set(null);
+        this.prefillFromFixedCost.set(null);
+        this.showTransactionModal.set(true);
+    }
+
+    openEditTransactionModal(transaction: Transaction) {
+        this.editingTransaction.set(transaction);
+        this.prefillFromFixedCost.set(null);
+        this.currentTransactionType.set(transaction.type);
+        this.showTransactionModal.set(true);
+    }
+
+    openNewFixedCostModal() {
+        this.editingFixedCost.set(null);
+        this.showFixedCostModal.set(true);
+    }
+
+    openEditFixedCostModalUnified(fixedCost: FixedCost) {
+        this.editingFixedCost.set(fixedCost);
+        this.showFixedCostModal.set(true);
+    }
+
+    openBookFixedCostModal(fixedCost: FixedCost) {
+        this.prefillFromFixedCost.set(fixedCost);
+        this.editingTransaction.set(null);
+        this.currentTransactionType.set(fixedCost.type);
+        this.showTransactionModal.set(true);
+    }
+
+    openEditAccountModal(account: Account) {
+        this.editingAccount.set(account);
+        this.showAccountModal.set(true);
+    }
+
+    openEditCategoryModal(category: Category) {
+        console.log('[ModalHandlers] openEditCategoryModal called with:', category);
+        this.editingCategory.set(category);
+        this.showCategoryModal.set(true);
+    }
+
+    openEditFixedCostModal(fixedCost: FixedCost) {
+        this.editingFixedCost.set(fixedCost);
+        this.showFixedCostModal.set(true);
+    }
+
+    openEditFixedCostGroupModal(group: FixedCostGroup) {
+        this.editingFixedCostGroup.set(group);
+        this.showFixedCostGroupModal.set(true);
+    }
+
+    // ==================== Submit Handlers ====================
+
+    onTransactionModalSubmit(data: {
+        type: 'income' | 'expense' | 'transfer';
+        amount: number;
+        description: string;
+        category: string;
+        account: string;
+        date: string;
+        toAccount?: string;
+    }) {
+        const transactionData = {
+            type: data.type,
+            amount: data.amount,
+            description: data.description,
+            category: data.category,
+            account: data.account,
+            toAccount: data.type === 'transfer' ? data.toAccount : undefined,
+            date: data.date
+        };
+
+        const isEditing = !!this.editingTransaction();
+        const isFromFixedCost = !!this.prefillFromFixedCost();
+
+        if (isEditing) {
+            const oldTransaction = this.editingTransaction()!;
+            this.stateService.updateTransaction(oldTransaction.id, transactionData, oldTransaction);
+        } else {
+            this.stateService.addTransaction(transactionData);
+        }
+
+        this.showTransactionModal.set(false);
+        this.editingTransaction.set(null);
+        this.prefillFromFixedCost.set(null);
+
+        if (isFromFixedCost) {
+            this.showToastFn(`Fixkosten "${data.description}" gebucht`);
+        } else if (isEditing) {
+            this.showToastFn('Transaktion aktualisiert');
+        } else {
+            this.showToastFn('Transaktion hinzugefügt');
+        }
+    }
+
+    onAccountModalSubmit(data: { name: string; balance: number }) {
+        console.log('[ModalHandlers] onAccountModalSubmit CALLED');
+        console.log('[ModalHandlers] Data received:', JSON.stringify(data));
+        console.log('[ModalHandlers] editingAccount:', this.editingAccount());
+        console.log('[ModalHandlers] showAccountModal BEFORE:', this.showAccountModal());
+
+        if (this.editingAccount()) {
+            console.log('[ModalHandlers] MODE: Updating existing account');
+            this.stateService.updateAccount(this.editingAccount()!.id, data.name, data.balance);
+        } else {
+            console.log('[ModalHandlers] MODE: Creating new account');
+            this.stateService.addAccount(data.name, data.balance);
+        }
+
+        console.log('[ModalHandlers] Closing modal now');
+        this.showAccountModal.set(false);
+        this.editingAccount.set(null);
+
+        console.log('[ModalHandlers] showAccountModal AFTER:', this.showAccountModal());
+        console.log('[ModalHandlers] onAccountModalSubmit COMPLETE');
+    }
+
+    onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) {
+        console.log('========================================');
+        console.log('[ModalHandlers] onCategoryModalSubmit CALLED');
+        console.log('[ModalHandlers] Data received:', JSON.stringify(data));
+
+        if (!data || typeof data.name !== 'string' || !['income', 'expense', 'both'].includes(data.type)) {
+            console.log('[ModalHandlers] ERROR: Invalid data received (likely native form event), ignoring');
+            return;
+        }
+
+        console.log('[ModalHandlers] editingCategory is:', this.editingCategory());
+        console.log('[ModalHandlers] Categories BEFORE operation:', JSON.stringify(this.stateService.categories()));
+
+        if (this.editingCategory()) {
+            console.log('[ModalHandlers] MODE: Updating existing category ID:', this.editingCategory()!.id);
+            this.stateService.updateCategory(this.editingCategory()!.id, data.name, data.type);
+        } else {
+            console.log('[ModalHandlers] MODE: Adding NEW category');
+            this.stateService.addCategory(data.name, data.type);
+        }
+
+        console.log('[ModalHandlers] Categories AFTER operation:', JSON.stringify(this.stateService.categories()));
+        console.log('========================================');
+
+        this.toggleCategoryModal();
+        this.editingCategory.set(null);
+    }
+
+    onFixedCostModalSubmit(data: {
+        name: string;
+        amount: number;
+        type: 'income' | 'expense' | 'transfer';
+        category: string;
+        account: string;
+        toAccount?: string;
+        groupId?: string;
+        note?: string;
+        excludeFromTotal?: boolean;
+    }) {
+        if (this.editingFixedCost()) {
+            this.stateService.updateFixedCost(this.editingFixedCost()!.id, data);
+        } else {
+            this.stateService.addFixedCost(data);
+        }
+
+        this.toggleFixedCostModal();
+    }
+
+    onFixedCostGroupModalSubmit(data: { name: string }) {
+        const isEditing = !!this.editingFixedCostGroup();
+
+        if (isEditing) {
+            this.stateService.updateFixedCostGroup(this.editingFixedCostGroup()!.id, data.name);
+            this.showToastFn(`Gruppe "${data.name}" aktualisiert`);
+        } else {
+            this.stateService.addFixedCostGroup(data.name);
+            this.showToastFn(`Gruppe "${data.name}" erstellt - verschiebe jetzt Fixkosten in die Gruppe`);
+        }
+
+        this.showFixedCostGroupModal.set(false);
+        this.editingFixedCostGroup.set(null);
+    }
+}

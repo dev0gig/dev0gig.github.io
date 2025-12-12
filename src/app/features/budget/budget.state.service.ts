@@ -1,45 +1,57 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
 import { BudgetUtilityService } from './budget.utility.service';
+import {
+    BudgetDataService,
+    BudgetAccountService,
+    BudgetCategoryService,
+    BudgetTransactionService,
+    BudgetFixedCostService,
+    BudgetFilterService,
+    BudgetImportExportService
+} from './services';
 
 /**
- * BudgetStateService - Manages all data signals and CRUD operations
+ * BudgetStateService - Facade that coordinates all budget sub-services
+ * Maintains backwards compatibility with existing template bindings
  */
 @Injectable({
     providedIn: 'root'
 })
 export class BudgetStateService {
 
-    // Data signals
-    transactions = signal<Transaction[]>([]);
-    accounts = signal<Account[]>([]);
-    categories = signal<Category[]>([]);
-    fixedCosts = signal<FixedCost[]>([]);
-    fixedCostGroups = signal<FixedCostGroup[]>([]);
+    private dataService = inject(BudgetDataService);
+    private accountService = inject(BudgetAccountService);
+    private categoryService = inject(BudgetCategoryService);
+    private transactionService = inject(BudgetTransactionService);
+    private fixedCostService = inject(BudgetFixedCostService);
+    private filterService = inject(BudgetFilterService);
+    private importExportService = inject(BudgetImportExportService);
+    private utilityService = inject(BudgetUtilityService);
 
-    // Filter signals
-    selectedAccountId = signal<string | null>(null);
-    searchQuery = signal<string>('');
-    selectedMonth = signal(new Date());
+    // ==================== Data Signals (delegated to DataService) ====================
 
-    constructor(private utilityService: BudgetUtilityService) {
+    get transactions() { return this.dataService.transactions; }
+    get accounts() { return this.dataService.accounts; }
+    get categories() { return this.dataService.categories; }
+    get fixedCosts() { return this.dataService.fixedCosts; }
+    get fixedCostGroups() { return this.dataService.fixedCostGroups; }
+    get selectedAccountId() { return this.dataService.selectedAccountId; }
+    get searchQuery() { return this.dataService.searchQuery; }
+    get selectedMonth() { return this.dataService.selectedMonth; }
+
+    constructor() {
         this.loadData();
     }
 
     // ==================== Data Loading/Saving ====================
 
     loadData() {
-        const transactionsData = localStorage.getItem('mybudget_transactions');
-        const accountsData = localStorage.getItem('mybudget_accounts');
-        const categoriesData = localStorage.getItem('mybudget_categories');
-        const fixedCostsData = localStorage.getItem('mybudget_fixedcosts');
-        const fixedCostGroupsData = localStorage.getItem('mybudget_fixedcostgroups');
+        const { accountsData, categoriesData, fixedCostsData } = this.dataService.loadData();
 
-        if (transactionsData) this.transactions.set(JSON.parse(transactionsData));
+        // Process accounts
         if (accountsData) {
             let parsedAccounts: Account[] = JSON.parse(accountsData);
-
-            // Filter out invalid accounts (missing name or invalid balance)
             const originalCount = parsedAccounts.length;
             parsedAccounts = parsedAccounts.filter(a =>
                 a.name && a.name.trim() !== '' &&
@@ -48,17 +60,13 @@ export class BudgetStateService {
             const removedCount = originalCount - parsedAccounts.length;
             if (removedCount > 0) {
                 console.warn(`loadData: Removed ${removedCount} invalid account entries`);
-                // Save cleaned accounts back to localStorage
-                this.accounts.set(parsedAccounts);
-                this.saveAccounts();
-            } else {
-                this.accounts.set(parsedAccounts);
             }
+            this.dataService.loadAccounts(parsedAccounts, removedCount > 0);
         }
+
+        // Process categories
         if (categoriesData) {
             let parsedCategories: Category[] = JSON.parse(categoriesData);
-
-            // Filter out invalid/corrupted categories (missing name or invalid type)
             const originalCount = parsedCategories.length;
             parsedCategories = parsedCategories.filter(c =>
                 c.name && typeof c.name === 'string' && c.name.trim() !== '' &&
@@ -67,20 +75,15 @@ export class BudgetStateService {
             const removedCount = originalCount - parsedCategories.length;
             if (removedCount > 0) {
                 console.warn(`loadData: Removed ${removedCount} invalid/corrupted category entries`);
-                // Save cleaned categories back to localStorage
-                this.categories.set(parsedCategories);
-                this.saveCategories();
-            } else {
-                this.categories.set(parsedCategories);
             }
+            this.dataService.loadCategories(parsedCategories, removedCount > 0);
         } else {
-            // Initialize with default categories on first start
             this.addDefaultCategories();
         }
+
+        // Process fixed costs
         if (fixedCostsData) {
             let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
-
-            // Filter out invalid fixed costs (missing name, NaN amount, or missing category/account)
             const originalCount = parsedFixedCosts.length;
             parsedFixedCosts = parsedFixedCosts.filter(fc =>
                 fc.name && fc.name.trim() !== '' &&
@@ -92,7 +95,7 @@ export class BudgetStateService {
                 console.warn(`loadData: Removed ${removedCount} invalid fixed cost entries`);
             }
 
-            // Migration: Add order field to existing fixed costs if missing
+            // Migration: Add order field if missing
             let needsMigration = false;
             parsedFixedCosts = parsedFixedCosts.map((fc, index) => {
                 if (fc.order === undefined) {
@@ -101,368 +104,69 @@ export class BudgetStateService {
                 }
                 return fc;
             });
-            this.fixedCosts.set(parsedFixedCosts);
-            if (needsMigration || removedCount > 0) {
-                this.saveFixedCosts();
-            }
+            this.dataService.loadFixedCosts(parsedFixedCosts, needsMigration || removedCount > 0);
         }
-        if (fixedCostGroupsData) this.fixedCostGroups.set(JSON.parse(fixedCostGroupsData));
     }
 
-    saveTransactions() {
-        localStorage.setItem('mybudget_transactions', JSON.stringify(this.transactions()));
-    }
-
-    saveAccounts() {
-        localStorage.setItem('mybudget_accounts', JSON.stringify(this.accounts()));
-    }
-
-    saveCategories() {
-        localStorage.setItem('mybudget_categories', JSON.stringify(this.categories()));
-    }
-
-    saveFixedCosts() {
-        localStorage.setItem('mybudget_fixedcosts', JSON.stringify(this.fixedCosts()));
-    }
-
-    saveFixedCostGroups() {
-        localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(this.fixedCostGroups()));
-    }
+    saveTransactions() { this.dataService.saveTransactions(); }
+    saveAccounts() { this.dataService.saveAccounts(); }
+    saveCategories() { this.dataService.saveCategories(); }
+    saveFixedCosts() { this.dataService.saveFixedCosts(); }
+    saveFixedCostGroups() { this.dataService.saveFixedCostGroups(); }
 
     // ==================== Lookups ====================
 
-    getCategoryById(id: string): Category | undefined {
-        return this.categories().find(c => c.id === id);
-    }
-
-    getCategoryFullName(id: string): string {
-        const category = this.getCategoryById(id);
-        if (!category) return 'Unbekannt';
-        return category.name;
-    }
-
-    getSortedCategories(): Category[] {
-        return [...this.categories()].sort((a, b) => a.name.localeCompare(b.name, 'de'));
-    }
-
-    getAccountById(id: string): Account | undefined {
-        return this.accounts().find(a => a.id === id);
-    }
-
-    getTotalBalance(): number {
-        return this.accounts().reduce((sum, a) => sum + a.balance, 0);
-    }
+    getCategoryById(id: string) { return this.dataService.getCategoryById(id); }
+    getCategoryFullName(id: string) { return this.dataService.getCategoryFullName(id); }
+    getSortedCategories() { return this.dataService.getSortedCategories(); }
+    getAccountById(id: string) { return this.dataService.getAccountById(id); }
+    getTotalBalance() { return this.dataService.getTotalBalance(); }
 
     // ==================== Account Operations ====================
 
-    selectAccount(id: string | null) {
-        if (this.selectedAccountId() === id) {
-            this.selectedAccountId.set(null);
-        } else {
-            this.selectedAccountId.set(id);
-        }
-    }
-
-    updateAccountBalance(accountId: string, delta: number) {
-        this.accounts.update(accounts =>
-            accounts.map(a =>
-                a.id === accountId ? { ...a, balance: a.balance + delta } : a
-            )
-        );
-    }
-
-    addAccount(name: string, balance: number) {
-        // Validate data to prevent empty/invalid entries
-        if (!name || name.trim() === '') {
-            console.warn('addAccount: Invalid data - missing name');
-            return;
-        }
-        if (isNaN(balance) || balance === null || balance === undefined) {
-            console.warn('addAccount: Invalid data - invalid balance');
-            return;
-        }
-
-        const account: Account = {
-            id: this.utilityService.generateId(),
-            name: name.trim(),
-            balance
-        };
-        this.accounts.update(a => [...a, account]);
-        this.saveAccounts();
-    }
-
-    updateAccount(id: string, name: string, balance: number) {
-        this.accounts.update(accounts =>
-            accounts.map(a => a.id === id ? { ...a, name, balance } : a)
-        );
-        this.saveAccounts();
-    }
-
-    deleteAccount(id: string): boolean {
-        this.accounts.update(a => a.filter(account => account.id !== id));
-        this.saveAccounts();
-        if (this.selectedAccountId() === id) {
-            this.selectAccount(null);
-        }
-        return true;
-    }
+    selectAccount(id: string | null) { this.accountService.selectAccount(id); }
+    updateAccountBalance(accountId: string, delta: number) { this.accountService.updateAccountBalance(accountId, delta); }
+    addAccount(name: string, balance: number) { this.accountService.addAccount(name, balance); }
+    updateAccount(id: string, name: string, balance: number) { this.accountService.updateAccount(id, name, balance); }
+    deleteAccount(id: string) { return this.accountService.deleteAccount(id); }
 
     // ==================== Category Operations ====================
 
-    addCategory(name: string, type: 'income' | 'expense' | 'both') {
-        console.log('[StateService] addCategory called with name:', name, 'type:', type);
-
-        // Validate data to prevent corrupted entries
-        if (!name || typeof name !== 'string' || name.trim() === '') {
-            console.warn('[StateService] addCategory: Invalid data - missing or invalid name');
-            return;
-        }
-        if (!['income', 'expense', 'both'].includes(type)) {
-            console.warn('[StateService] addCategory: Invalid data - invalid type:', type);
-            return;
-        }
-
-        const category: Category = {
-            id: this.utilityService.generateId(),
-            name: name.trim(),
-            type
-        };
-        console.log('[StateService] Created new category object:', JSON.stringify(category));
-        console.log('[StateService] Categories BEFORE update:', JSON.stringify(this.categories()));
-        this.categories.update(c => [...c, category]);
-        console.log('[StateService] Categories AFTER update:', JSON.stringify(this.categories()));
-        this.saveCategories();
-        console.log('[StateService] Categories saved to localStorage');
-    }
-
-    updateCategory(id: string, name: string, type: 'income' | 'expense' | 'both') {
-        this.categories.update(categories =>
-            categories.map(c => c.id === id ? { ...c, name, type } : c)
-        );
-        this.saveCategories();
-    }
-
-    deleteCategory(id: string) {
-        this.categories.update(c => c.filter(category => category.id !== id));
-        this.saveCategories();
-    }
-
-    deleteAllCategories() {
-        console.log('[StateService] deleteAllCategories called');
-        console.log('[StateService] Categories BEFORE:', JSON.stringify(this.categories()));
-        this.categories.set([]);
-        this.saveCategories();
-        console.log('[StateService] Categories AFTER:', JSON.stringify(this.categories()));
-        console.log('[StateService] Categories saved to localStorage');
-    }
-
-    deleteSelectedCategories(ids: string[]) {
-        console.log('[StateService] deleteSelectedCategories called with ids:', ids);
-        console.log('[StateService] Categories BEFORE:', JSON.stringify(this.categories()));
-        this.categories.update(c => c.filter(category => !ids.includes(category.id)));
-        this.saveCategories();
-        console.log('[StateService] Categories AFTER:', JSON.stringify(this.categories()));
-        console.log('[StateService] Categories saved to localStorage');
-    }
-
-    /**
-     * Add default categories (can be called manually via settings)
-     * Adds only categories that don't already exist (by name)
-     * @returns number of categories added
-     */
-    addDefaultCategories(): number {
-        const defaultCategories: { name: string; type: 'income' | 'expense' | 'both' }[] = [
-            // Income categories
-            { name: 'Gehalt', type: 'income' },
-            { name: 'Nebeneinkommen', type: 'income' },
-            { name: 'Kindergeld', type: 'income' },
-            { name: 'Zinsen & Dividenden', type: 'income' },
-            { name: 'Rückerstattung', type: 'income' },
-
-            // Expense categories
-            { name: 'Miete & Wohnen', type: 'expense' },
-            { name: 'Lebensmittel', type: 'expense' },
-            { name: 'Transport & Auto', type: 'expense' },
-            { name: 'Versicherungen', type: 'expense' },
-            { name: 'Strom & Energie', type: 'expense' },
-            { name: 'Internet & Telefon', type: 'expense' },
-            { name: 'Gesundheit', type: 'expense' },
-            { name: 'Freizeit & Hobby', type: 'expense' },
-            { name: 'Restaurant & Café', type: 'expense' },
-            { name: 'Kleidung', type: 'expense' },
-            { name: 'Haushalt', type: 'expense' },
-            { name: 'Abonnements', type: 'expense' },
-            { name: 'Bildung', type: 'expense' },
-            { name: 'Urlaub & Reisen', type: 'expense' },
-            { name: 'Sparen & Investieren', type: 'expense' },
-
-            // Both (can be income or expense)
-            { name: 'Geschenke', type: 'both' },
-            { name: 'Sonstiges', type: 'both' }
-        ];
-
-        // Get existing category names (lowercase for comparison)
-        const existingNames = new Set(this.categories().map(c => c.name.toLowerCase()));
-
-        // Filter out categories that already exist
-        const newCategories: Category[] = defaultCategories
-            .filter(cat => !existingNames.has(cat.name.toLowerCase()))
-            .map(cat => ({
-                id: this.utilityService.generateId(),
-                name: cat.name,
-                type: cat.type
-            }));
-
-        if (newCategories.length > 0) {
-            this.categories.update(c => [...c, ...newCategories]);
-            this.saveCategories();
-        }
-
-        console.log('[StateService] Added default categories:', newCategories.length);
-        return newCategories.length;
-    }
-
-    getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>): string {
-        const categoryName = categoryNameRaw.trim();
-
-        let category = categoriesMap.get(categoryName);
-        if (!category) {
-            category = {
-                id: this.utilityService.generateId(),
-                name: categoryName,
-                type: 'both'
-            };
-            categoriesMap.set(categoryName, category);
-        }
-        return category.id;
-    }
-
-    // ==================== Transaction Balance Operations ====================
-
-    revertTransactionBalance(t: Transaction) {
-        if (t.type === 'transfer' && t.toAccount) {
-            this.updateAccountBalance(t.account, t.amount); // Add back to source
-            this.updateAccountBalance(t.toAccount, -t.amount); // Deduct from dest
-        } else if (t.type === 'income') {
-            this.updateAccountBalance(t.account, -t.amount); // Deduct
-        } else {
-            this.updateAccountBalance(t.account, t.amount); // Add back
-        }
-    }
-
-    applyTransactionBalance(t: Transaction) {
-        if (t.type === 'transfer' && t.toAccount) {
-            this.updateAccountBalance(t.account, -t.amount);
-            this.updateAccountBalance(t.toAccount, t.amount);
-        } else if (t.type === 'income') {
-            this.updateAccountBalance(t.account, t.amount);
-        } else {
-            this.updateAccountBalance(t.account, -t.amount);
-        }
+    addCategory(name: string, type: 'income' | 'expense' | 'both') { this.categoryService.addCategory(name, type); }
+    updateCategory(id: string, name: string, type: 'income' | 'expense' | 'both') { this.categoryService.updateCategory(id, name, type); }
+    deleteCategory(id: string) { this.categoryService.deleteCategory(id); }
+    deleteAllCategories() { this.categoryService.deleteAllCategories(); }
+    deleteSelectedCategories(ids: string[]) { this.categoryService.deleteSelectedCategories(ids); }
+    addDefaultCategories() { return this.categoryService.addDefaultCategories(); }
+    getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>) {
+        return this.categoryService.getOrCreateCategory(categoryNameRaw, categoriesMap);
     }
 
     // ==================== Transaction Operations ====================
 
-    addTransaction(transaction: Omit<Transaction, 'id'>): Transaction {
-        const newTransaction: Transaction = {
-            ...transaction,
-            id: this.utilityService.generateId()
-        };
-        this.applyTransactionBalance(newTransaction);
-        this.transactions.update(t => [...t, newTransaction]);
-        this.saveTransactions();
-        this.saveAccounts();
-        return newTransaction;
-    }
-
+    revertTransactionBalance(t: Transaction) { this.transactionService.revertTransactionBalance(t); }
+    applyTransactionBalance(t: Transaction) { this.transactionService.applyTransactionBalance(t); }
+    addTransaction(transaction: Omit<Transaction, 'id'>) { return this.transactionService.addTransaction(transaction); }
     updateTransaction(id: string, transactionData: Omit<Transaction, 'id'>, oldTransaction: Transaction) {
-        const updatedTransaction: Transaction = {
-            ...transactionData,
-            id
-        };
-        this.revertTransactionBalance(oldTransaction);
-        this.applyTransactionBalance(updatedTransaction);
-        this.transactions.update(t => t.map(item => item.id === id ? updatedTransaction : item));
-        this.saveTransactions();
-        this.saveAccounts();
+        this.transactionService.updateTransaction(id, transactionData, oldTransaction);
     }
-
-    deleteTransaction(id: string) {
-        const transaction = this.transactions().find(t => t.id === id);
-        if (!transaction) return;
-
-        this.revertTransactionBalance(transaction);
-        this.transactions.update(t => t.filter(item => item.id !== id));
-        this.saveTransactions();
-        this.saveAccounts();
-    }
-
-    deleteAllTransactions() {
-        // Revert balances for all transactions
-        this.transactions().forEach(t => this.revertTransactionBalance(t));
-        // Clear transactions
-        this.transactions.set([]);
-        // Save changes
-        this.saveTransactions();
-        this.saveAccounts();
-    }
+    deleteTransaction(id: string) { this.transactionService.deleteTransaction(id); }
+    deleteAllTransactions() { this.transactionService.deleteAllTransactions(); }
 
     // ==================== Fixed Cost Operations ====================
 
-    getFixedCosts(): FixedCost[] {
-        return this.fixedCosts();
-    }
-
-    getFixedCostsSortedByCategory(): FixedCost[] {
-        return [...this.fixedCosts()].sort((a, b) => {
-            const categoryA = this.getCategoryFullName(a.category).toLowerCase();
-            const categoryB = this.getCategoryFullName(b.category).toLowerCase();
-            return categoryA.localeCompare(categoryB, 'de');
-        });
-    }
-
-    getFixedCostsTotal(): number {
-        return this.fixedCosts()
-            .filter(fc => fc.type === 'expense' && !fc.excludeFromTotal)
-            .reduce((sum, fc) => sum + fc.amount, 0);
-    }
-
-    getFixedIncomeTotal(): number {
-        return this.fixedCosts()
-            .filter(fc => fc.type === 'income' && !fc.excludeFromTotal)
-            .reduce((sum, fc) => sum + fc.amount, 0);
-    }
-
-    getFixedTransferTotal(): number {
-        return this.fixedCosts()
-            .filter(fc => fc.type === 'transfer' && !fc.excludeFromTotal)
-            .reduce((sum, fc) => sum + fc.amount, 0);
-    }
-
-    getExcludedFixedCostsTotal(): number {
-        return this.fixedCosts()
-            .filter(fc => fc.excludeFromTotal)
-            .reduce((sum, fc) => {
-                if (fc.type === 'income') return sum + fc.amount;
-                return sum - fc.amount;
-            }, 0);
-    }
-
-    getFixedIncomeCount(): number {
-        return this.fixedCosts().filter(fc => fc.type === 'income' && !fc.excludeFromTotal).length;
-    }
-
-    getFixedExpenseCount(): number {
-        return this.fixedCosts().filter(fc => fc.type === 'expense' && !fc.excludeFromTotal).length;
-    }
-
-    getFixedTransferCount(): number {
-        return this.fixedCosts().filter(fc => fc.type === 'transfer' && !fc.excludeFromTotal).length;
-    }
-
-    getExcludedFixedCostsCount(): number {
-        return this.fixedCosts().filter(fc => fc.excludeFromTotal).length;
-    }
+    getFixedCosts() { return this.fixedCostService.getFixedCosts(); }
+    getFixedCostsSortedByCategory() { return this.fixedCostService.getFixedCostsSortedByCategory(); }
+    getFixedCostsTotal() { return this.fixedCostService.getFixedCostsTotal(); }
+    getFixedIncomeTotal() { return this.fixedCostService.getFixedIncomeTotal(); }
+    getFixedTransferTotal() { return this.fixedCostService.getFixedTransferTotal(); }
+    getExcludedFixedCostsTotal() { return this.fixedCostService.getExcludedFixedCostsTotal(); }
+    getFixedIncomeCount() { return this.fixedCostService.getFixedIncomeCount(); }
+    getFixedExpenseCount() { return this.fixedCostService.getFixedExpenseCount(); }
+    getFixedTransferCount() { return this.fixedCostService.getFixedTransferCount(); }
+    getExcludedFixedCostsCount() { return this.fixedCostService.getExcludedFixedCostsCount(); }
+    getFixedCostsSortedByOrder() { return this.fixedCostService.getFixedCostsSortedByOrder(); }
+    getFixedCostGroupsSortedByOrder() { return this.fixedCostService.getFixedCostGroupsSortedByOrder(); }
 
     addFixedCost(data: {
         name: string;
@@ -474,42 +178,7 @@ export class BudgetStateService {
         groupId?: string;
         note?: string;
         excludeFromTotal?: boolean;
-    }) {
-        // Validate data to prevent empty/invalid entries
-        if (!data.name || data.name.trim() === '') {
-            console.warn('addFixedCost: Invalid data - missing name');
-            return;
-        }
-        if (isNaN(data.amount) || data.amount === null || data.amount === undefined) {
-            console.warn('addFixedCost: Invalid data - invalid amount');
-            return;
-        }
-        if (!data.category || !data.account) {
-            console.warn('addFixedCost: Invalid data - missing category or account');
-            return;
-        }
-
-        const currentFixedCosts = this.fixedCosts();
-        const maxOrder = currentFixedCosts.length > 0
-            ? Math.max(...currentFixedCosts.map(fc => fc.order))
-            : -1;
-
-        const fixedCost: FixedCost = {
-            id: this.utilityService.generateId(),
-            name: data.name.trim(),
-            amount: data.amount,
-            type: data.type,
-            category: data.category,
-            account: data.account,
-            toAccount: data.toAccount,
-            groupId: data.groupId,
-            order: maxOrder + 1,
-            note: data.note,
-            excludeFromTotal: data.excludeFromTotal
-        };
-        this.fixedCosts.update(fc => [...fc, fixedCost]);
-        this.saveFixedCosts();
-    }
+    }) { this.fixedCostService.addFixedCost(data); }
 
     updateFixedCost(id: string, data: {
         name: string;
@@ -521,449 +190,34 @@ export class BudgetStateService {
         groupId?: string;
         note?: string;
         excludeFromTotal?: boolean;
-    }) {
-        this.fixedCosts.update(fcs =>
-            fcs.map(fc => fc.id === id ? {
-                ...fc,
-                name: data.name,
-                amount: data.amount,
-                type: data.type,
-                category: data.category,
-                account: data.account,
-                toAccount: data.toAccount,
-                groupId: data.groupId,
-                note: data.note,
-                excludeFromTotal: data.excludeFromTotal
-            } : fc)
-        );
-        this.saveFixedCosts();
-    }
+    }) { this.fixedCostService.updateFixedCost(id, data); }
 
-    deleteFixedCost(id: string) {
-        this.fixedCosts.update(fc => fc.filter(item => item.id !== id));
-        this.saveFixedCosts();
-    }
-
-    copyTransactionToFixedCost(transaction: Transaction) {
-        const currentFixedCosts = this.fixedCosts();
-        const maxOrder = currentFixedCosts.length > 0
-            ? Math.max(...currentFixedCosts.map(fc => fc.order))
-            : -1;
-
-        const fixedCost: FixedCost = {
-            id: this.utilityService.generateId(),
-            name: transaction.description,
-            amount: transaction.amount,
-            type: transaction.type,
-            category: transaction.category,
-            account: transaction.account,
-            toAccount: transaction.toAccount,
-            order: maxOrder + 1,
-            note: transaction.note
-        };
-
-        this.fixedCosts.update(fc => [...fc, fixedCost]);
-        this.saveFixedCosts();
-    }
+    deleteFixedCost(id: string) { this.fixedCostService.deleteFixedCost(id); }
+    copyTransactionToFixedCost(transaction: Transaction) { this.fixedCostService.copyTransactionToFixedCost(transaction); }
+    reorderFixedCosts(fixedCostIds: string[]) { this.fixedCostService.reorderFixedCosts(fixedCostIds); }
 
     // ==================== Fixed Cost Group Operations ====================
 
-    addFixedCostGroup(name: string) {
-        const currentGroups = this.fixedCostGroups();
-        const maxOrder = currentGroups.length > 0
-            ? Math.max(...currentGroups.map(g => g.order))
-            : -1;
-
-        const group: FixedCostGroup = {
-            id: this.utilityService.generateId(),
-            name,
-            order: maxOrder + 1,
-            collapsed: false
-        };
-        this.fixedCostGroups.update(g => [...g, group]);
-        this.saveFixedCostGroups();
-        return group;
-    }
-
-    updateFixedCostGroup(id: string, name: string) {
-        this.fixedCostGroups.update(groups =>
-            groups.map(g => g.id === id ? { ...g, name } : g)
-        );
-        this.saveFixedCostGroups();
-    }
-
-    deleteFixedCostGroup(id: string) {
-        // Remove group and unassign fixed costs from this group
-        this.fixedCostGroups.update(g => g.filter(group => group.id !== id));
-        this.fixedCosts.update(fcs =>
-            fcs.map(fc => fc.groupId === id ? { ...fc, groupId: undefined } : fc)
-        );
-        this.saveFixedCostGroups();
-        this.saveFixedCosts();
-    }
-
-    toggleFixedCostGroupCollapsed(id: string) {
-        this.fixedCostGroups.update(groups =>
-            groups.map(g => g.id === id ? { ...g, collapsed: !g.collapsed } : g)
-        );
-        this.saveFixedCostGroups();
-    }
-
-    reorderFixedCosts(fixedCostIds: string[]) {
-        // Get the minimum order value of the items being reordered
-        const currentFixedCosts = this.fixedCosts();
-        const reorderedItems = fixedCostIds.map(id => currentFixedCosts.find(fc => fc.id === id)).filter(Boolean) as FixedCost[];
-        const minOrder = reorderedItems.length > 0 ? Math.min(...reorderedItems.map(fc => fc.order)) : 0;
-
-        this.fixedCosts.update(fcs => {
-            return fcs.map(fc => {
-                const newIndex = fixedCostIds.indexOf(fc.id);
-                if (newIndex !== -1) {
-                    return { ...fc, order: minOrder + newIndex };
-                }
-                return fc;
-            });
-        });
-        this.saveFixedCosts();
-    }
-
-    reorderFixedCostGroups(groupIds: string[]) {
-        this.fixedCostGroups.update(groups => {
-            return groups.map(g => {
-                const newOrder = groupIds.indexOf(g.id);
-                return newOrder !== -1 ? { ...g, order: newOrder } : g;
-            });
-        });
-        this.saveFixedCostGroups();
-    }
-
-    deleteAllFixedCostGroups() {
-        // Unassign all fixed costs from groups
-        this.fixedCosts.update(fcs =>
-            fcs.map(fc => ({ ...fc, groupId: undefined }))
-        );
-        // Clear all groups
-        this.fixedCostGroups.set([]);
-        this.saveFixedCostGroups();
-        this.saveFixedCosts();
-    }
-
-    deleteSelectedFixedCostGroups(ids: string[]) {
-        // Unassign fixed costs from selected groups
-        this.fixedCosts.update(fcs =>
-            fcs.map(fc => ids.includes(fc.groupId || '') ? { ...fc, groupId: undefined } : fc)
-        );
-        // Remove selected groups
-        this.fixedCostGroups.update(groups =>
-            groups.filter(g => !ids.includes(g.id))
-        );
-        this.saveFixedCostGroups();
-        this.saveFixedCosts();
-    }
-
-    getFixedCostsSortedByOrder(): FixedCost[] {
-        return [...this.fixedCosts()].sort((a, b) => a.order - b.order);
-    }
-
-    getFixedCostGroupsSortedByOrder(): FixedCostGroup[] {
-        return [...this.fixedCostGroups()].sort((a, b) => a.order - b.order);
-    }
+    addFixedCostGroup(name: string) { return this.fixedCostService.addFixedCostGroup(name); }
+    updateFixedCostGroup(id: string, name: string) { this.fixedCostService.updateFixedCostGroup(id, name); }
+    deleteFixedCostGroup(id: string) { this.fixedCostService.deleteFixedCostGroup(id); }
+    toggleFixedCostGroupCollapsed(id: string) { this.fixedCostService.toggleFixedCostGroupCollapsed(id); }
+    reorderFixedCostGroups(groupIds: string[]) { this.fixedCostService.reorderFixedCostGroups(groupIds); }
+    deleteAllFixedCostGroups() { this.fixedCostService.deleteAllFixedCostGroups(); }
+    deleteSelectedFixedCostGroups(ids: string[]) { this.fixedCostService.deleteSelectedFixedCostGroups(ids); }
 
     // ==================== Filtering ====================
 
-    onSearch(query: string) {
-        console.log('[StateService] onSearch called with query:', query);
-        this.searchQuery.set(query);
-        console.log('[StateService] searchQuery signal updated to:', this.searchQuery());
-    }
-
-    onMonthChange(date: Date) {
-        this.selectedMonth.set(date);
-    }
-
-    getFilteredTransactions(): Transaction[] {
-        console.log('[StateService] getFilteredTransactions called');
-        console.log('[StateService] Current searchQuery:', this.searchQuery());
-        console.log('[StateService] Total transactions:', this.transactions().length);
-        let filtered = this.transactions();
-
-        // Filter by Account
-        if (this.selectedAccountId()) {
-            filtered = filtered.filter(t =>
-                t.account === this.selectedAccountId() ||
-                (t.type === 'transfer' && t.toAccount === this.selectedAccountId())
-            );
-        }
-
-        // Filter by Search
-        const query = this.searchQuery().toLowerCase();
-        if (query) {
-            console.log('[StateService] Filtering with query:', query);
-            filtered = filtered.filter(t => {
-                // Search in title/description (with null check)
-                if (t.description && t.description.toLowerCase().includes(query)) return true;
-
-                // Search in amount (as string, with null check)
-                if (t.amount != null && t.amount.toString().includes(query)) return true;
-
-                // Search in formatted amount (with comma for German locale)
-                if (t.amount != null && t.amount.toFixed(2).replace('.', ',').includes(query)) return true;
-
-                // Search in category name
-                const categoryName = this.getCategoryFullName(t.category);
-                if (categoryName && categoryName.toLowerCase().includes(query)) return true;
-
-                // Search in account name
-                const account = this.getAccountById(t.account);
-                if (account && account.name && account.name.toLowerCase().includes(query)) return true;
-
-                // Search in date (multiple formats)
-                if (t.date) {
-                    const date = new Date(t.date);
-                    const day = date.getDate().toString().padStart(2, '0');
-                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const year = date.getFullYear().toString();
-                    const yearShort = year.slice(-2);
-
-                    // Match formats: DD.MM.YYYY, DD.MM.YY, YYYY-MM-DD, DD/MM/YYYY
-                    const dateFormats = [
-                        `${day}.${month}.${year}`,      // 12.12.2025
-                        `${day}.${month}.${yearShort}`, // 12.12.25
-                        t.date,                          // 2025-12-12 (original)
-                        `${day}/${month}/${year}`,       // 12/12/2025
-                    ];
-
-                    if (dateFormats.some(format => format.includes(query))) return true;
-                }
-
-                return false;
-            });
-            console.log('[StateService] Filtered to', filtered.length, 'transactions');
-        }
-        return filtered;
-    }
-
-    getSortedTransactions(): Transaction[] {
-        let filtered = this.getFilteredTransactions();
-
-        // Filter by Month
-        const currentMonth = this.selectedMonth().getMonth();
-        const currentYear = this.selectedMonth().getFullYear();
-
-        filtered = filtered.filter(t => {
-            const date = new Date(t.date);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        });
-
-        return filtered.sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-    }
+    onSearch(query: string) { this.filterService.onSearch(query); }
+    onMonthChange(date: Date) { this.filterService.onMonthChange(date); }
+    getFilteredTransactions() { return this.filterService.getFilteredTransactions(); }
+    getSortedTransactions() { return this.filterService.getSortedTransactions(); }
 
     // ==================== Import/Export ====================
 
-    importExtendedFormat(data: { transaktionen: any[], fixkosten: any[] }): { transactions: number, fixedCosts: number } {
-        const newTransactions: Transaction[] = [];
-        const newFixedCosts: FixedCost[] = [];
-
-        // Local maps for batch processing
-        const accountsMap = new Map<string, Account>();
-        const categoriesMap = new Map<string, Category>();
-        this.categories().forEach(c => categoriesMap.set(c.name, c));
-
-        // Process transactions
-        data.transaktionen.forEach(item => {
-            if (!item.datum || item.betrag === undefined || !item.beschreibung) return;
-
-            const amountRaw = parseFloat(item.betrag);
-            const dateRaw = item.datum.trim();
-            const description = item.beschreibung.trim();
-            const accountName = (item.konto || 'Unbekannt').trim();
-            const categoryNameRaw = (item.kategorie || 'Sonstiges').trim();
-
-            // Handle Account
-            let account = accountsMap.get(accountName);
-            if (!account) {
-                account = {
-                    id: this.utilityService.generateId(),
-                    name: accountName,
-                    balance: 0
-                };
-                accountsMap.set(accountName, account);
-            }
-            account.balance += amountRaw;
-
-            // Handle Category
-            const categoryId = this.getOrCreateCategory(categoryNameRaw, categoriesMap);
-
-            // Create Transaction
-            const amount = Math.abs(amountRaw);
-            const type: 'income' | 'expense' = amountRaw >= 0 ? 'income' : 'expense';
-
-            const transaction: Transaction = {
-                id: this.utilityService.generateId(),
-                type,
-                amount,
-                description,
-                category: categoryId,
-                account: account.id,
-                date: dateRaw.split('T')[0]
-            };
-
-            newTransactions.push(transaction);
-        });
-
-        // Process fixed costs
-        if (data.fixkosten && Array.isArray(data.fixkosten)) {
-            data.fixkosten.forEach(item => {
-                if (!item.name || item.betrag === undefined) return;
-
-                const amountRaw = parseFloat(item.betrag);
-                const name = item.name.trim();
-                const accountName = (item.konto || 'Unbekannt').trim();
-                const categoryNameRaw = (item.kategorie || 'Sonstiges').trim();
-
-                // Handle Account (ensure it exists)
-                let account = accountsMap.get(accountName);
-                if (!account) {
-                    account = {
-                        id: this.utilityService.generateId(),
-                        name: accountName,
-                        balance: 0
-                    };
-                    accountsMap.set(accountName, account);
-                }
-
-                // Handle Category
-                const categoryId = this.getOrCreateCategory(categoryNameRaw, categoriesMap);
-
-                // Create Fixed Cost
-                const amount = Math.abs(amountRaw);
-                const type: 'income' | 'expense' = amountRaw >= 0 ? 'income' : 'expense';
-
-                const fixedCost: FixedCost = {
-                    id: this.utilityService.generateId(),
-                    name,
-                    amount,
-                    type,
-                    category: categoryId,
-                    account: account.id,
-                    order: newFixedCosts.length
-                };
-
-                newFixedCosts.push(fixedCost);
-            });
-        }
-
-        // Save all data
-        this.transactions.set(newTransactions);
-        this.accounts.set(Array.from(accountsMap.values()));
-        this.categories.set(Array.from(categoriesMap.values()));
-        this.fixedCosts.set(newFixedCosts);
-
-        this.saveTransactions();
-        this.saveAccounts();
-        this.saveCategories();
-        this.saveFixedCosts();
-
-        return { transactions: newTransactions.length, fixedCosts: newFixedCosts.length };
+    importExtendedFormat(data: { transaktionen: any[], fixkosten: any[] }) {
+        return this.importExportService.importExtendedFormat(data);
     }
-
-    importLegacyFormat(jsonData: any[]): number {
-        const newTransactions: Transaction[] = [];
-
-        // Local maps for batch processing
-        const accountsMap = new Map<string, Account>();
-        const categoriesMap = new Map<string, Category>();
-        this.categories().forEach(c => categoriesMap.set(c.name, c));
-
-        jsonData.forEach(item => {
-            if (!item.datum || item.betrag === undefined || !item.beschreibung) return;
-
-            const amountRaw = parseFloat(item.betrag);
-            const dateRaw = item.datum.trim();
-            const description = item.beschreibung.trim();
-            const accountName = (item.konto || 'Unbekannt').trim();
-            const categoryNameRaw = (item.kategorie || 'Sonstiges').trim();
-
-            // Handle Account
-            let account = accountsMap.get(accountName);
-            if (!account) {
-                account = {
-                    id: this.utilityService.generateId(),
-                    name: accountName,
-                    balance: 0
-                };
-                accountsMap.set(accountName, account);
-            }
-            account.balance += amountRaw;
-
-            // Handle Category
-            const categoryId = this.getOrCreateCategory(categoryNameRaw, categoriesMap);
-
-            // Create Transaction
-            const amount = Math.abs(amountRaw);
-            const type: 'income' | 'expense' = amountRaw >= 0 ? 'income' : 'expense';
-
-            const transaction: Transaction = {
-                id: this.utilityService.generateId(),
-                type,
-                amount,
-                description,
-                category: categoryId,
-                account: account.id,
-                date: dateRaw.split('T')[0]
-            };
-
-            newTransactions.push(transaction);
-        });
-
-        if (newTransactions.length > 0) {
-            this.transactions.set(newTransactions);
-            this.accounts.set(Array.from(accountsMap.values()));
-            this.categories.set(Array.from(categoriesMap.values()));
-
-            this.saveTransactions();
-            this.saveAccounts();
-            this.saveCategories();
-        }
-
-        return newTransactions.length;
-    }
-
-    getExportData(): { version: number, exportDate: string, transaktionen: any[], fixkosten: any[] } {
-        const transactionsData = this.transactions().map(t => {
-            const account = this.getAccountById(t.account);
-            const category = this.getCategoryById(t.category);
-            const betrag = t.type === 'expense' ? -t.amount : t.amount;
-
-            return {
-                datum: t.date,
-                betrag: betrag,
-                beschreibung: t.description,
-                konto: account?.name || '',
-                kategorie: category?.name || ''
-            };
-        });
-
-        const fixedCostsData = this.fixedCosts().map(fc => {
-            const account = this.getAccountById(fc.account);
-            const category = this.getCategoryById(fc.category);
-            const betrag = fc.type === 'expense' ? -fc.amount : fc.amount;
-
-            return {
-                name: fc.name,
-                betrag: betrag,
-                konto: account?.name || '',
-                kategorie: category?.name || ''
-            };
-        });
-
-        return {
-            version: 2,
-            exportDate: new Date().toISOString(),
-            transaktionen: transactionsData,
-            fixkosten: fixedCostsData
-        };
-    }
+    importLegacyFormat(jsonData: any[]) { return this.importExportService.importLegacyFormat(jsonData); }
+    getExportData() { return this.importExportService.getExportData(); }
 }
