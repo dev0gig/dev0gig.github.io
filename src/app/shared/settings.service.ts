@@ -4,16 +4,21 @@ import { Injectable, signal } from '@angular/core';
     providedIn: 'root'
 })
 export class SettingsService {
-    // Signal to trigger settings modal opening
-    private settingsTrigger = signal(0);
+    // Signal to control global settings modal visibility
+    showGlobalSettings = signal(false);
 
-    // Observable for components to listen to
-    get trigger() {
-        return this.settingsTrigger.asReadonly();
+    // Method to open global settings modal
+    openSettings() {
+        this.showGlobalSettings.set(true);
     }
 
-    // Method to trigger settings modal
-    openSettings() {
-        this.settingsTrigger.update(v => v + 1);
+    // Method to close global settings modal
+    closeSettings() {
+        this.showGlobalSettings.set(false);
+    }
+
+    // Toggle global settings modal
+    toggleSettings() {
+        this.showGlobalSettings.update(v => !v);
     }
 }

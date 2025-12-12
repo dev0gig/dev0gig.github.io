@@ -179,15 +179,5 @@ export class JournalPage {
                 this.showSettingsModal.set(false);
             }
         });
-
-        // Listen to settings service trigger - only react to NEW changes (not existing trigger value)
-        let previousTrigger = this.settingsService.trigger();
-        effect(() => {
-            const trigger = this.settingsService.trigger();
-            if (trigger > previousTrigger) {
-                this.showSettingsModal.set(true);
-                previousTrigger = trigger;
-            }
-        });
     }
 }

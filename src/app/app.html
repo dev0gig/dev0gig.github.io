@@ -3,3 +3,8 @@
 <div class="fade-in">
     <router-outlet></router-outlet>
 </div>
+
+<!-- Global Settings Modal -->
+@if (settingsService.showGlobalSettings()) {
+<app-global-settings-modal (close)="settingsService.closeSettings()"></app-global-settings-modal>
+}

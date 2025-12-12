@@ -152,16 +152,6 @@ export class BudgetPage {
                 this.showSettingsModal.set(false);
             }
         });
-
-        // Listen to settings service trigger
-        let previousTrigger = this.settingsService.trigger();
-        effect(() => {
-            const trigger = this.settingsService.trigger();
-            if (trigger > previousTrigger) {
-                this.showSettingsModal.set(true);
-                previousTrigger = trigger;
-            }
-        });
     }
 
     // ==================== Passthrough methods for template ====================

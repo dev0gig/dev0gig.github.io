@@ -1,16 +1,13 @@
-import { Component, signal, inject, computed, effect } from '@angular/core';
+import { Component, inject, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
-import { BookmarkService } from '../../shared/bookmark.service';
-import { JournalService } from '../journal/journal';
-import { ThemeService, ACCENT_COLORS } from '../../shared/theme.service';
-import { SidebarService } from '../../shared/sidebar.service';
-import { SettingsService } from '../../shared/settings.service';
 
-interface ProjectSelection {
+import { ThemeService, ACCENT_COLORS } from '../theme.service';
+import { BookmarkService } from '../bookmark.service';
+import { JournalService } from '../../features/journal/journal';
+
+export interface ProjectSelection {
     bookmarks: boolean;
     journal: boolean;
     budget: boolean;
@@ -19,27 +16,20 @@ interface ProjectSelection {
 }
 
 @Component({
-    selector: 'app-dashboard',
+    selector: 'app-global-settings-modal',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule, AppsLauncher],
-    templateUrl: './dashboard.html',
-    styleUrl: './dashboard.css'
+    imports: [CommonModule, FormsModule],
+    templateUrl: './global-settings-modal.html'
 })
-// Dashboard component with apps modal
-export class Dashboard {
+export class GlobalSettingsModal {
+    @Output() close = new EventEmitter<void>();
+
+    themeService = inject(ThemeService);
     bookmarkService = inject(BookmarkService);
     journalService = inject(JournalService);
-    themeService = inject(ThemeService);
-    sidebarService = inject(SidebarService);
-    settingsService = inject(SettingsService);
-    router = inject(Router);
-    isOnline = signal(true);
-    showSettingsModal = signal(false);
 
-    // Accent colors for theme selection
     accentColors = ACCENT_COLORS;
 
-    // Project selection for import/export
     projectSelection = signal<ProjectSelection>({
         bookmarks: true,
         journal: true,
@@ -48,183 +38,9 @@ export class Dashboard {
         recentlyPlayed: true
     });
 
-    newBookmarkUrl = '';
-    newBookmarkName = '';
-    searchTerm = signal('');
-    googleSearchTerm = '';
-
-    filteredBookmarks = computed(() => {
-        const term = this.searchTerm().toLowerCase();
-        const bookmarks = this.bookmarkService.bookmarks();
-
-        if (!term) return bookmarks;
-
-        return bookmarks.filter(b =>
-            b.name.toLowerCase().includes(term) ||
-            b.url.toLowerCase().includes(term)
-        );
-    });
-
-    onBookmarkClick() {
-        if (this.searchTerm()) {
-            this.searchTerm.set('');
-        }
+    onClose() {
+        this.close.emit();
     }
-
-    searchGoogle(event: Event) {
-        event.preventDefault();
-        if (this.googleSearchTerm) {
-            const query = encodeURIComponent(this.googleSearchTerm);
-            window.open(`https://www.google.com/search?q=${query}`, '_blank');
-            this.googleSearchTerm = '';
-        }
-    }
-
-    toggleSettingsModal() {
-        this.showSettingsModal.update(v => !v);
-    }
-
-    toggleRightSidebar() {
-        this.sidebarService.toggleRight();
-    }
-
-    isEditMode = signal(false);
-    editingBookmark: { id: string, name: string, url: string } | null = null;
-
-    toggleEditMode() {
-        this.isEditMode.update(v => !v);
-        this.editingBookmark = null; // Reset editing state when toggling mode
-    }
-
-    startEditingBookmark(bookmark: any) {
-        this.editingBookmark = { ...bookmark };
-    }
-
-    saveEditedBookmark() {
-        if (this.editingBookmark && this.editingBookmark.name && this.editingBookmark.url) {
-            this.bookmarkService.updateBookmark(this.editingBookmark.id, {
-                name: this.editingBookmark.name,
-                url: this.editingBookmark.url
-            });
-            this.editingBookmark = null;
-        }
-    }
-
-    cancelEditingBookmark() {
-        this.editingBookmark = null;
-    }
-
-    addBookmark() {
-        if (this.newBookmarkUrl && this.newBookmarkName) {
-            this.bookmarkService.addBookmark(this.newBookmarkUrl, this.newBookmarkName);
-            this.newBookmarkUrl = '';
-            this.newBookmarkName = '';
-        }
-    }
-
-    navigateToJournal() {
-        this.router.navigate(['/journal']);
-    }
-
-    navigateToBudget() {
-        this.router.navigate(['/budget']);
-    }
-
-    navigateToAudioNotes() {
-        this.router.navigate(['/audio-notes']);
-    }
-
-    exportBookmarks() {
-        const bookmarks = this.bookmarkService.bookmarks();
-        const date = Math.floor(Date.now() / 1000);
-
-        let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
-<!-- This is an automatically generated file.
-     It will be read and overwritten.
-     DO NOT EDIT! -->
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-<TITLE>Bookmarks</TITLE>
-<H1>Bookmarks</H1>
-<DL><p>
-    <DT><H3 ADD_DATE="${date}" LAST_MODIFIED="${date}">dev0gig Dashboard</H3>
-    <DL><p>
-`;
-
-        bookmarks.forEach(b => {
-            const addDate = Math.floor(b.createdAt / 1000);
-            html += `        <DT><A HREF="${b.url}" ADD_DATE="${addDate}">${b.name}</A>\n`;
-        });
-
-        html += `    </DL><p>
-</DL><p>`;
-
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `bookmarks_${new Date().toISOString().split('T')[0]}.html`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    triggerImport() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.html';
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.processImportFile(file);
-            }
-        };
-        input.click();
-    }
-
-    private processImportFile(file: File) {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-            const content = e.target.result;
-            this.parseAndImportBookmarks(content);
-        };
-        reader.readAsText(file);
-    }
-
-    private parseAndImportBookmarks(html: string) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = doc.getElementsByTagName('a');
-        const bookmarksToImport: { url: string; name: string; createdAt?: number }[] = [];
-
-        for (let i = 0; i < links.length; i++) {
-            const link = links[i];
-            const url = link.href;
-            const name = link.textContent || url;
-            const addDateStr = link.getAttribute('add_date');
-            let createdAt = Date.now();
-
-            if (addDateStr) {
-                try {
-                    // Chrome exports timestamps in seconds, JS uses milliseconds
-                    createdAt = parseInt(addDateStr) * 1000;
-                } catch (e) {
-                    console.warn('Invalid date in bookmark', e);
-                }
-            }
-
-            if (url && !url.startsWith('place:')) { // Ignore smart bookmarks
-                bookmarksToImport.push({ url, name, createdAt });
-            }
-        }
-
-        if (bookmarksToImport.length > 0) {
-            this.bookmarkService.importBookmarks(bookmarksToImport);
-            this.toggleSettingsModal(); // Close modal on success
-            alert(`${bookmarksToImport.length} Lesezeichen erfolgreich importiert.`);
-        } else {
-            alert('Keine Lesezeichen in der Datei gefunden.');
-        }
-    }
-
 
     toggleProjectSelection(project: keyof ProjectSelection) {
         this.projectSelection.update(sel => ({
@@ -270,7 +86,6 @@ export class Dashboard {
         const zip = new JSZip();
         const exportDate = new Date().toISOString();
 
-        // Export Bookmarks as separate JSON file
         if (selection.bookmarks) {
             const bookmarks = this.bookmarkService.bookmarks();
             const bookmarksData = {
@@ -282,7 +97,6 @@ export class Dashboard {
             zip.file('bookmarks.json', JSON.stringify(bookmarksData, null, 2));
         }
 
-        // Export Journal as separate JSON file
         if (selection.journal) {
             const journalEntries = this.journalService.entries();
             const journalData = {
@@ -294,7 +108,6 @@ export class Dashboard {
             zip.file('journal.json', JSON.stringify(journalData, null, 2));
         }
 
-        // Export Budget as separate JSON file
         if (selection.budget) {
             const transactions = localStorage.getItem('mybudget_transactions');
             const accounts = localStorage.getItem('mybudget_accounts');
@@ -317,7 +130,6 @@ export class Dashboard {
             zip.file('budget.json', JSON.stringify(budgetData, null, 2));
         }
 
-        // Export AudioNotes as separate JSON file
         if (selection.audioNotes) {
             const audioNotes = localStorage.getItem('audio_notes_entries');
             const audioNotesData = {
@@ -329,7 +141,6 @@ export class Dashboard {
             zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
         }
 
-        // Export RecentlyPlayed (YouTube URL History) as separate JSON file
         if (selection.recentlyPlayed) {
             const urlHistory = localStorage.getItem('youtube_url_history');
             const recentlyPlayedData = {
@@ -341,7 +152,6 @@ export class Dashboard {
             zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
         }
 
-        // Generate and download
         const blob = await zip.generateAsync({ type: 'blob' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -382,24 +192,19 @@ export class Dashboard {
             const importedProjects: string[] = [];
             const projectsToImport: string[] = [];
 
-            // Check which files exist in the ZIP
             const bookmarksFile = zip.file('bookmarks.json');
             const journalFile = zip.file('journal.json');
             const budgetFile = zip.file('budget.json');
             const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
-
-            // Also check for legacy format (dashboard_backup.json)
             const legacyFile = zip.file('dashboard_backup.json');
 
-            // Determine which projects can be imported
             if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
             if (selection.journal && journalFile) projectsToImport.push('Journal');
             if (selection.budget && budgetFile) projectsToImport.push('Budget');
             if (selection.audioNotes && audioNotesFile) projectsToImport.push('AudioNotes');
             if (selection.recentlyPlayed && recentlyPlayedFile) projectsToImport.push('Zuletzt gespielt');
 
-            // If no new format files found, try legacy format
             if (projectsToImport.length === 0 && legacyFile) {
                 await this.processLegacyImport(legacyFile, selection);
                 return;
@@ -414,7 +219,6 @@ export class Dashboard {
                 return;
             }
 
-            // Import Bookmarks
             if (selection.bookmarks && bookmarksFile) {
                 const content = await bookmarksFile.async('string');
                 const bookmarksData = JSON.parse(content);
@@ -426,7 +230,6 @@ export class Dashboard {
                 importedProjects.push('Lesezeichen');
             }
 
-            // Import Journal
             if (selection.journal && journalFile) {
                 const content = await journalFile.async('string');
                 const journalData = JSON.parse(content);
@@ -438,7 +241,6 @@ export class Dashboard {
                 importedProjects.push('Journal');
             }
 
-            // Import Budget
             if (selection.budget && budgetFile) {
                 const content = await budgetFile.async('string');
                 const budgetData = JSON.parse(content);
@@ -461,7 +263,6 @@ export class Dashboard {
                 importedProjects.push('Budget');
             }
 
-            // Import AudioNotes
             if (selection.audioNotes && audioNotesFile) {
                 const content = await audioNotesFile.async('string');
                 const audioNotesData = JSON.parse(content);
@@ -473,7 +274,6 @@ export class Dashboard {
                 importedProjects.push('AudioNotes');
             }
 
-            // Import RecentlyPlayed (YouTube URL History)
             if (selection.recentlyPlayed && recentlyPlayedFile) {
                 const content = await recentlyPlayedFile.async('string');
                 const recentlyPlayedData = JSON.parse(content);
@@ -481,10 +281,8 @@ export class Dashboard {
                 importedProjects.push('Zuletzt gespielt');
             }
 
-            this.toggleSettingsModal();
+            this.onClose();
             alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
-
-            // Reload to apply changes
             window.location.reload();
         } catch (e) {
             console.error('Import failed', e);
@@ -517,7 +315,6 @@ export class Dashboard {
             return;
         }
 
-        // Import Bookmarks
         if (selection.bookmarks && data.projects.bookmarks) {
             const bookmarks = data.projects.bookmarks.map((b: any) => ({
                 ...b,
@@ -527,7 +324,6 @@ export class Dashboard {
             importedProjects.push('Lesezeichen');
         }
 
-        // Import Journal
         if (selection.journal && data.projects.journal) {
             const entries = data.projects.journal.map((e: any) => ({
                 ...e,
@@ -537,7 +333,6 @@ export class Dashboard {
             importedProjects.push('Journal');
         }
 
-        // Import Budget
         if (selection.budget && data.projects.budget) {
             const budget = data.projects.budget;
             if (budget.transactions) {
@@ -558,10 +353,99 @@ export class Dashboard {
             importedProjects.push('Budget');
         }
 
-        this.toggleSettingsModal();
+        this.onClose();
         alert(`Import erfolgreich (Legacy-Format)!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
-
         window.location.reload();
+    }
+
+    exportBookmarks() {
+        const bookmarks = this.bookmarkService.bookmarks();
+        const date = Math.floor(Date.now() / 1000);
+
+        let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<!-- This is an automatically generated file.
+     It will be read and overwritten.
+     DO NOT EDIT! -->
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+    <DT><H3 ADD_DATE="${date}" LAST_MODIFIED="${date}">dev0gig Dashboard</H3>
+    <DL><p>
+`;
+
+        bookmarks.forEach(b => {
+            const addDate = Math.floor(b.createdAt / 1000);
+            html += `        <DT><A HREF="${b.url}" ADD_DATE="${addDate}">${b.name}</A>\n`;
+        });
+
+        html += `    </DL><p>
+</DL><p>`;
+
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bookmarks_${new Date().toISOString().split('T')[0]}.html`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    triggerBookmarkImport() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.html';
+        input.onchange = (e: any) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.processBookmarkImportFile(file);
+            }
+        };
+        input.click();
+    }
+
+    private processBookmarkImportFile(file: File) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            const content = e.target.result;
+            this.parseAndImportBookmarks(content);
+        };
+        reader.readAsText(file);
+    }
+
+    private parseAndImportBookmarks(html: string) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = doc.getElementsByTagName('a');
+        const bookmarksToImport: { url: string; name: string; createdAt?: number }[] = [];
+
+        for (let i = 0; i < links.length; i++) {
+            const link = links[i];
+            const url = link.href;
+            const name = link.textContent || url;
+            const addDateStr = link.getAttribute('add_date');
+            let createdAt = Date.now();
+
+            if (addDateStr) {
+                try {
+                    createdAt = parseInt(addDateStr) * 1000;
+                } catch (e) {
+                    console.warn('Invalid date in bookmark', e);
+                }
+            }
+
+            if (url && !url.startsWith('place:')) {
+                bookmarksToImport.push({ url, name, createdAt });
+            }
+        }
+
+        if (bookmarksToImport.length > 0) {
+            this.bookmarkService.importBookmarks(bookmarksToImport);
+            this.onClose();
+            alert(`${bookmarksToImport.length} Lesezeichen erfolgreich importiert.`);
+        } else {
+            alert('Keine Lesezeichen in der Datei gefunden.');
+        }
     }
 
     deleteAllData() {
@@ -583,22 +467,18 @@ export class Dashboard {
             return;
         }
 
-        // Double confirmation for safety
         if (!confirm('Sind Sie ABSOLUT sicher? Alle ausgewählten Daten werden unwiderruflich gelöscht!')) {
             return;
         }
 
-        // Delete Bookmarks
         if (selection.bookmarks) {
             localStorage.removeItem('dev0gig_bookmarks');
         }
 
-        // Delete Journal
         if (selection.journal) {
             localStorage.removeItem('terminal_journal_entries');
         }
 
-        // Delete Budget
         if (selection.budget) {
             localStorage.removeItem('mybudget_transactions');
             localStorage.removeItem('mybudget_accounts');
@@ -607,27 +487,16 @@ export class Dashboard {
             localStorage.removeItem('mybudget_fixedcostgroups');
         }
 
-        // Delete AudioNotes
         if (selection.audioNotes) {
             localStorage.removeItem('audio_notes_entries');
         }
 
-        // Delete RecentlyPlayed (YouTube URL History)
         if (selection.recentlyPlayed) {
             localStorage.removeItem('youtube_url_history');
         }
 
-        this.toggleSettingsModal();
+        this.onClose();
         alert(`Gelöscht: ${projectsToDelete.join(', ')}\n\nDie Seite wird neu geladen.`);
         window.location.reload();
-    }
-
-    constructor() {
-        // Close settings modal on route change
-        this.router.events.subscribe(() => {
-            if (this.showSettingsModal()) {
-                this.showSettingsModal.set(false);
-            }
-        });
     }
 }

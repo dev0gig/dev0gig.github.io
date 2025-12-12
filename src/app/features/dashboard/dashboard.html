@@ -15,6 +15,12 @@
                         {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
                     </span>
                 </div>
+                <!-- Local Settings Button -->
+                <button (click)="toggleSettingsModal()"
+                    class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
+                    title="Dashboard Settings">
+                    <span class="material-symbols-sharp text-xl">settings</span>
+                </button>
                 <!-- Right Sidebar Toggle -->
                 <button (click)="toggleRightSidebar()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
@@ -50,144 +56,38 @@
             </div>
         </div>
 
-        <!-- Settings Modal -->
+        <!-- Local Settings Modal (Bookmark Import/Export) -->
         <div *ngIf="showSettingsModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleSettingsModal()">
             </div>
             <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 max-h-[90vh] overflow-y-auto accent-glow">
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Settings</h2>
+                    <h2 class="text-lg font-bold text-dash-text">Dashboard Settings</h2>
                     <button (click)="toggleSettingsModal()"
                         class="text-dash-text-dim hover:text-white transition-colors">
                         <span class="material-symbols-sharp">close</span>
                     </button>
                 </div>
 
-                <!-- Project Selection -->
+                <!-- Bookmark Import/Export -->
                 <div class="flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-bold text-dash-text">Projekte auswählen</h3>
-                        <div class="flex gap-2">
-                            <button (click)="selectAllProjects()"
-                                class="text-xs text-dash-accent hover:text-dash-accent/80 transition-colors">
-                                Alle
-                            </button>
-                            <span class="text-dash-text-dim">|</span>
-                            <button (click)="deselectAllProjects()"
-                                class="text-xs text-dash-text-dim hover:text-white transition-colors">
-                                Keine
-                            </button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-5 gap-2">
-                        <button (click)="toggleProjectSelection('bookmarks')"
-                            [class]="projectSelection().bookmarks ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
-                            <span class="material-symbols-sharp text-xl">bookmarks</span>
-                            <span class="text-xs font-medium">Lesezeichen</span>
-                        </button>
-                        <button (click)="toggleProjectSelection('journal')"
-                            [class]="projectSelection().journal ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
-                            <span class="material-symbols-sharp text-xl">description</span>
-                            <span class="text-xs font-medium">Journal</span>
-                        </button>
-                        <button (click)="toggleProjectSelection('budget')"
-                            [class]="projectSelection().budget ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
-                            <span class="material-symbols-sharp text-xl">payments</span>
-                            <span class="text-xs font-medium">Budget</span>
-                        </button>
-                        <button (click)="toggleProjectSelection('audioNotes')"
-                            [class]="projectSelection().audioNotes ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
-                            <span class="material-symbols-sharp text-xl">mic</span>
-                            <span class="text-xs font-medium">AudioNotes</span>
-                        </button>
-                        <button (click)="toggleProjectSelection('recentlyPlayed')"
-                            [class]="projectSelection().recentlyPlayed ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
-                            <span class="material-symbols-sharp text-xl">history</span>
-                            <span class="text-xs font-medium">Zuletzt</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="border-t border-dash-border"></div>
-
-                <!-- Accent Color Selection -->
-                <div class="flex flex-col gap-3">
-                    <h3 class="text-sm font-bold text-dash-text">Akzentfarbe</h3>
-                    <p class="text-xs text-dash-text-dim">
-                        Wählen Sie eine Akzentfarbe für die Benutzeroberfläche.
-                    </p>
-                    <div class="grid grid-cols-7 gap-2">
-                        <button *ngFor="let color of accentColors" (click)="themeService.setAccentColor(color)"
-                            [style.background-color]="color.value"
-                            [class]="themeService.currentAccentColor().value === color.value ? 'w-full aspect-square rounded-sm ring-2 ring-white ring-offset-2 ring-offset-dash-card transition-all hover:scale-110' : 'w-full aspect-square rounded-sm transition-all hover:scale-110 hover:ring-1 hover:ring-white/50'"
-                            [title]="color.name">
-                        </button>
-                    </div>
-                    <div class="text-xs text-dash-text-dim">
-                        Aktuelle Farbe: <span class="font-medium text-dash-text">{{
-                            themeService.currentAccentColor().name }}</span>
-                    </div>
-                </div>
-
-                <div class="border-t border-dash-border"></div>
-
-                <!-- Backup / Restore Section -->
-                <div class="flex flex-col gap-3">
-                    <h3 class="text-sm font-bold text-dash-text">Backup & Wiederherstellung</h3>
-                    <p class="text-xs text-dash-text-dim">
-                        Exportieren oder importieren Sie Daten für die ausgewählten Projekte als ZIP-Datei.
-                    </p>
-                    <div class="flex gap-2">
-                        <button (click)="exportAllData()" [disabled]="!hasAnyProjectSelected()"
-                            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-dash-border">
-                            <span class="material-symbols-sharp">download</span>
-                            Exportieren
-                        </button>
-                        <button (click)="triggerImportAll()" [disabled]="!hasAnyProjectSelected()"
-                            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-dash-border">
-                            <span class="material-symbols-sharp">upload</span>
-                            Importieren
-                        </button>
-                    </div>
-                </div>
-
-                <div class="border-t border-dash-border"></div>
-
-                <!-- Lesezeichen Import (Chrome HTML) -->
-                <div class="flex flex-col gap-2">
                     <h3 class="text-sm font-bold text-dash-text">Lesezeichen (Chrome HTML)</h3>
+                    <p class="text-xs text-dash-text-dim">
+                        Exportieren oder importieren Sie Lesezeichen im Chrome HTML-Format.
+                    </p>
                     <div class="flex gap-2">
                         <button (click)="exportBookmarks()"
-                            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
                             <span class="material-symbols-sharp">download</span>
                             HTML Export
                         </button>
                         <button (click)="triggerImport()"
-                            class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
+                            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-dash-bg border border-dash-border hover:border-dash-accent text-dash-text rounded-sm transition-colors text-sm">
                             <span class="material-symbols-sharp">upload</span>
                             HTML Import
                         </button>
                     </div>
-                    <p class="text-xs text-dash-text-dim">
-                        Unterstützt den Import von Chrome-Lesezeichen (HTML).
-                    </p>
-                </div>
-
-                <div class="border-t border-dash-border"></div>
-
-                <!-- Danger Zone -->
-                <div class="flex flex-col gap-3">
-                    <h3 class="text-sm font-bold text-red-500">Gefahrenzone</h3>
-                    <p class="text-xs text-dash-text-dim">
-                        Löschen Sie alle Daten für die ausgewählten Projekte. Diese Aktion kann nicht rückgängig gemacht
-                        werden!
-                    </p>
-                    <button (click)="deleteAllData()" [disabled]="!hasAnyProjectSelected()"
-                        class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-sm transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500/10">
-                        <span class="material-symbols-sharp">delete_forever</span>
-                        Ausgewählte Daten löschen
-                    </button>
                 </div>
             </div>
         </div>
