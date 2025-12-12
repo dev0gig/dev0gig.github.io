@@ -114,13 +114,13 @@
             </app-budget-sidebar>
         </aside>
 
-        <!-- Unified Budget Entry Modal -->
-        @if (showBudgetEntryModal()) {
-        <app-budget-entry-modal [mode]="entryModalMode()" [editingTransaction]="editingTransaction()"
-            [editingFixedCost]="editingFixedCost()" [prefillFromFixedCost]="prefillFromFixedCost()"
-            [accounts]="accounts()" [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()"
-            (close)="closeBudgetEntryModal()" (submitEntry)="onBudgetEntryModalSubmit($event)">
-        </app-budget-entry-modal>
+        <!-- Transaction Modal -->
+        @if (showTransactionModal()) {
+        <app-transaction-modal [editingTransaction]="editingTransaction()" [prefillFromFixedCost]="prefillFromFixedCost()"
+            [accounts]="accounts()" [categories]="categories()"
+            (close)="toggleTransactionModal(); editingTransaction.set(null); prefillFromFixedCost.set(null)"
+            (submit)="onTransactionModalSubmit($event)">
+        </app-transaction-modal>
         }
 
         <!-- Account Modal -->

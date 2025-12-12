@@ -21,10 +21,8 @@ import {
     AccountModalComponent,
     CategoryModalComponent,
     FixedCostModalComponent,
-    SettingsModalComponent,
-    BudgetEntryModalComponent
+    SettingsModalComponent
 } from './components';
-import { BudgetEntryMode, BudgetEntrySubmitData } from './components/modals/budget-entry-modal/budget-entry-modal';
 import { FixedCostGroupModalComponent } from './components/modals/fixed-cost-group-modal/fixed-cost-group-modal';
 
 @Component({
@@ -44,8 +42,7 @@ import { FixedCostGroupModalComponent } from './components/modals/fixed-cost-gro
         CategoryModalComponent,
         FixedCostModalComponent,
         SettingsModalComponent,
-        FixedCostGroupModalComponent,
-        BudgetEntryModalComponent
+        FixedCostGroupModalComponent
     ],
     templateUrl: './budget-page.html',
     styleUrls: ['./budget-page.css']
@@ -72,8 +69,7 @@ export class BudgetPage {
     showSettingsModal = signal(false);
     showFixedCostModal = signal(false);
     showFixedCostGroupModal = signal(false);
-    showBudgetEntryModal = signal(false);
-    entryModalMode = signal<BudgetEntryMode>('transaction');
+
     settingsView = signal<'main' | 'accounts' | 'categories'>('main');
     viewMode = signal<'transactions' | 'statistics' | 'fixedcosts'>('transactions');
 
@@ -224,103 +220,38 @@ export class BudgetPage {
         this.currentTransactionType.set(type);
     }
 
-    // ==================== Unified Budget Entry Modal ====================
-
-    openBudgetEntryModal(mode: BudgetEntryMode) {
-        this.entryModalMode.set(mode);
-        this.showBudgetEntryModal.set(true);
-    }
+    // ==================== Transaction Modal Methods ====================
 
     openNewTransactionModal() {
         this.editingTransaction.set(null);
         this.prefillFromFixedCost.set(null);
-        this.openBudgetEntryModal('transaction');
+        this.showTransactionModal.set(true);
     }
 
     openEditTransactionModal(transaction: Transaction) {
         this.editingTransaction.set(transaction);
         this.prefillFromFixedCost.set(null);
-        this.openBudgetEntryModal('transaction');
+        this.currentTransactionType.set(transaction.type);
+        this.showTransactionModal.set(true);
     }
 
     openNewFixedCostModal() {
         this.editingFixedCost.set(null);
-        this.openBudgetEntryModal('fixedCost');
+        this.showFixedCostModal.set(true);
     }
 
     openEditFixedCostModalUnified(fixedCost: FixedCost) {
         this.editingFixedCost.set(fixedCost);
-        this.openBudgetEntryModal('fixedCost');
+        this.showFixedCostModal.set(true);
     }
 
     openBookFixedCostModal(fixedCost: FixedCost) {
         this.prefillFromFixedCost.set(fixedCost);
         this.editingTransaction.set(null);
-        this.openBudgetEntryModal('bookFixedCost');
+        this.currentTransactionType.set(fixedCost.type);
+        this.showTransactionModal.set(true);
     }
 
-    closeBudgetEntryModal() {
-        this.showBudgetEntryModal.set(false);
-        this.editingTransaction.set(null);
-        this.editingFixedCost.set(null);
-        this.prefillFromFixedCost.set(null);
-    }
-
-    onBudgetEntryModalSubmit(data: BudgetEntrySubmitData) {
-        const mode = this.entryModalMode();
-
-        if (mode === 'fixedCost') {
-            // Handle Fixed Cost creation/update
-            const fixedCostData = {
-                name: data.name,
-                amount: data.amount,
-                type: data.type,
-                category: data.category,
-                account: data.account,
-                toAccount: data.toAccount,
-                groupId: data.groupId,
-                note: data.note,
-                excludeFromTotal: data.excludeFromTotal
-            };
-
-            if (this.editingFixedCost()) {
-                this.stateService.updateFixedCost(this.editingFixedCost()!.id, fixedCostData);
-                this.showToast('Fixkosten aktualisiert');
-            } else {
-                this.stateService.addFixedCost(fixedCostData);
-                this.showToast('Fixkosten hinzugefügt');
-            }
-        } else {
-            // Handle Transaction creation/update (transaction or bookFixedCost mode)
-            const transactionData = {
-                type: data.type,
-                amount: data.amount,
-                description: data.name,
-                category: data.category,
-                account: data.account,
-                toAccount: data.toAccount,
-                date: data.date!
-            };
-
-            const isEditing = !!this.editingTransaction();
-            const isFromFixedCost = mode === 'bookFixedCost';
-
-            if (isEditing) {
-                const oldTransaction = this.editingTransaction()!;
-                this.stateService.updateTransaction(oldTransaction.id, transactionData, oldTransaction);
-                this.showToast('Transaktion aktualisiert');
-            } else {
-                this.stateService.addTransaction(transactionData);
-                if (isFromFixedCost) {
-                    this.showToast(`Fixkosten "${data.name}" gebucht`);
-                } else {
-                    this.showToast('Transaktion hinzugefügt');
-                }
-            }
-        }
-
-        this.closeBudgetEntryModal();
-    }
 
 
     // ==================== Account Methods ====================

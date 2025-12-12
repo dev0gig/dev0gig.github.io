@@ -11,4 +11,3 @@ export { AccountModalComponent } from './modals/account-modal/account-modal';
 export { CategoryModalComponent } from './modals/category-modal/category-modal';
 export { FixedCostModalComponent } from './modals/fixed-cost-modal/fixed-cost-modal';
 export { SettingsModalComponent } from './modals/settings-modal/settings-modal';
-export { BudgetEntryModalComponent } from './modals/budget-entry-modal/budget-entry-modal';

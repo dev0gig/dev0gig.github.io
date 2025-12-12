@@ -36,7 +36,25 @@ export class BudgetStateService {
         const fixedCostGroupsData = localStorage.getItem('mybudget_fixedcostgroups');
 
         if (transactionsData) this.transactions.set(JSON.parse(transactionsData));
-        if (accountsData) this.accounts.set(JSON.parse(accountsData));
+        if (accountsData) {
+            let parsedAccounts: Account[] = JSON.parse(accountsData);
+
+            // Filter out invalid accounts (missing name or invalid balance)
+            const originalCount = parsedAccounts.length;
+            parsedAccounts = parsedAccounts.filter(a =>
+                a.name && a.name.trim() !== '' &&
+                !isNaN(a.balance) && a.balance !== null && a.balance !== undefined
+            );
+            const removedCount = originalCount - parsedAccounts.length;
+            if (removedCount > 0) {
+                console.warn(`loadData: Removed ${removedCount} invalid account entries`);
+                // Save cleaned accounts back to localStorage
+                this.accounts.set(parsedAccounts);
+                this.saveAccounts();
+            } else {
+                this.accounts.set(parsedAccounts);
+            }
+        }
         if (categoriesData) this.categories.set(JSON.parse(categoriesData));
         if (fixedCostsData) {
             let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
@@ -133,9 +151,19 @@ export class BudgetStateService {
     }
 
     addAccount(name: string, balance: number) {
+        // Validate data to prevent empty/invalid entries
+        if (!name || name.trim() === '') {
+            console.warn('addAccount: Invalid data - missing name');
+            return;
+        }
+        if (isNaN(balance) || balance === null || balance === undefined) {
+            console.warn('addAccount: Invalid data - invalid balance');
+            return;
+        }
+
         const account: Account = {
             id: this.utilityService.generateId(),
-            name,
+            name: name.trim(),
             balance
         };
         this.accounts.update(a => [...a, account]);
