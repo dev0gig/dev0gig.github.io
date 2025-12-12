@@ -612,16 +612,29 @@ export class BudgetPage {
             date: data.date
         };
 
-        if (this.editingTransaction()) {
+        const isEditing = !!this.editingTransaction();
+        const isFromFixedCost = !!this.prefillFromFixedCost();
+
+        if (isEditing) {
             const oldTransaction = this.editingTransaction()!;
             this.stateService.updateTransaction(oldTransaction.id, transactionData, oldTransaction);
         } else {
             this.stateService.addTransaction(transactionData);
         }
 
-        this.toggleTransactionModal();
+        // Close modal immediately
+        this.showTransactionModal.set(false);
         this.editingTransaction.set(null);
         this.prefillFromFixedCost.set(null);
+
+        // Show confirmation toast
+        if (isFromFixedCost) {
+            this.showToast(`Fixkosten "${data.description}" gebucht`);
+        } else if (isEditing) {
+            this.showToast('Transaktion aktualisiert');
+        } else {
+            this.showToast('Transaktion hinzugefügt');
+        }
     }
 
     onAccountModalSubmit(data: { name: string; balance: number }) {
