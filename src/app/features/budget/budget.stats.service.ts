@@ -47,11 +47,45 @@ export class BudgetStatsService {
         // Filter by Search
         const query = this.stateService.searchQuery().toLowerCase();
         if (query) {
-            transactionsForStats = transactionsForStats.filter(t =>
-                t.description.toLowerCase().includes(query) ||
-                t.amount.toString().includes(query) ||
-                this.stateService.getCategoryFullName(t.category).toLowerCase().includes(query)
-            );
+            transactionsForStats = transactionsForStats.filter(t => {
+                // Search in title/description (with null check)
+                if (t.description && t.description.toLowerCase().includes(query)) return true;
+
+                // Search in amount (as string, with null check)
+                if (t.amount != null && t.amount.toString().includes(query)) return true;
+
+                // Search in formatted amount (with comma for German locale)
+                if (t.amount != null && t.amount.toFixed(2).replace('.', ',').includes(query)) return true;
+
+                // Search in category name
+                const categoryName = this.stateService.getCategoryFullName(t.category);
+                if (categoryName && categoryName.toLowerCase().includes(query)) return true;
+
+                // Search in account name
+                const account = this.stateService.accounts().find(a => a.id === t.account);
+                if (account && account.name && account.name.toLowerCase().includes(query)) return true;
+
+                // Search in date (multiple formats)
+                if (t.date) {
+                    const date = new Date(t.date);
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const year = date.getFullYear().toString();
+                    const yearShort = year.slice(-2);
+
+                    // Match formats: DD.MM.YYYY, DD.MM.YY, YYYY-MM-DD, DD/MM/YYYY
+                    const dateFormats = [
+                        `${day}.${month}.${year}`,      // 12.12.2025
+                        `${day}.${month}.${yearShort}`, // 12.12.25
+                        t.date,                          // 2025-12-12 (original)
+                        `${day}/${month}/${year}`,       // 12/12/2025
+                    ];
+
+                    if (dateFormats.some(format => format.includes(query))) return true;
+                }
+
+                return false;
+            });
         }
 
         // Filter by Month

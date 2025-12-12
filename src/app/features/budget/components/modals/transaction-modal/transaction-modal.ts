@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Transaction, Account, Category, FixedCost } from '../../../budget.models';
@@ -10,7 +10,7 @@ import { BudgetUtilityService } from '../../../budget.utility.service';
     imports: [CommonModule, FormsModule],
     templateUrl: './transaction-modal.html'
 })
-export class TransactionModalComponent {
+export class TransactionModalComponent implements OnInit, OnDestroy {
     private utilityService = inject(BudgetUtilityService);
 
     @Input() editingTransaction: Transaction | null = null;
@@ -33,11 +33,16 @@ export class TransactionModalComponent {
     currentTransactionType = signal<'income' | 'expense' | 'transfer'>('expense');
 
     ngOnInit(): void {
+        document.body.classList.add('overflow-hidden');
         if (this.editingTransaction) {
             this.currentTransactionType.set(this.editingTransaction.type);
         } else if (this.prefillFromFixedCost) {
             this.currentTransactionType.set(this.prefillFromFixedCost.type === 'income' ? 'income' : 'expense');
         }
+    }
+
+    ngOnDestroy(): void {
+        document.body.classList.remove('overflow-hidden');
     }
 
     setTransactionType(type: 'income' | 'expense' | 'transfer'): void {

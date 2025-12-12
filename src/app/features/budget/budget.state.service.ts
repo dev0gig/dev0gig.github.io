@@ -672,7 +672,9 @@ export class BudgetStateService {
     // ==================== Filtering ====================
 
     onSearch(query: string) {
+        console.log('[StateService] onSearch called with query:', query);
         this.searchQuery.set(query);
+        console.log('[StateService] searchQuery signal updated to:', this.searchQuery());
     }
 
     onMonthChange(date: Date) {
@@ -680,6 +682,9 @@ export class BudgetStateService {
     }
 
     getFilteredTransactions(): Transaction[] {
+        console.log('[StateService] getFilteredTransactions called');
+        console.log('[StateService] Current searchQuery:', this.searchQuery());
+        console.log('[StateService] Total transactions:', this.transactions().length);
         let filtered = this.transactions();
 
         // Filter by Account
@@ -693,11 +698,47 @@ export class BudgetStateService {
         // Filter by Search
         const query = this.searchQuery().toLowerCase();
         if (query) {
-            filtered = filtered.filter(t =>
-                t.description.toLowerCase().includes(query) ||
-                t.amount.toString().includes(query) ||
-                this.getCategoryFullName(t.category).toLowerCase().includes(query)
-            );
+            console.log('[StateService] Filtering with query:', query);
+            filtered = filtered.filter(t => {
+                // Search in title/description (with null check)
+                if (t.description && t.description.toLowerCase().includes(query)) return true;
+
+                // Search in amount (as string, with null check)
+                if (t.amount != null && t.amount.toString().includes(query)) return true;
+
+                // Search in formatted amount (with comma for German locale)
+                if (t.amount != null && t.amount.toFixed(2).replace('.', ',').includes(query)) return true;
+
+                // Search in category name
+                const categoryName = this.getCategoryFullName(t.category);
+                if (categoryName && categoryName.toLowerCase().includes(query)) return true;
+
+                // Search in account name
+                const account = this.getAccountById(t.account);
+                if (account && account.name && account.name.toLowerCase().includes(query)) return true;
+
+                // Search in date (multiple formats)
+                if (t.date) {
+                    const date = new Date(t.date);
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const year = date.getFullYear().toString();
+                    const yearShort = year.slice(-2);
+
+                    // Match formats: DD.MM.YYYY, DD.MM.YY, YYYY-MM-DD, DD/MM/YYYY
+                    const dateFormats = [
+                        `${day}.${month}.${year}`,      // 12.12.2025
+                        `${day}.${month}.${yearShort}`, // 12.12.25
+                        t.date,                          // 2025-12-12 (original)
+                        `${day}/${month}/${year}`,       // 12/12/2025
+                    ];
+
+                    if (dateFormats.some(format => format.includes(query))) return true;
+                }
+
+                return false;
+            });
+            console.log('[StateService] Filtered to', filtered.length, 'transactions');
         }
         return filtered;
     }

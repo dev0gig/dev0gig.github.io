@@ -130,7 +130,10 @@ export class TransactionsViewComponent {
 
     onSearch(event: Event): void {
         const value = (event.target as HTMLInputElement).value;
+        console.log('[TransactionsView] onSearch called with value:', value);
+        console.log('[TransactionsView] Emitting search event...');
         this.search.emit(value);
+        console.log('[TransactionsView] Search event emitted');
     }
 
     onInlineTransactionEdit(event: Event, transactionId: string): void {

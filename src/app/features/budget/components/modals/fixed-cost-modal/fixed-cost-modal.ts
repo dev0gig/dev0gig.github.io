@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FixedCost, Account, Category, FixedCostGroup } from '../../../budget.models';
@@ -10,7 +10,7 @@ import { BudgetStateService } from '../../../budget.state.service';
     imports: [CommonModule, FormsModule],
     templateUrl: './fixed-cost-modal.html'
 })
-export class FixedCostModalComponent implements OnInit {
+export class FixedCostModalComponent implements OnInit, OnDestroy {
     private stateService = inject(BudgetStateService);
 
     @Input() editingFixedCost: FixedCost | null = null;
@@ -34,9 +34,14 @@ export class FixedCostModalComponent implements OnInit {
     currentType = signal<'income' | 'expense' | 'transfer'>('expense');
 
     ngOnInit(): void {
+        document.body.classList.add('overflow-hidden');
         if (this.editingFixedCost) {
             this.currentType.set(this.editingFixedCost.type);
         }
+    }
+
+    ngOnDestroy(): void {
+        document.body.classList.remove('overflow-hidden');
     }
 
     setType(type: 'income' | 'expense' | 'transfer'): void {
