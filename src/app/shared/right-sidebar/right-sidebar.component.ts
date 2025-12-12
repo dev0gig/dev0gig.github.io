@@ -312,38 +312,44 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     }
 
     getWeatherIcon(code: number): string {
-        // WMO Weather interpretation codes
+        // WMO Weather interpretation codes -> OpenWeatherMap icon codes
+        // Format: https://openweathermap.org/img/wn/{icon}@2x.png
+        const hour = new Date().getHours();
+        const isDay = hour >= 6 && hour < 20;
+        const dayNight = isDay ? 'd' : 'n';
+
         const weatherIcons: Record<number, string> = {
-            0: 'clear_day',           // Clear sky
-            1: 'partly_cloudy_day',   // Mainly clear
-            2: 'partly_cloudy_day',   // Partly cloudy
-            3: 'cloud',               // Overcast
-            45: 'foggy',              // Fog
-            48: 'foggy',              // Depositing rime fog
-            51: 'rainy',              // Light drizzle
-            53: 'rainy',              // Moderate drizzle
-            55: 'rainy',              // Dense drizzle
-            56: 'weather_snowy',      // Light freezing drizzle
-            57: 'weather_snowy',      // Dense freezing drizzle
-            61: 'rainy',              // Slight rain
-            63: 'rainy',              // Moderate rain
-            65: 'rainy',              // Heavy rain
-            66: 'weather_snowy',      // Light freezing rain
-            67: 'weather_snowy',      // Heavy freezing rain
-            71: 'weather_snowy',      // Slight snow
-            73: 'weather_snowy',      // Moderate snow
-            75: 'weather_snowy',      // Heavy snow
-            77: 'weather_snowy',      // Snow grains
-            80: 'rainy',              // Slight rain showers
-            81: 'rainy',              // Moderate rain showers
-            82: 'rainy',              // Violent rain showers
-            85: 'weather_snowy',      // Slight snow showers
-            86: 'weather_snowy',      // Heavy snow showers
-            95: 'thunderstorm',       // Thunderstorm
-            96: 'thunderstorm',       // Thunderstorm with slight hail
-            99: 'thunderstorm'        // Thunderstorm with heavy hail
+            0: `01${dayNight}`,           // Clear sky
+            1: `02${dayNight}`,           // Mainly clear
+            2: `03${dayNight}`,           // Partly cloudy
+            3: '04d',                      // Overcast
+            45: '50d',                     // Fog
+            48: '50d',                     // Depositing rime fog
+            51: '09d',                     // Light drizzle
+            53: '09d',                     // Moderate drizzle
+            55: '09d',                     // Dense drizzle
+            56: '13d',                     // Light freezing drizzle
+            57: '13d',                     // Dense freezing drizzle
+            61: '10d',                     // Slight rain
+            63: '10d',                     // Moderate rain
+            65: '10d',                     // Heavy rain
+            66: '13d',                     // Light freezing rain
+            67: '13d',                     // Heavy freezing rain
+            71: '13d',                     // Slight snow
+            73: '13d',                     // Moderate snow
+            75: '13d',                     // Heavy snow
+            77: '13d',                     // Snow grains
+            80: '09d',                     // Slight rain showers
+            81: '09d',                     // Moderate rain showers
+            82: '09d',                     // Violent rain showers
+            85: '13d',                     // Slight snow showers
+            86: '13d',                     // Heavy snow showers
+            95: '11d',                     // Thunderstorm
+            96: '11d',                     // Thunderstorm with slight hail
+            99: '11d'                      // Thunderstorm with heavy hail
         };
-        return weatherIcons[code] || 'cloud';
+        const iconCode = weatherIcons[code] || '03d';
+        return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
     }
 
     getWeatherDescription(code: number): string {

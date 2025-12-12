@@ -74,10 +74,8 @@
                 <span class="material-symbols-sharp text-sm">location_on</span>
                 <span>{{ currentWeather()!.location }}</span>
             </div>
-            <div class="flex items-center justify-center gap-3">
-                <span class="material-symbols-sharp text-5xl text-dash-accent">
-                    {{ getWeatherIcon(currentWeather()!.weatherCode) }}
-                </span>
+            <div class="flex items-center justify-center gap-1">
+                <img [src]="getWeatherIcon(currentWeather()!.weatherCode)" alt="Weather icon" class="w-20 h-20 -ml-3">
                 <div class="text-left">
                     <div class="text-4xl font-bold text-white">{{ currentWeather()!.temperature }}°</div>
                     <div class="text-sm text-dash-text-dim">{{ getWeatherDescription(currentWeather()!.weatherCode) }}
@@ -104,9 +102,7 @@
             @for (day of forecast(); track day.date; let i = $index) {
             <div class="flex flex-col items-center gap-1 flex-1">
                 <span class="text-xs text-dash-text-dim font-medium">{{ getDayName(day.date, i) }}</span>
-                <span class="material-symbols-sharp text-xl text-dash-accent">
-                    {{ getWeatherIcon(day.weatherCode) }}
-                </span>
+                <img [src]="getWeatherIcon(day.weatherCode)" alt="Weather forecast" class="w-12 h-12 -my-2">
                 <div class="text-xs">
                     <span class="text-white font-semibold">{{ day.tempMax }}°</span>
                     <span class="text-dash-text-dim">/{{ day.tempMin }}°</span>
@@ -175,8 +171,8 @@
 
                 <!-- X-Axis Day Labels -->
                 @for (day of budgetTrendData(); track day.date; let i = $index) {
-                <text [attr.x]="(i / (budgetTrendData().length - 1)) * 100" y="48"
-                    font-size="5" fill="rgba(255,255,255,0.5)" text-anchor="middle">
+                <text [attr.x]="(i / (budgetTrendData().length - 1)) * 100" y="48" font-size="5"
+                    fill="rgba(255,255,255,0.5)" text-anchor="middle">
                     {{ getTrendDayLabel(day.date, i) }}
                 </text>
                 }

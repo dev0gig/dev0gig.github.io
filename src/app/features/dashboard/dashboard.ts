@@ -130,6 +130,10 @@ export class Dashboard {
         this.router.navigate(['/budget']);
     }
 
+    navigateToAudioNotes() {
+        this.router.navigate(['/audio-notes']);
+    }
+
     exportBookmarks() {
         const bookmarks = this.bookmarkService.bookmarks();
         const date = Math.floor(Date.now() / 1000);
