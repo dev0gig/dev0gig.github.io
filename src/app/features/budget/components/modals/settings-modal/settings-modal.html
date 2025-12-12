@@ -162,6 +162,11 @@
 
                     <!-- Action Buttons for Categories -->
                     <div *ngIf="categories.length > 0" class="flex flex-col gap-3 pt-4 border-t border-dash-border">
+                        <!-- Load Default Categories Button -->
+                        <button (click)="onLoadDefaultCategories()"
+                            class="flex items-center justify-center gap-2 px-4 py-3 bg-dash-accent/10 border border-dash-accent/30 hover:bg-dash-accent/20 text-dash-accent rounded-sm transition-colors text-sm w-full">
+                            Standardkategorien laden
+                        </button>
                         <div class="grid grid-cols-2 gap-3">
                             <button (click)="onDeleteSelectedCategories()" [disabled]="!hasSelectedCategories()"
                                 [class.opacity-50]="!hasSelectedCategories()"
@@ -174,6 +179,13 @@
                                 Alle löschen
                             </button>
                         </div>
+                    </div>
+                    <!-- Show load button even when no categories exist -->
+                    <div *ngIf="categories.length === 0" class="pt-4">
+                        <button (click)="onLoadDefaultCategories()"
+                            class="flex items-center justify-center gap-2 px-4 py-3 bg-dash-accent/10 border border-dash-accent/30 hover:bg-dash-accent/20 text-dash-accent rounded-sm transition-colors text-sm w-full">
+                            Standardkategorien laden
+                        </button>
                     </div>
                 </div>
 

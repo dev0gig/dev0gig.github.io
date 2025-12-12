@@ -53,8 +53,9 @@
             (deleteAccount)="deleteAccount($event)" (addCategory)="editingCategory.set(null); toggleCategoryModal()"
             (editCategory)="openEditCategoryModal($event)" (deleteCategory)="deleteCategory($event)"
             (deleteAllCategories)="deleteAllCategories()" (deleteSelectedCategories)="deleteSelectedCategories($event)"
-            (addGroup)="toggleFixedCostGroupModal()" (editGroup)="openEditFixedCostGroupModal($event)"
-            (deleteGroup)="deleteFixedCostGroup($event)" (deleteAllGroups)="deleteAllFixedCostGroups()"
+            (loadDefaultCategories)="loadDefaultCategories()" (addGroup)="toggleFixedCostGroupModal()"
+            (editGroup)="openEditFixedCostGroupModal($event)" (deleteGroup)="deleteFixedCostGroup($event)"
+            (deleteAllGroups)="deleteAllFixedCostGroups()"
             (deleteSelectedGroups)="deleteSelectedFixedCostGroups($event)"
             (reorderGroups)="reorderFixedCostGroups($event)">
         </app-settings-modal>

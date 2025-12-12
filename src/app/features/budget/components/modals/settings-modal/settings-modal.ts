@@ -30,6 +30,7 @@ export class SettingsModalComponent {
     @Output() deleteCategory = new EventEmitter<string>();
     @Output() deleteAllCategories = new EventEmitter<void>();
     @Output() deleteSelectedCategories = new EventEmitter<string[]>();
+    @Output() loadDefaultCategories = new EventEmitter<void>();
 
     // Group events
     @Output() addGroup = new EventEmitter<void>();
@@ -106,6 +107,10 @@ export class SettingsModalComponent {
         console.log('[SettingsModal] onDeleteAllCategories called');
         this.deleteAllCategories.emit();
         this.selectedCategoryIds.set(new Set());
+    }
+
+    onLoadDefaultCategories(): void {
+        this.loadDefaultCategories.emit();
     }
 
     onDeleteSelectedCategories(): void {

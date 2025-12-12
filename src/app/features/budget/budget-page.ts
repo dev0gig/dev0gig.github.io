@@ -322,6 +322,15 @@ export class BudgetPage {
         this.showToast(`${ids.length} Kategorien gelöscht`);
     }
 
+    loadDefaultCategories() {
+        const addedCount = this.stateService.addDefaultCategories();
+        if (addedCount > 0) {
+            this.showToast(`${addedCount} Standardkategorien hinzugefügt`);
+        } else {
+            this.showToast('Alle Standardkategorien sind bereits vorhanden');
+        }
+    }
+
     onCategorySubmit(event: Event) {
         event.preventDefault();
         const form = event.target as HTMLFormElement;

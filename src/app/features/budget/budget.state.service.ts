@@ -75,7 +75,7 @@ export class BudgetStateService {
             }
         } else {
             // Initialize with default categories on first start
-            this.initializeDefaultCategories();
+            this.addDefaultCategories();
         }
         if (fixedCostsData) {
             let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
@@ -266,10 +266,11 @@ export class BudgetStateService {
     }
 
     /**
-     * Initialize default categories for first-time users
-     * Users can still edit or delete these categories later
+     * Add default categories (can be called manually via settings)
+     * Adds only categories that don't already exist (by name)
+     * @returns number of categories added
      */
-    private initializeDefaultCategories() {
+    addDefaultCategories(): number {
         const defaultCategories: { name: string; type: 'income' | 'expense' | 'both' }[] = [
             // Income categories
             { name: 'Gehalt', type: 'income' },
@@ -300,15 +301,25 @@ export class BudgetStateService {
             { name: 'Sonstiges', type: 'both' }
         ];
 
-        const categories: Category[] = defaultCategories.map(cat => ({
-            id: this.utilityService.generateId(),
-            name: cat.name,
-            type: cat.type
-        }));
+        // Get existing category names (lowercase for comparison)
+        const existingNames = new Set(this.categories().map(c => c.name.toLowerCase()));
 
-        this.categories.set(categories);
-        this.saveCategories();
-        console.log('[StateService] Initialized default categories:', categories.length);
+        // Filter out categories that already exist
+        const newCategories: Category[] = defaultCategories
+            .filter(cat => !existingNames.has(cat.name.toLowerCase()))
+            .map(cat => ({
+                id: this.utilityService.generateId(),
+                name: cat.name,
+                type: cat.type
+            }));
+
+        if (newCategories.length > 0) {
+            this.categories.update(c => [...c, ...newCategories]);
+            this.saveCategories();
+        }
+
+        console.log('[StateService] Added default categories:', newCategories.length);
+        return newCategories.length;
     }
 
     getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>): string {
