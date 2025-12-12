@@ -84,13 +84,13 @@
 
                     <div class="flex flex-col gap-2">
                         <div *ngFor="let account of accounts"
-                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-medium text-dash-text">{{ account.name }}</span>
+                            class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors gap-2">
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <span class="text-sm font-medium text-dash-text truncate">{{ account.name }}</span>
                                 <span class="text-xs text-dash-text-dim font-mono">{{
                                     formatCurrency(account.balance) }}</span>
                             </div>
-                            <div class="flex gap-1">
+                            <div class="flex gap-1 shrink-0">
                                 <button (click)="onEditAccount(account)"
                                     class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
                                     title="Bearbeiten">
@@ -122,15 +122,15 @@
                     <div class="flex flex-col gap-2">
                         <!-- Categories (sorted alphabetically) -->
                         <div *ngFor="let category of getSortedCategories()"
-                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors"
+                            class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors gap-2"
                             [class.border-dash-accent]="isCategorySelected(category.id)"
                             [class.bg-dash-accent/10]="isCategorySelected(category.id)">
-                            <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                            <div class="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
                                 <!-- Checkbox for selection -->
                                 <input type="checkbox" [checked]="isCategorySelected(category.id)"
                                     (change)="toggleCategorySelection(category.id)"
-                                    class="w-4 h-4 rounded border-dash-border bg-dash-bg text-dash-accent focus:ring-dash-accent cursor-pointer">
-                                <div class="flex flex-col overflow-hidden">
+                                    class="w-4 h-4 rounded border-dash-border bg-dash-bg text-dash-accent focus:ring-dash-accent cursor-pointer shrink-0">
+                                <div class="flex flex-col overflow-hidden min-w-0">
                                     <span class="text-sm font-medium text-dash-text truncate">{{
                                         category.name }}</span>
                                     <span class="text-[10px] uppercase tracking-wider font-bold"
@@ -142,7 +142,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="flex gap-1">
+                            <div class="flex gap-1 shrink-0">
                                 <button (click)="onEditCategory(category)"
                                     class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
                                     title="Bearbeiten">
@@ -202,21 +202,21 @@
                     <!-- Groups List with Drag & Drop -->
                     <div cdkDropList (cdkDropListDropped)="onGroupDrop($event)" class="flex flex-col gap-2">
                         <div *ngFor="let group of getSortedGroups()" cdkDrag
-                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors cursor-move"
+                            class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors cursor-move gap-2"
                             [class.border-dash-accent]="isGroupSelected(group.id)"
                             [class.bg-dash-accent/10]="isGroupSelected(group.id)">
-                            <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                            <div class="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
                                 <!-- Checkbox for selection -->
                                 <input type="checkbox" [checked]="isGroupSelected(group.id)"
                                     (change)="toggleGroupSelection(group.id)"
-                                    class="w-4 h-4 rounded border-dash-border bg-dash-bg text-dash-accent focus:ring-dash-accent cursor-pointer">
+                                    class="w-4 h-4 rounded border-dash-border bg-dash-bg text-dash-accent focus:ring-dash-accent cursor-pointer shrink-0">
                                 <!-- Drag handle -->
-                                <span class="material-symbols-sharp text-dash-text-dim text-sm cursor-move"
+                                <span class="material-symbols-sharp text-dash-text-dim text-sm cursor-move shrink-0"
                                     cdkDragHandle>drag_indicator</span>
                                 <!-- Group name -->
                                 <span class="text-sm font-medium text-dash-text truncate">{{ group.name }}</span>
                             </div>
-                            <div class="flex gap-1">
+                            <div class="flex gap-1 shrink-0">
                                 <button (click)="onEditGroup(group)"
                                     class="px-2 py-1 hover:bg-dash-card text-dash-text-dim hover:text-white rounded-sm transition-colors text-xs"
                                     title="Bearbeiten">

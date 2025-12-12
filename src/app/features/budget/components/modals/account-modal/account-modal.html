@@ -21,7 +21,7 @@
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">
                     {{ editingAccount ? 'Aktueller Kontostand (€)' : 'Startguthaben (€)' }}
                 </label>
-                <input type="number" name="accountBalance" step="0.01" required [value]="editingAccount?.balance"
+                <input type="number" name="accountBalance" step="0.01" [value]="editingAccount?.balance"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="0,00">
             </div>

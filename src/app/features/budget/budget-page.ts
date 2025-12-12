@@ -694,14 +694,26 @@ export class BudgetPage {
     }
 
     onAccountModalSubmit(data: { name: string; balance: number }) {
+        console.log('[BudgetPage] onAccountModalSubmit CALLED');
+        console.log('[BudgetPage] Data received:', JSON.stringify(data));
+        console.log('[BudgetPage] editingAccount:', this.editingAccount());
+        console.log('[BudgetPage] showAccountModal BEFORE:', this.showAccountModal());
+
         if (this.editingAccount()) {
+            console.log('[BudgetPage] MODE: Updating existing account');
             this.stateService.updateAccount(this.editingAccount()!.id, data.name, data.balance);
         } else {
+            console.log('[BudgetPage] MODE: Creating new account');
             this.stateService.addAccount(data.name, data.balance);
         }
 
-        this.toggleAccountModal();
+        console.log('[BudgetPage] Closing modal now');
+        // Close modal immediately (not toggle)
+        this.showAccountModal.set(false);
         this.editingAccount.set(null);
+
+        console.log('[BudgetPage] showAccountModal AFTER:', this.showAccountModal());
+        console.log('[BudgetPage] onAccountModalSubmit COMPLETE');
     }
 
     onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) {
