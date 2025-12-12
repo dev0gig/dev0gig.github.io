@@ -99,7 +99,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         return { totalBalance, income, expenses };
     });
 
-    // Budget trend data - calculate running balance for last 7 days
+    // Budget trend data - calculate running balance for last 5 days
     budgetTrendData = computed(() => {
         const transactions = this.budgetTransactions();
         const accounts = this.budgetAccounts();
@@ -107,13 +107,13 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         // Get current total balance
         const currentBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
 
-        // Get last 7 days
+        // Get last 5 days
         const days: { date: Date; balance: number }[] = [];
         const today = new Date();
         today.setHours(23, 59, 59, 999);
 
         // Calculate balance changes for each day going backwards
-        for (let i = 6; i >= 0; i--) {
+        for (let i = 4; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
             date.setHours(0, 0, 0, 0);
@@ -129,10 +129,10 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         );
 
         // Set today's balance
-        days[6].balance = runningBalance;
+        days[4].balance = runningBalance;
 
         // Calculate balance for each previous day
-        for (let i = 5; i >= 0; i--) {
+        for (let i = 3; i >= 0; i--) {
             const dayStart = days[i].date;
             const dayEnd = new Date(dayStart);
             dayEnd.setHours(23, 59, 59, 999);
@@ -409,7 +409,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         const range = maxVal - minVal || 1;
 
         const width = 100;
-        const height = 40;
+        const height = 38; // Leave room for x-axis labels
         const padding = 2;
 
         return data.map((d, i) => {
@@ -424,7 +424,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         const linePoints = this.getBudgetTrendLinePoints();
         if (!linePoints) return '';
 
-        const height = 40;
+        const height = 38; // Leave room for x-axis labels
         return `0,${height} ${linePoints} 100,${height}`;
     }
 
@@ -437,7 +437,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         const minVal = Math.min(...values);
         const range = maxVal - minVal || 1;
 
-        const height = 40;
+        const height = 38; // Leave room for x-axis labels
         const padding = 2;
 
         const lastIndex = data.length - 1;
@@ -446,5 +446,18 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         const y = height - padding - (normalizedValue * (height - padding * 2));
 
         return { x, y };
+    }
+
+    // Get label for trend chart x-axis
+    getTrendDayLabel(date: Date, index: number): string {
+        const data = this.budgetTrendData();
+        const isToday = index === data.length - 1;
+
+        if (isToday) {
+            return 'Heute';
+        }
+
+        // Return short weekday name (Mo, Di, Mi, Do, Fr, Sa, So)
+        return date.toLocaleDateString('de-DE', { weekday: 'short' });
     }
 }

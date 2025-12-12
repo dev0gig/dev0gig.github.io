@@ -151,8 +151,8 @@
         <!-- Trend Chart -->
         @if (budgetTrendData().length > 1) {
         <div class="bg-black/20 rounded-lg p-2">
-            <div class="text-xs text-dash-text-dim text-center mb-2">Trend (letzte 7 Tage)</div>
-            <svg viewBox="0 0 100 40" class="w-full h-12" preserveAspectRatio="none">
+            <div class="text-xs text-dash-text-dim text-center mb-2">Trend (letzte 5 Tage)</div>
+            <svg viewBox="0 0 100 50" class="w-full h-16" preserveAspectRatio="none">
                 <!-- Grid lines -->
                 <line x1="0" y1="20" x2="100" y2="20" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"
                     stroke-dasharray="2,2" />
@@ -171,6 +171,14 @@
                 @if (lastPoint) {
                 <circle [attr.cx]="lastPoint.x" [attr.cy]="lastPoint.y" r="2"
                     [attr.fill]="budgetStats().totalBalance >= 0 ? '#4ade80' : '#f87171'" />
+                }
+
+                <!-- X-Axis Day Labels -->
+                @for (day of budgetTrendData(); track day.date; let i = $index) {
+                <text [attr.x]="(i / (budgetTrendData().length - 1)) * 100" y="48"
+                    font-size="5" fill="rgba(255,255,255,0.5)" text-anchor="middle">
+                    {{ getTrendDayLabel(day.date, i) }}
+                </text>
                 }
             </svg>
         </div>
