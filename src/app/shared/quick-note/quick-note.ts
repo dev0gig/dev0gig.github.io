@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
+import { Component, inject, signal, ViewChild, ElementRef, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AudioNotesService } from '../../features/audio-notes/audio-notes';
@@ -10,7 +10,7 @@ import { AudioNotesService } from '../../features/audio-notes/audio-notes';
     templateUrl: './quick-note.html',
     styleUrl: './quick-note.css'
 })
-export class QuickNoteComponent {
+export class QuickNoteComponent implements OnInit, OnDestroy {
     private audioNotes = inject(AudioNotesService);
 
     @ViewChild('noteInput') noteInput!: ElementRef<HTMLTextAreaElement>;
@@ -24,6 +24,17 @@ export class QuickNoteComponent {
     // Drag state
     private isDragging = false;
     private dragOffset = { x: 0, y: 0 };
+
+    // Event handler for custom event
+    private quickNoteHandler = () => this.toggle();
+
+    ngOnInit() {
+        window.addEventListener('app:quicknote', this.quickNoteHandler);
+    }
+
+    ngOnDestroy() {
+        window.removeEventListener('app:quicknote', this.quickNoteHandler);
+    }
 
     toggle(): void {
         if (this.isVisible()) {
