@@ -85,6 +85,36 @@ export class FixedCostsViewComponent {
         return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
     }
 
+    /**
+     * Gets categories filtered by fixed cost type for inline editing:
+     * - income: shows categories with type 'income' or 'both'
+     * - expense: shows categories with type 'expense' or 'both'
+     * - transfer: returns empty array (transfers have no category)
+     */
+    getFilteredCategoriesForFixedCost(fixedCostId: string): Category[] {
+        const type = this.getInlineFixedCostType(fixedCostId);
+
+        // Transfers don't have categories
+        if (type === 'transfer') {
+            return [];
+        }
+
+        // Filter categories based on type
+        return [...this.categories]
+            .filter(cat => {
+                if (cat.type === 'both') return true;
+                return cat.type === type;
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    /**
+     * Checks if category field should be disabled (for transfers)
+     */
+    isCategoryDisabledForFixedCost(fixedCostId: string): boolean {
+        return this.getInlineFixedCostType(fixedCostId) === 'transfer';
+    }
+
     getFixedCostsByGroup(groupId: string | null): FixedCost[] {
         return this.fixedCosts
             .filter(fc => {

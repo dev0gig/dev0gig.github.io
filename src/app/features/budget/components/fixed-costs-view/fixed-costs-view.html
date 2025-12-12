@@ -221,12 +221,22 @@
                                 <div>
                                     <label
                                         class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
-                                    <select name="category" required [disabled]="!isEditingInline(fixedCost.id)"
-                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <select name="category" [required]="!isCategoryDisabledForFixedCost(fixedCost.id)"
+                                        [disabled]="!isEditingInline(fixedCost.id) || isCategoryDisabledForFixedCost(fixedCost.id)"
+                                        [class]="isCategoryDisabledForFixedCost(fixedCost.id) 
+                                            ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-2 py-1.5 rounded-sm text-sm cursor-not-allowed opacity-50' 
+                                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed'">
+                                        @if (isCategoryDisabledForFixedCost(fixedCost.id)) {
+                                        <option value="">Nicht verfügbar bei Transfer</option>
+                                        } @else if (getFilteredCategoriesForFixedCost(fixedCost.id).length === 0) {
+                                        <option value="">Keine passenden Kategorien</option>
+                                        } @else {
                                         <option value="">Wählen</option>
-                                        @for (category of getSortedCategories(); track category.id) {
+                                        @for (category of getFilteredCategoriesForFixedCost(fixedCost.id); track
+                                        category.id) {
                                         <option [value]="category.id" [selected]="category.id === fixedCost.category">{{
                                             category.name }}</option>
+                                        }
                                         }
                                     </select>
                                 </div>
@@ -465,12 +475,22 @@
                                 <div>
                                     <label
                                         class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
-                                    <select name="category" required [disabled]="!isEditingInline(fixedCost.id)"
-                                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <select name="category" [required]="!isCategoryDisabledForFixedCost(fixedCost.id)"
+                                        [disabled]="!isEditingInline(fixedCost.id) || isCategoryDisabledForFixedCost(fixedCost.id)"
+                                        [class]="isCategoryDisabledForFixedCost(fixedCost.id) 
+                                            ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-2 py-1.5 rounded-sm text-sm cursor-not-allowed opacity-50' 
+                                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed'">
+                                        @if (isCategoryDisabledForFixedCost(fixedCost.id)) {
+                                        <option value="">Nicht verfügbar bei Transfer</option>
+                                        } @else if (getFilteredCategoriesForFixedCost(fixedCost.id).length === 0) {
+                                        <option value="">Keine passenden Kategorien</option>
+                                        } @else {
                                         <option value="">Wählen</option>
-                                        @for (category of getSortedCategories(); track category.id) {
+                                        @for (category of getFilteredCategoriesForFixedCost(fixedCost.id); track
+                                        category.id) {
                                         <option [value]="category.id" [selected]="category.id === fixedCost.category">{{
                                             category.name }}</option>
+                                        }
                                         }
                                     </select>
                                 </div>
