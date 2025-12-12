@@ -50,8 +50,9 @@
             [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleSettingsModal()" (importData)="triggerImport()"
             (exportData)="triggerExport()" (deleteAllTransactions)="deleteAllTransactions()"
             (addAccount)="toggleAccountModal()" (editAccount)="openEditAccountModal($event)"
-            (deleteAccount)="deleteAccount($event)" (addCategory)="toggleCategoryModal()"
+            (deleteAccount)="deleteAccount($event)" (addCategory)="editingCategory.set(null); toggleCategoryModal()"
             (editCategory)="openEditCategoryModal($event)" (deleteCategory)="deleteCategory($event)"
+            (deleteAllCategories)="deleteAllCategories()" (deleteSelectedCategories)="deleteSelectedCategories($event)"
             (addGroup)="toggleFixedCostGroupModal()" (editGroup)="openEditFixedCostGroupModal($event)"
             (deleteGroup)="deleteFixedCostGroup($event)" (deleteAllGroups)="deleteAllFixedCostGroups()"
             (deleteSelectedGroups)="deleteSelectedFixedCostGroups($event)"
@@ -116,8 +117,8 @@
 
         <!-- Transaction Modal -->
         @if (showTransactionModal()) {
-        <app-transaction-modal [editingTransaction]="editingTransaction()" [prefillFromFixedCost]="prefillFromFixedCost()"
-            [accounts]="accounts()" [categories]="categories()"
+        <app-transaction-modal [editingTransaction]="editingTransaction()"
+            [prefillFromFixedCost]="prefillFromFixedCost()" [accounts]="accounts()" [categories]="categories()"
             (close)="toggleTransactionModal(); editingTransaction.set(null); prefillFromFixedCost.set(null)"
             (submit)="onTransactionModalSubmit($event)">
         </app-transaction-modal>

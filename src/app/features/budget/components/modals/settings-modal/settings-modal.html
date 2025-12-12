@@ -122,8 +122,14 @@
                     <div class="flex flex-col gap-2">
                         <!-- Categories (sorted alphabetically) -->
                         <div *ngFor="let category of getSortedCategories()"
-                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors">
+                            class="flex justify-between items-center bg-dash-bg p-3 rounded-sm border border-dash-border group hover:border-dash-text-dim transition-colors"
+                            [class.border-dash-accent]="isCategorySelected(category.id)"
+                            [class.bg-dash-accent/10]="isCategorySelected(category.id)">
                             <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                                <!-- Checkbox for selection -->
+                                <input type="checkbox" [checked]="isCategorySelected(category.id)"
+                                    (change)="toggleCategorySelection(category.id)"
+                                    class="w-4 h-4 rounded border-dash-border bg-dash-bg text-dash-accent focus:ring-dash-accent cursor-pointer">
                                 <div class="flex flex-col overflow-hidden">
                                     <span class="text-sm font-medium text-dash-text truncate">{{
                                         category.name }}</span>
@@ -151,6 +157,22 @@
                         </div>
                         <div *ngIf="categories.length === 0" class="text-center py-8 text-dash-text-dim text-sm italic">
                             Keine Kategorien erstellt.
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons for Categories -->
+                    <div *ngIf="categories.length > 0" class="flex flex-col gap-3 pt-4 border-t border-dash-border">
+                        <div class="grid grid-cols-2 gap-3">
+                            <button (click)="onDeleteSelectedCategories()" [disabled]="!hasSelectedCategories()"
+                                [class.opacity-50]="!hasSelectedCategories()"
+                                [class.cursor-not-allowed]="!hasSelectedCategories()"
+                                class="flex items-center justify-center gap-2 px-4 py-3 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 text-orange-500 rounded-sm transition-colors text-sm">
+                                Ausgewählte löschen ({{ selectedCategoryIds().size }})
+                            </button>
+                            <button (click)="onDeleteAllCategories()"
+                                class="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-sm transition-colors text-sm">
+                                Alle löschen
+                            </button>
                         </div>
                     </div>
                 </div>

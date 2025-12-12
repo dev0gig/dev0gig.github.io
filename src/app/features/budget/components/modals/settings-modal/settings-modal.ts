@@ -28,6 +28,8 @@ export class SettingsModalComponent {
     @Output() addCategory = new EventEmitter<void>();
     @Output() editCategory = new EventEmitter<Category>();
     @Output() deleteCategory = new EventEmitter<string>();
+    @Output() deleteAllCategories = new EventEmitter<void>();
+    @Output() deleteSelectedCategories = new EventEmitter<string[]>();
 
     // Group events
     @Output() addGroup = new EventEmitter<void>();
@@ -42,12 +44,18 @@ export class SettingsModalComponent {
     // Group selection state
     selectedGroupIds = signal<Set<string>>(new Set());
 
+    // Category selection state
+    selectedCategoryIds = signal<Set<string>>(new Set());
+
     formatCurrency(amount: number): string {
         return this.utilityService.formatCurrency(amount);
     }
 
     getSortedCategories(): Category[] {
-        return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+        // Filter out any corrupted categories (missing name) before sorting
+        return [...this.categories]
+            .filter(c => c.name && typeof c.name === 'string')
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     getSortedGroups(): FixedCostGroup[] {
@@ -92,6 +100,43 @@ export class SettingsModalComponent {
 
     onDeleteCategory(id: string): void {
         this.deleteCategory.emit(id);
+    }
+
+    onDeleteAllCategories(): void {
+        console.log('[SettingsModal] onDeleteAllCategories called');
+        this.deleteAllCategories.emit();
+        this.selectedCategoryIds.set(new Set());
+    }
+
+    onDeleteSelectedCategories(): void {
+        const ids = Array.from(this.selectedCategoryIds());
+        console.log('[SettingsModal] onDeleteSelectedCategories called, ids:', ids);
+        if (ids.length > 0) {
+            this.deleteSelectedCategories.emit(ids);
+            this.selectedCategoryIds.set(new Set());
+        } else {
+            console.log('[SettingsModal] No categories selected, nothing to delete');
+        }
+    }
+
+    toggleCategorySelection(id: string): void {
+        this.selectedCategoryIds.update(set => {
+            const newSet = new Set(set);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    }
+
+    isCategorySelected(id: string): boolean {
+        return this.selectedCategoryIds().has(id);
+    }
+
+    hasSelectedCategories(): boolean {
+        return this.selectedCategoryIds().size > 0;
     }
 
     // Group methods

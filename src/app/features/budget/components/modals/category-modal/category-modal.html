@@ -12,7 +12,8 @@
         <form (submit)="onSubmit($event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Name</label>
-                <input type="text" name="categoryName" required [value]="editingCategory?.name || ''"
+                <input type="text" required [ngModel]="categoryName()" (ngModelChange)="categoryName.set($event)"
+                    name="categoryName"
                     class="w-full bg-dash-bg border border-dash-border text-dash-text px-4 py-2 rounded-sm focus:outline-none focus:border-dash-accent"
                     placeholder="z.B. Kleidung">
             </div>
@@ -22,20 +23,20 @@
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
                 <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="categoryType" value="expense"
-                            [checked]="!editingCategory || editingCategory?.type === 'expense'"
+                        <input type="radio" name="categoryType" value="expense" [checked]="categoryType() === 'expense'"
+                            (change)="categoryType.set('expense')"
                             class="text-dash-accent focus:ring-dash-accent bg-dash-bg border-dash-border">
                         <span class="text-sm text-dash-text">Ausgabe</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="categoryType" value="income"
-                            [checked]="editingCategory?.type === 'income'"
+                        <input type="radio" name="categoryType" value="income" [checked]="categoryType() === 'income'"
+                            (change)="categoryType.set('income')"
                             class="text-dash-accent focus:ring-dash-accent bg-dash-bg border-dash-border">
                         <span class="text-sm text-dash-text">Einnahme</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="categoryType" value="both"
-                            [checked]="editingCategory?.type === 'both'"
+                        <input type="radio" name="categoryType" value="both" [checked]="categoryType() === 'both'"
+                            (change)="categoryType.set('both')"
                             class="text-dash-accent focus:ring-dash-accent bg-dash-bg border-dash-border">
                         <span class="text-sm text-dash-text">Beides</span>
                     </label>

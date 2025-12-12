@@ -202,7 +202,9 @@ export class BudgetPage {
     }
 
     toggleCategoryModal() {
-        this.showCategoryModal.set(!this.showCategoryModal());
+        const newState = !this.showCategoryModal();
+        console.log('[BudgetPage] toggleCategoryModal called, new state:', newState, 'editingCategory:', this.editingCategory());
+        this.showCategoryModal.set(newState);
     }
 
     toggleFixedCostModal() {
@@ -293,6 +295,7 @@ export class BudgetPage {
     // ==================== Category Methods ====================
 
     openEditCategoryModal(category: Category) {
+        console.log('[BudgetPage] openEditCategoryModal called with:', category);
         this.editingCategory.set(category);
         this.showCategoryModal.set(true);
     }
@@ -301,6 +304,22 @@ export class BudgetPage {
         if (confirm('Möchten Sie diese Kategorie wirklich löschen?')) {
             this.stateService.deleteCategory(id);
         }
+    }
+
+    deleteAllCategories() {
+        console.log('[BudgetPage] deleteAllCategories called');
+        console.log('[BudgetPage] Categories BEFORE delete:', JSON.stringify(this.stateService.categories()));
+        this.stateService.deleteAllCategories();
+        console.log('[BudgetPage] Categories AFTER delete:', JSON.stringify(this.stateService.categories()));
+        this.showToast('Alle Kategorien gelöscht');
+    }
+
+    deleteSelectedCategories(ids: string[]) {
+        console.log('[BudgetPage] deleteSelectedCategories called with ids:', ids);
+        console.log('[BudgetPage] Categories BEFORE delete:', JSON.stringify(this.stateService.categories()));
+        this.stateService.deleteSelectedCategories(ids);
+        console.log('[BudgetPage] Categories AFTER delete:', JSON.stringify(this.stateService.categories()));
+        this.showToast(`${ids.length} Kategorien gelöscht`);
     }
 
     onCategorySubmit(event: Event) {
@@ -684,11 +703,29 @@ export class BudgetPage {
     }
 
     onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) {
+        console.log('========================================');
+        console.log('[BudgetPage] onCategoryModalSubmit CALLED');
+        console.log('[BudgetPage] Data received:', JSON.stringify(data));
+
+        // CRITICAL: Validate that we received actual category data, not a native Event
+        if (!data || typeof data.name !== 'string' || !['income', 'expense', 'both'].includes(data.type)) {
+            console.log('[BudgetPage] ERROR: Invalid data received (likely native form event), ignoring');
+            return;
+        }
+
+        console.log('[BudgetPage] editingCategory is:', this.editingCategory());
+        console.log('[BudgetPage] Categories BEFORE operation:', JSON.stringify(this.stateService.categories()));
+
         if (this.editingCategory()) {
+            console.log('[BudgetPage] MODE: Updating existing category ID:', this.editingCategory()!.id);
             this.stateService.updateCategory(this.editingCategory()!.id, data.name, data.type);
         } else {
+            console.log('[BudgetPage] MODE: Adding NEW category');
             this.stateService.addCategory(data.name, data.type);
         }
+
+        console.log('[BudgetPage] Categories AFTER operation:', JSON.stringify(this.stateService.categories()));
+        console.log('========================================');
 
         this.toggleCategoryModal();
         this.editingCategory.set(null);

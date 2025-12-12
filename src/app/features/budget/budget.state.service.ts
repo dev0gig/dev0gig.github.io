@@ -55,7 +55,25 @@ export class BudgetStateService {
                 this.accounts.set(parsedAccounts);
             }
         }
-        if (categoriesData) this.categories.set(JSON.parse(categoriesData));
+        if (categoriesData) {
+            let parsedCategories: Category[] = JSON.parse(categoriesData);
+
+            // Filter out invalid/corrupted categories (missing name or invalid type)
+            const originalCount = parsedCategories.length;
+            parsedCategories = parsedCategories.filter(c =>
+                c.name && typeof c.name === 'string' && c.name.trim() !== '' &&
+                ['income', 'expense', 'both'].includes(c.type)
+            );
+            const removedCount = originalCount - parsedCategories.length;
+            if (removedCount > 0) {
+                console.warn(`loadData: Removed ${removedCount} invalid/corrupted category entries`);
+                // Save cleaned categories back to localStorage
+                this.categories.set(parsedCategories);
+                this.saveCategories();
+            } else {
+                this.categories.set(parsedCategories);
+            }
+        }
         if (fixedCostsData) {
             let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
 
@@ -189,13 +207,29 @@ export class BudgetStateService {
     // ==================== Category Operations ====================
 
     addCategory(name: string, type: 'income' | 'expense' | 'both') {
+        console.log('[StateService] addCategory called with name:', name, 'type:', type);
+
+        // Validate data to prevent corrupted entries
+        if (!name || typeof name !== 'string' || name.trim() === '') {
+            console.warn('[StateService] addCategory: Invalid data - missing or invalid name');
+            return;
+        }
+        if (!['income', 'expense', 'both'].includes(type)) {
+            console.warn('[StateService] addCategory: Invalid data - invalid type:', type);
+            return;
+        }
+
         const category: Category = {
             id: this.utilityService.generateId(),
-            name,
+            name: name.trim(),
             type
         };
+        console.log('[StateService] Created new category object:', JSON.stringify(category));
+        console.log('[StateService] Categories BEFORE update:', JSON.stringify(this.categories()));
         this.categories.update(c => [...c, category]);
+        console.log('[StateService] Categories AFTER update:', JSON.stringify(this.categories()));
         this.saveCategories();
+        console.log('[StateService] Categories saved to localStorage');
     }
 
     updateCategory(id: string, name: string, type: 'income' | 'expense' | 'both') {
@@ -208,6 +242,24 @@ export class BudgetStateService {
     deleteCategory(id: string) {
         this.categories.update(c => c.filter(category => category.id !== id));
         this.saveCategories();
+    }
+
+    deleteAllCategories() {
+        console.log('[StateService] deleteAllCategories called');
+        console.log('[StateService] Categories BEFORE:', JSON.stringify(this.categories()));
+        this.categories.set([]);
+        this.saveCategories();
+        console.log('[StateService] Categories AFTER:', JSON.stringify(this.categories()));
+        console.log('[StateService] Categories saved to localStorage');
+    }
+
+    deleteSelectedCategories(ids: string[]) {
+        console.log('[StateService] deleteSelectedCategories called with ids:', ids);
+        console.log('[StateService] Categories BEFORE:', JSON.stringify(this.categories()));
+        this.categories.update(c => c.filter(category => !ids.includes(category.id)));
+        this.saveCategories();
+        console.log('[StateService] Categories AFTER:', JSON.stringify(this.categories()));
+        console.log('[StateService] Categories saved to localStorage');
     }
 
     getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>): string {
