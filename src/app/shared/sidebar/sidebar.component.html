@@ -12,31 +12,36 @@
             </button>
         </div>
 
-        <!-- Quick Actions: Export/Import (dezent) -->
-        <div class="flex justify-center gap-3 text-dash-text-dim">
-            <button (click)="exportAllData()"
-                class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
-                title="Alle Daten exportieren (Ctrl+E)">
-                <span class="material-symbols-sharp text-sm">download</span>
-                <span>Export</span>
-                <span class="text-[10px] opacity-60">Ctrl+E</span>
-            </button>
-            <span class="text-dash-border">|</span>
-            <button (click)="triggerImportAll()"
-                class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
-                title="Alle Daten importieren (Ctrl+I)">
-                <span class="material-symbols-sharp text-sm">upload</span>
-                <span>Import</span>
-                <span class="text-[10px] opacity-60">Ctrl+I</span>
-            </button>
-            <span class="text-dash-border">|</span>
-            <button (click)="openQuickNote()"
-                class="flex items-center gap-1.5 text-xs hover:text-amber-400 transition-colors"
-                title="Schnellnotiz (Alt+N)">
-                <span class="material-symbols-sharp text-sm">edit_note</span>
-                <span>Notiz</span>
-                <span class="text-[10px] opacity-60">Alt+N</span>
-            </button>
+        <!-- Quick Actions -->
+        <div class="flex flex-col gap-2">
+            <!-- Row 1: Export/Import -->
+            <div class="flex justify-center gap-3 text-dash-text-dim">
+                <button (click)="exportAllData()"
+                    class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
+                    title="Alle Daten exportieren (Ctrl+E)">
+                    <span class="material-symbols-sharp text-sm">download</span>
+                    <span>Export</span>
+                    <span class="text-[10px] opacity-60">Ctrl+E</span>
+                </button>
+                <span class="text-dash-border">|</span>
+                <button (click)="triggerImportAll()"
+                    class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
+                    title="Alle Daten importieren (Ctrl+I)">
+                    <span class="material-symbols-sharp text-sm">upload</span>
+                    <span>Import</span>
+                    <span class="text-[10px] opacity-60">Ctrl+I</span>
+                </button>
+            </div>
+            <!-- Row 2: Quick Note -->
+            <div class="flex justify-center text-dash-text-dim">
+                <button (click)="openQuickNote()"
+                    class="flex items-center gap-1.5 text-xs hover:text-amber-400 transition-colors"
+                    title="Schnellnotiz (Alt+N)">
+                    <span class="material-symbols-sharp text-sm">edit_note</span>
+                    <span>Schnellnotiz</span>
+                    <span class="text-[10px] opacity-60">Alt+N</span>
+                </button>
+            </div>
         </div>
 
         <div class="border-t border-dash-border"></div>
