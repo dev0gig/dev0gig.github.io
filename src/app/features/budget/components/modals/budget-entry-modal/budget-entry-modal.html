@@ -1,0 +1,195 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()"></div>
+    <div
+        class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-[min(95vw,700px)] accent-glow max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-dash-text">{{ getTitle() }}</h2>
+            <button (click)="onClose()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+
+        <!-- Prefill Info Banner -->
+        @if (prefillFromFixedCost && mode === 'bookFixedCost') {
+        <div class="mb-3 p-2 bg-dash-accent/10 border border-dash-accent/30 rounded-sm">
+            <div class="flex items-center gap-2 text-dash-accent text-sm">
+                <span class="material-symbols-sharp text-lg">info</span>
+                <span>Aus Fixkosten: <strong>{{ prefillFromFixedCost.name }}</strong></span>
+            </div>
+        </div>
+        }
+
+        <form (submit)="onSubmit($event)" class="space-y-3">
+            <!-- Type Selector -->
+            <div [class.opacity-50]="isFieldDisabled('type')" [class.pointer-events-none]="isFieldDisabled('type')">
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Typ</label>
+                <div class="flex gap-2">
+                    <button type="button" (click)="setType('expense')"
+                        [class]="currentType() === 'expense' 
+                            ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors' 
+                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-1.5 rounded-sm text-sm font-medium transition-colors border border-dash-border hover:border-dash-text-dim'">
+                        Ausgabe
+                    </button>
+                    <button type="button" (click)="setType('income')"
+                        [class]="currentType() === 'income' 
+                            ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors' 
+                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-1.5 rounded-sm text-sm font-medium transition-colors border border-dash-border hover:border-dash-text-dim'">
+                        Einnahme
+                    </button>
+                    <button type="button" (click)="setType('transfer')"
+                        [class]="currentType() === 'transfer' 
+                            ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors' 
+                            : 'flex-1 bg-dash-bg text-dash-text-dim px-3 py-1.5 rounded-sm text-sm font-medium transition-colors border border-dash-border hover:border-dash-text-dim'">
+                        Transfer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 1: Name/Description + Amount -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">
+                        {{ mode === 'fixedCost' ? 'Name' : 'Beschreibung' }}
+                    </label>
+                    <input type="text" name="name" [ngModel]="getNameValue()"
+                        [class]="hasError('name') 
+                            ? 'w-full bg-dash-bg border-2 border-red-500 text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-red-400' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'"
+                        [placeholder]="mode === 'fixedCost' ? 'z.B. Miete' : 'z.B. Einkauf'">
+                    @if (hasError('name')) {
+                    <p class="text-red-500 text-xs mt-0.5">Erforderlich</p>
+                    }
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Betrag
+                        (€)</label>
+                    <input type="number" name="amount" step="0.01" [ngModel]="getAmountValue()"
+                        [class]="hasError('amount') 
+                            ? 'w-full bg-dash-bg border-2 border-red-500 text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-red-400' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'" placeholder="0,00">
+                    @if (hasError('amount')) {
+                    <p class="text-red-500 text-xs mt-0.5">Ungültig</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Row 2: Category + Account -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
+                    <select name="category" [ngModel]="getCategoryValue()"
+                        [class]="hasError('category') 
+                            ? 'w-full bg-dash-bg border-2 border-red-500 text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-red-400' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
+                        <option value="">Wählen</option>
+                        @for (category of getSortedCategories(); track category.id) {
+                        <option [value]="category.id">{{ category.name }}</option>
+                        }
+                    </select>
+                    @if (hasError('category')) {
+                    <p class="text-red-500 text-xs mt-0.5">Bitte wählen</p>
+                    }
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">
+                        {{ currentType() === 'transfer' ? 'Von Konto' : 'Konto' }}
+                    </label>
+                    <select name="account" [ngModel]="getAccountValue()"
+                        [class]="hasError('account') 
+                            ? 'w-full bg-dash-bg border-2 border-red-500 text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-red-400' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
+                        <option value="">Wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id">{{ account.name }}</option>
+                        }
+                    </select>
+                    @if (hasError('account')) {
+                    <p class="text-red-500 text-xs mt-0.5">Bitte wählen</p>
+                    }
+                </div>
+            </div>
+
+            <!-- To Account (only for transfer) -->
+            @if (currentType() === 'transfer') {
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Nach
+                    Konto</label>
+                <select name="toAccount" [ngModel]="getToAccountValue()"
+                    [class]="hasError('toAccount') 
+                        ? 'w-full bg-dash-bg border-2 border-red-500 text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-red-400' 
+                        : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
+                    <option value="">Wählen</option>
+                    @for (account of accounts; track account.id) {
+                    <option [value]="account.id">{{ account.name }}</option>
+                    }
+                </select>
+                @if (hasError('toAccount')) {
+                <p class="text-red-500 text-xs mt-0.5">Bitte wählen</p>
+                }
+            </div>
+            }
+
+            <!-- Row 3: Date + Group -->
+            <div class="grid grid-cols-1 gap-3" [class.sm:grid-cols-2]="groups.length > 0">
+                <div [class.opacity-50]="isFieldDisabled('date')" [class.pointer-events-none]="isFieldDisabled('date')">
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Datum</label>
+                    <input type="date" name="date" [ngModel]="getDateValue()"
+                        [class]="hasError('date') 
+                            ? 'w-full bg-dash-bg border-2 border-red-500 text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-red-400' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
+                    @if (hasError('date')) {
+                    <p class="text-red-500 text-xs mt-0.5">Bitte wählen</p>
+                    }
+                </div>
+                @if (groups.length > 0) {
+                <div [class.opacity-50]="isFieldDisabled('group')"
+                    [class.pointer-events-none]="isFieldDisabled('group')">
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Gruppe</label>
+                    <select name="group" [ngModel]="getGroupValue()"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
+                        <option value="">Keine</option>
+                        @for (group of getSortedGroups(); track group.id) {
+                        <option [value]="group.id">{{ group.name }}</option>
+                        }
+                    </select>
+                </div>
+                }
+            </div>
+
+            <!-- Row 4: Note + Exclude checkbox -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Notiz</label>
+                    <input type="text" name="note" [ngModel]="getNoteValue()"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent"
+                        placeholder="Optional...">
+                </div>
+                <div [class.opacity-50]="isFieldDisabled('exclude')"
+                    [class.pointer-events-none]="isFieldDisabled('exclude')">
+                    <div class="flex items-center gap-2 py-1.5">
+                        <input type="checkbox" name="exclude" id="excludeFromTotal" [checked]="getExcludeValue()"
+                            class="w-4 h-4 bg-dash-bg border border-dash-border rounded accent-dash-accent">
+                        <label for="excludeFromTotal" class="text-sm text-dash-text-dim cursor-pointer">
+                            Nicht in Summe
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2 pt-1">
+                <button type="button" (click)="onClose()"
+                    class="flex-1 bg-dash-bg hover:bg-dash-card-hover text-dash-text-dim hover:text-white px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border">
+                    Abbrechen
+                </button>
+                <button type="submit" class="flex-1 gradient-btn text-white px-4 py-2 rounded-sm text-sm font-medium">
+                    {{ editingTransaction || editingFixedCost ? 'Speichern' : 'Hinzufügen' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

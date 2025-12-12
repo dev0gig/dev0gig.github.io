@@ -1,6 +1,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onClose()"></div>
-    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md accent-glow">
+    <div
+        class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-[min(95vw,600px)] max-h-[90vh] overflow-y-auto accent-glow">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-bold text-dash-text">
                 {{ editingTransaction ? 'Transaktion bearbeiten' : (prefillFromFixedCost ? 'Fixkosten

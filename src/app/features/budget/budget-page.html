@@ -65,8 +65,8 @@
             <!-- TRANSACTIONS VIEW -->
             @if (viewMode() === 'transactions') {
             <app-transactions-view [transactions]="getSortedTransactions()" [accounts]="accounts()"
-                [categories]="categories()" [searchQuery]="searchQuery()" (addTransaction)="toggleTransactionModal()"
-                (editTransaction)="openEditModal($event)" (deleteTransaction)="deleteTransaction($event)"
+                [categories]="categories()" [searchQuery]="searchQuery()" (addTransaction)="openNewTransactionModal()"
+                (editTransaction)="openEditTransactionModal($event)" (deleteTransaction)="deleteTransaction($event)"
                 (copyToFixedCost)="copyTransactionToFixedCost($event)" (search)="stateService.onSearch($event)">
             </app-transactions-view>
             }
@@ -97,8 +97,8 @@
                 [fixedTransferTotal]="getFixedTransferTotal()" [fixedIncomeCount]="getFixedIncomeCount()"
                 [fixedExpenseCount]="getFixedExpenseCount()" [fixedTransferCount]="getFixedTransferCount()"
                 [excludedTotal]="getExcludedFixedCostsTotal()" [excludedCount]="getExcludedFixedCostsCount()"
-                (addFixedCost)="toggleFixedCostModal()" (editFixedCost)="openEditFixedCostModal($event)"
-                (deleteFixedCost)="deleteFixedCost($event)" (createTransaction)="createTransactionFromFixedCost($event)"
+                (addFixedCost)="openNewFixedCostModal()" (editFixedCost)="openEditFixedCostModalUnified($event)"
+                (deleteFixedCost)="deleteFixedCost($event)" (createTransaction)="openBookFixedCostModal($event)"
                 (addGroup)="toggleFixedCostGroupModal()" (editGroup)="openEditFixedCostGroupModal($event)"
                 (deleteGroup)="deleteFixedCostGroup($event)" (reorderFixedCosts)="reorderFixedCosts($event)">
             </app-fixed-costs-view>
@@ -114,13 +114,13 @@
             </app-budget-sidebar>
         </aside>
 
-        <!-- Transaction Modal -->
-        @if (showTransactionModal()) {
-        <app-transaction-modal [editingTransaction]="editingTransaction()"
-            [prefillFromFixedCost]="prefillFromFixedCost()" [accounts]="accounts()" [categories]="categories()"
-            (close)="toggleTransactionModal(); editingTransaction.set(null); clearPrefillData()"
-            (submit)="onTransactionModalSubmit($event)">
-        </app-transaction-modal>
+        <!-- Unified Budget Entry Modal -->
+        @if (showBudgetEntryModal()) {
+        <app-budget-entry-modal [mode]="entryModalMode()" [editingTransaction]="editingTransaction()"
+            [editingFixedCost]="editingFixedCost()" [prefillFromFixedCost]="prefillFromFixedCost()"
+            [accounts]="accounts()" [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()"
+            (close)="closeBudgetEntryModal()" (submitEntry)="onBudgetEntryModalSubmit($event)">
+        </app-budget-entry-modal>
         }
 
         <!-- Account Modal -->
@@ -135,14 +135,6 @@
         <app-category-modal [editingCategory]="editingCategory()"
             (close)="toggleCategoryModal(); editingCategory.set(null)" (submit)="onCategoryModalSubmit($event)">
         </app-category-modal>
-        }
-
-        <!-- Fixed Cost Modal -->
-        @if (showFixedCostModal()) {
-        <app-fixed-cost-modal [editingFixedCost]="editingFixedCost()" [accounts]="accounts()"
-            [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleFixedCostModal()"
-            (submit)="onFixedCostModalSubmit($event)">
-        </app-fixed-cost-modal>
         }
 
         <!-- Fixed Cost Group Modal -->
