@@ -146,12 +146,21 @@
                     <div>
                         <label
                             class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
-                        <select name="category" required [disabled]="!isEditingInline(transaction.id)"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                        <select name="category" [required]="!isCategoryDisabledForTransaction(transaction.id)"
+                            [disabled]="!isEditingInline(transaction.id) || isCategoryDisabledForTransaction(transaction.id)"
+                            [class]="isCategoryDisabledForTransaction(transaction.id) 
+                                ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-2 py-1.5 rounded-sm text-sm cursor-not-allowed opacity-50' 
+                                : 'w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed'">
+                            @if (isCategoryDisabledForTransaction(transaction.id)) {
+                            <option value="">Nicht verfügbar bei Transfer</option>
+                            } @else if (getFilteredCategoriesForTransaction(transaction.id).length === 0) {
+                            <option value="">Keine passenden Kategorien</option>
+                            } @else {
                             <option value="">Wählen</option>
-                            @for (category of getSortedCategories(); track category.id) {
+                            @for (category of getFilteredCategoriesForTransaction(transaction.id); track category.id) {
                             <option [value]="category.id" [selected]="category.id === transaction.category">{{
                                 category.name }}</option>
+                            }
                             }
                         </select>
                     </div>

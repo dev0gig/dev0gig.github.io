@@ -43,8 +43,34 @@ export class FixedCostModalComponent implements OnInit {
         this.currentType.set(type);
     }
 
-    getSortedCategories(): Category[] {
-        return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+    /**
+     * Gets categories filtered by current type:
+     * - income: shows categories with type 'income' or 'both'
+     * - expense: shows categories with type 'expense' or 'both'
+     * - transfer: returns empty array (transfers have no category)
+     */
+    getFilteredCategories(): Category[] {
+        const type = this.currentType();
+
+        // Transfers don't have categories
+        if (type === 'transfer') {
+            return [];
+        }
+
+        // Filter categories based on type
+        return [...this.categories]
+            .filter(cat => {
+                if (cat.type === 'both') return true;
+                return cat.type === type;
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    /**
+     * Check if category field should be disabled (for transfers)
+     */
+    isCategoryDisabled(): boolean {
+        return this.currentType() === 'transfer';
     }
 
     getSortedGroups(): FixedCostGroup[] {

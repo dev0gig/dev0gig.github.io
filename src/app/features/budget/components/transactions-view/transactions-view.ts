@@ -52,8 +52,34 @@ export class TransactionsViewComponent {
         return this.stateService.getCategoryFullName(id);
     }
 
-    getSortedCategories(): Category[] {
-        return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+    /**
+     * Gets categories filtered by transaction type for inline editing:
+     * - income: shows categories with type 'income' or 'both'
+     * - expense: shows categories with type 'expense' or 'both'
+     * - transfer: returns empty array (transfers have no category)
+     */
+    getFilteredCategoriesForTransaction(transactionId: string): Category[] {
+        const type = this.getInlineTransactionType(transactionId);
+
+        // Transfers don't have categories
+        if (type === 'transfer') {
+            return [];
+        }
+
+        // Filter categories based on type
+        return [...this.categories]
+            .filter(cat => {
+                if (cat.type === 'both') return true;
+                return cat.type === type;
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    /**
+     * Check if category field should be disabled for a specific transaction (for transfers)
+     */
+    isCategoryDisabledForTransaction(transactionId: string): boolean {
+        return this.getInlineTransactionType(transactionId) === 'transfer';
     }
 
     // Expansion and inline edit

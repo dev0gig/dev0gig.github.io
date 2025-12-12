@@ -65,12 +65,21 @@
                 <div>
                     <label
                         class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
-                    <select name="category" required
-                        [ngModel]="editingTransaction?.category || prefillFromFixedCost?.category"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
-                        <option value="">Wählen</option>
-                        @for (category of getSortedCategories(); track category.id) {
-                        <option [value]="category.id">{{ category.name }}</option>
+                    <select name="category" [required]="!isCategoryDisabled()"
+                        [disabled]="isCategoryDisabled()"
+                        [ngModel]="isCategoryDisabled() ? '' : (editingTransaction?.category || prefillFromFixedCost?.category)"
+                        [class]="isCategoryDisabled() 
+                            ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-3 py-1.5 rounded-sm cursor-not-allowed opacity-50' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
+                        @if (isCategoryDisabled()) {
+                            <option value="">Nicht verfügbar bei Transfer</option>
+                        } @else if (getFilteredCategories().length === 0) {
+                            <option value="">Keine passenden Kategorien</option>
+                        } @else {
+                            <option value="">Wählen</option>
+                            @for (category of getFilteredCategories(); track category.id) {
+                                <option [value]="category.id">{{ category.name }}</option>
+                            }
                         }
                     </select>
                 </div>
