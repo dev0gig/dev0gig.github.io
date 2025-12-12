@@ -73,6 +73,9 @@ export class BudgetStateService {
             } else {
                 this.categories.set(parsedCategories);
             }
+        } else {
+            // Initialize with default categories on first start
+            this.initializeDefaultCategories();
         }
         if (fixedCostsData) {
             let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
@@ -260,6 +263,52 @@ export class BudgetStateService {
         this.saveCategories();
         console.log('[StateService] Categories AFTER:', JSON.stringify(this.categories()));
         console.log('[StateService] Categories saved to localStorage');
+    }
+
+    /**
+     * Initialize default categories for first-time users
+     * Users can still edit or delete these categories later
+     */
+    private initializeDefaultCategories() {
+        const defaultCategories: { name: string; type: 'income' | 'expense' | 'both' }[] = [
+            // Income categories
+            { name: 'Gehalt', type: 'income' },
+            { name: 'Nebeneinkommen', type: 'income' },
+            { name: 'Kindergeld', type: 'income' },
+            { name: 'Zinsen & Dividenden', type: 'income' },
+            { name: 'Rückerstattung', type: 'income' },
+
+            // Expense categories
+            { name: 'Miete & Wohnen', type: 'expense' },
+            { name: 'Lebensmittel', type: 'expense' },
+            { name: 'Transport & Auto', type: 'expense' },
+            { name: 'Versicherungen', type: 'expense' },
+            { name: 'Strom & Energie', type: 'expense' },
+            { name: 'Internet & Telefon', type: 'expense' },
+            { name: 'Gesundheit', type: 'expense' },
+            { name: 'Freizeit & Hobby', type: 'expense' },
+            { name: 'Restaurant & Café', type: 'expense' },
+            { name: 'Kleidung', type: 'expense' },
+            { name: 'Haushalt', type: 'expense' },
+            { name: 'Abonnements', type: 'expense' },
+            { name: 'Bildung', type: 'expense' },
+            { name: 'Urlaub & Reisen', type: 'expense' },
+            { name: 'Sparen & Investieren', type: 'expense' },
+
+            // Both (can be income or expense)
+            { name: 'Geschenke', type: 'both' },
+            { name: 'Sonstiges', type: 'both' }
+        ];
+
+        const categories: Category[] = defaultCategories.map(cat => ({
+            id: this.utilityService.generateId(),
+            name: cat.name,
+            type: cat.type
+        }));
+
+        this.categories.set(categories);
+        this.saveCategories();
+        console.log('[StateService] Initialized default categories:', categories.length);
     }
 
     getOrCreateCategory(categoryNameRaw: string, categoriesMap: Map<string, Category>): string {
