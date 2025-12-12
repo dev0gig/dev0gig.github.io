@@ -1,0 +1,20 @@
+@if (isVisible()) {
+<div class="quick-note-overlay">
+    <div class="quick-note-container" [style.left.px]="position().x" [style.top.px]="position().y">
+        <!-- Header / Drag Handle -->
+        <div class="quick-note-header" (mousedown)="startDrag($event)" (touchstart)="startDrag($event)">
+            <span class="quick-note-title">📝 Schnellnotiz</span>
+            <button class="quick-note-close" (click)="close()" title="Schließen (Alt+N)">×</button>
+        </div>
+
+        <!-- Note Input -->
+        <textarea #noteInput [(ngModel)]="noteText" (keydown.enter)="onEnter($any($event))" class="quick-note-textarea"
+            placeholder="Gedanken notieren... (Enter zum Speichern)" rows="5"></textarea>
+
+        <!-- Footer hint -->
+        <div class="quick-note-footer">
+            <span>Enter → Speichern & Schließen</span>
+        </div>
+    </div>
+</div>
+}

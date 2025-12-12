@@ -1,9 +1,10 @@
-import { Component, inject, HostListener, OnInit } from '@angular/core';
+import { Component, inject, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { ThemeService } from './shared/theme.service';
 import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { RightSidebarComponent } from './shared/right-sidebar/right-sidebar.component';
 import { GlobalSettingsModal } from './shared/global-settings-modal/global-settings-modal';
+import { QuickNoteComponent } from './shared/quick-note/quick-note';
 import { SidebarService } from './shared/sidebar.service';
 import { SettingsService } from './shared/settings.service';
 import { filter, take } from 'rxjs/operators';
@@ -11,7 +12,7 @@ import { filter, take } from 'rxjs/operators';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, RightSidebarComponent, GlobalSettingsModal],
+  imports: [RouterOutlet, SidebarComponent, RightSidebarComponent, GlobalSettingsModal, QuickNoteComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -21,6 +22,8 @@ export class App implements OnInit {
   private router = inject(Router);
   private sidebarService = inject(SidebarService);
   settingsService = inject(SettingsService);
+
+  @ViewChild(QuickNoteComponent) quickNote!: QuickNoteComponent;
 
   ngOnInit() {
     // Auto-redirect Android devices to AudioNotes on initial load
@@ -71,6 +74,10 @@ export class App implements OnInit {
         case 's':
           event.preventDefault();
           this.sidebarService.toggleBoth();
+          break;
+        case 'n':
+          event.preventDefault();
+          this.quickNote?.toggle();
           break;
       }
     }
