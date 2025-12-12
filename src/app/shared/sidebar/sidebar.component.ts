@@ -58,6 +58,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.closeSidebarOnMobile();
     }
 
+    openQuickCalc() {
+        window.dispatchEvent(new CustomEvent('app:quickcalc'));
+        this.closeSidebarOnMobile();
+    }
+
     downloadAudioNotes() {
         if (confirm('Möchten Sie die AudioNotes App herunterladen?')) {
             const link = document.createElement('a');

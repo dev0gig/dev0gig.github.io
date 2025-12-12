@@ -1,0 +1,66 @@
+@if (isVisible()) {
+<div class="quick-calc-overlay">
+    <div class="quick-calc-container" [style.left.px]="position().x" [style.top.px]="position().y">
+        <!-- Header / Drag Handle -->
+        <div class="quick-calc-header" (mousedown)="startDrag($event)" (touchstart)="startDrag($event)">
+            <span class="quick-calc-title">⚡ Schnellrechner</span>
+            <div class="quick-calc-header-buttons">
+                <button class="quick-calc-help-btn" [class.active]="showHelp()" (click)="toggleHelp()"
+                    title="Hilfe">?</button>
+                <button class="quick-calc-close" (click)="close()" title="Schließen (ESC)">×</button>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        @if (showHelp()) {
+        <div class="quick-calc-help-panel">
+            <div class="help-section">
+                <span class="help-label">Mathe</span>
+                <span class="help-example">2+3, 5*4, 2^8</span>
+            </div>
+            <div class="help-section">
+                <span class="help-label">Datum → Tag</span>
+                <span class="help-example">24.12.2025</span>
+            </div>
+            <div class="help-section">
+                <span class="help-label">Tage bis</span>
+                <span class="help-example">today to 24.02.2025</span>
+            </div>
+            <div class="help-section">
+                <span class="help-label">Datum ±</span>
+                <span class="help-example">today + 3weeks, today - 2months</span>
+            </div>
+            <div class="help-section">
+                <span class="help-label">Datum rechnen</span>
+                <span class="help-example">24.12.2025 + 1year</span>
+            </div>
+            <div class="help-section">
+                <span class="help-label">Einheiten</span>
+                <span class="help-example">3cm in m, 100c in f</span>
+            </div>
+        </div>
+        }
+
+        <!-- Input Area -->
+        <div class="quick-calc-input-area">
+            <span class="quick-calc-prompt">&gt;</span>
+            <input #calcInput type="text" [(ngModel)]="inputText" (ngModelChange)="onInputChange()"
+                (keydown.escape)="onEscape()" class="quick-calc-input" placeholder="2+3, 24.12.2025, 3cm in m..."
+                autocomplete="off" spellcheck="false">
+        </div>
+
+        <!-- Result -->
+        @if (result()) {
+        <div class="quick-calc-result">
+            <span class="quick-calc-result-label">= </span>
+            <span class="quick-calc-result-value">{{ result() }}</span>
+        </div>
+        }
+
+        <!-- Footer hint -->
+        <div class="quick-calc-footer">
+            <span>ESC → Schließen</span>
+        </div>
+    </div>
+</div>
+}

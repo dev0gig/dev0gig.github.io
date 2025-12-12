@@ -1,0 +1,268 @@
+/* Quick Calc Overlay */
+.quick-calc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* Terminal Style Container */
+.quick-calc-container {
+    position: fixed;
+    width: 400px;
+    pointer-events: auto;
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(0, 255, 136, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    animation: quickCalcAppear 0.2s ease-out;
+    overflow: hidden;
+}
+
+@keyframes quickCalcAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Scanline effect */
+.quick-calc-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 136, 0.03) 2px,
+            rgba(0, 255, 136, 0.03) 4px);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Drag Handle / Header */
+.quick-calc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    cursor: grab;
+    user-select: none;
+    background: rgba(0, 255, 136, 0.05);
+    border-bottom: 1px solid #30363d;
+}
+
+.quick-calc-header:active {
+    cursor: grabbing;
+}
+
+.quick-calc-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #00ff88;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.quick-calc-close {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #30363d;
+    background: rgba(255, 85, 85, 0.1);
+    color: #ff5555;
+    border-radius: 4px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-calc-close:hover {
+    background: rgba(255, 85, 85, 0.3);
+    border-color: #ff5555;
+    transform: scale(1.1);
+}
+
+/* Header Buttons Container */
+.quick-calc-header-buttons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Help Button */
+.quick-calc-help-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #30363d;
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-calc-help-btn:hover,
+.quick-calc-help-btn.active {
+    background: rgba(0, 255, 136, 0.3);
+    border-color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+/* Help Panel */
+.quick-calc-help-panel {
+    padding: 10px 14px;
+    background: rgba(0, 255, 136, 0.03);
+    border-bottom: 1px dashed #30363d;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    animation: helpSlide 0.2s ease-out;
+}
+
+@keyframes helpSlide {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        max-height: 200px;
+    }
+}
+
+.help-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+}
+
+.help-label {
+    color: #58a6ff;
+    font-weight: 500;
+}
+
+.help-example {
+    color: #7ee787;
+    font-family: 'Fira Code', monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Input Area */
+.quick-calc-input-area {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    gap: 8px;
+}
+
+.quick-calc-prompt {
+    color: #00ff88;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.quick-calc-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e6edf3;
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    caret-color: #00ff88;
+}
+
+.quick-calc-input::placeholder {
+    color: #484f58;
+    font-style: italic;
+}
+
+.quick-calc-input::selection {
+    background: rgba(0, 255, 136, 0.3);
+}
+
+/* Result */
+.quick-calc-result {
+    padding: 12px 14px;
+    background: rgba(0, 255, 136, 0.05);
+    border-top: 1px dashed #30363d;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.quick-calc-result-label {
+    color: #7ee787;
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.quick-calc-result-value {
+    color: #7ee787;
+    font-size: 18px;
+    font-weight: 600;
+    text-shadow: 0 0 12px rgba(126, 231, 135, 0.5);
+    animation: resultFade 0.2s ease-out;
+}
+
+@keyframes resultFade {
+    from {
+        opacity: 0;
+        transform: translateX(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Footer */
+.quick-calc-footer {
+    padding: 8px 14px;
+    border-top: 1px solid #30363d;
+    font-size: 10px;
+    color: #484f58;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .quick-calc-container {
+        width: calc(100vw - 32px);
+        left: 16px !important;
+    }
+}

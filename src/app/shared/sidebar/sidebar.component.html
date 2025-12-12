@@ -32,14 +32,22 @@
                     <span class="text-[10px] opacity-60">Ctrl+I</span>
                 </button>
             </div>
-            <!-- Row 2: Quick Note -->
-            <div class="flex justify-center text-dash-text-dim">
+            <!-- Row 2: Quick Note & Quick Calc -->
+            <div class="flex justify-center gap-3 text-dash-text-dim">
                 <button (click)="openQuickNote()"
                     class="flex items-center gap-1.5 text-xs hover:text-amber-400 transition-colors"
                     title="Schnellnotiz (Alt+N)">
                     <span class="material-symbols-sharp text-sm">edit_note</span>
-                    <span>Schnellnotiz</span>
+                    <span>Notiz</span>
                     <span class="text-[10px] opacity-60">Alt+N</span>
+                </button>
+                <span class="text-dash-border">|</span>
+                <button (click)="openQuickCalc()"
+                    class="flex items-center gap-1.5 text-xs hover:text-emerald-400 transition-colors"
+                    title="Schnellrechner (Alt+R)">
+                    <span class="material-symbols-sharp text-sm">calculate</span>
+                    <span>Rechner</span>
+                    <span class="text-[10px] opacity-60">Alt+R</span>
                 </button>
             </div>
         </div>

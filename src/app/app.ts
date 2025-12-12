@@ -5,6 +5,7 @@ import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { RightSidebarComponent } from './shared/right-sidebar/right-sidebar.component';
 import { GlobalSettingsModal } from './shared/global-settings-modal/global-settings-modal';
 import { QuickNoteComponent } from './shared/quick-note/quick-note';
+import { QuickCalcComponent } from './shared/quick-calc/quick-calc';
 import { SidebarService } from './shared/sidebar.service';
 import { SettingsService } from './shared/settings.service';
 import { filter, take } from 'rxjs/operators';
@@ -12,7 +13,7 @@ import { filter, take } from 'rxjs/operators';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, RightSidebarComponent, GlobalSettingsModal, QuickNoteComponent],
+  imports: [RouterOutlet, SidebarComponent, RightSidebarComponent, GlobalSettingsModal, QuickNoteComponent, QuickCalcComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -24,6 +25,7 @@ export class App implements OnInit {
   settingsService = inject(SettingsService);
 
   @ViewChild(QuickNoteComponent) quickNote!: QuickNoteComponent;
+  @ViewChild(QuickCalcComponent) quickCalc!: QuickCalcComponent;
 
   ngOnInit() {
     // Auto-redirect Android devices to AudioNotes on initial load
@@ -79,6 +81,10 @@ export class App implements OnInit {
           event.preventDefault();
           this.quickNote?.toggle();
           break;
+        case 'r':
+          event.preventDefault();
+          this.quickCalc?.toggle();
+          break;
       }
     }
 
@@ -100,4 +106,3 @@ export class App implements OnInit {
     }
   }
 }
-
