@@ -168,6 +168,14 @@
                                 {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
                                 formatCurrency(fixedCost.amount) }}
                             </div>
+
+                            <!-- Quick Book Button -->
+                            <button type="button" (click)="onCreateTransaction(fixedCost); $event.stopPropagation()"
+                                class="gradient-btn text-white px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium flex items-center gap-1 flex-shrink-0"
+                                title="Als Transaktion buchen">
+                                <span class="material-symbols-sharp text-sm">add</span>
+                                <span class="hidden sm:inline">Buchen</span>
+                            </button>
                         </div>
                     </div>
 
@@ -414,6 +422,14 @@
                                 {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
                                 formatCurrency(fixedCost.amount) }}
                             </div>
+
+                            <!-- Quick Book Button -->
+                            <button type="button" (click)="onCreateTransaction(fixedCost); $event.stopPropagation()"
+                                class="gradient-btn text-white px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium flex items-center gap-1 flex-shrink-0"
+                                title="Als Transaktion buchen">
+                                <span class="material-symbols-sharp text-sm">add</span>
+                                <span class="hidden sm:inline">Buchen</span>
+                            </button>
                         </div>
                     </div>
                     <!-- Expanded form would go here (copy from above if needed) -->
@@ -550,6 +566,14 @@
                                 {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
                                 formatCurrency(fixedCost.amount) }}
                             </div>
+
+                            <!-- Quick Book Button -->
+                            <button type="button" (click)="onCreateTransaction(fixedCost); $event.stopPropagation()"
+                                class="gradient-btn text-white px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium flex items-center gap-1 flex-shrink-0"
+                                title="Als Transaktion buchen">
+                                <span class="material-symbols-sharp text-sm">add</span>
+                                <span class="hidden sm:inline">Buchen</span>
+                            </button>
                         </div>
                     </div>
                 </div>
