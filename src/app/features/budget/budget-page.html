@@ -146,6 +146,14 @@
         </app-fixed-cost-group-modal>
         }
 
+        <!-- Fixed Cost Modal -->
+        @if (showFixedCostModal()) {
+        <app-fixed-cost-modal [editingFixedCost]="editingFixedCost()" [accounts]="accounts()"
+            [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleFixedCostModal()"
+            (submit)="onFixedCostSubmit($event)">
+        </app-fixed-cost-modal>
+        }
+
         <!-- Toast Notification -->
         @if (toastMessage()) {
         <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">

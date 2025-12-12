@@ -44,7 +44,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label
-                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Beschreibung</label>
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Titel</label>
                     <input type="text" name="description" required
                         [ngModel]="editingTransaction?.description || prefillFromFixedCost?.name"
                         class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent"
@@ -65,21 +65,20 @@
                 <div>
                     <label
                         class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
-                    <select name="category" [required]="!isCategoryDisabled()"
-                        [disabled]="isCategoryDisabled()"
+                    <select name="category" [required]="!isCategoryDisabled()" [disabled]="isCategoryDisabled()"
                         [ngModel]="isCategoryDisabled() ? '' : (editingTransaction?.category || prefillFromFixedCost?.category)"
                         [class]="isCategoryDisabled() 
                             ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-3 py-1.5 rounded-sm cursor-not-allowed opacity-50' 
                             : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
                         @if (isCategoryDisabled()) {
-                            <option value="">Nicht verfügbar bei Transfer</option>
+                        <option value="">Nicht verfügbar bei Transfer</option>
                         } @else if (getFilteredCategories().length === 0) {
-                            <option value="">Keine passenden Kategorien</option>
+                        <option value="">Keine passenden Kategorien</option>
                         } @else {
-                            <option value="">Wählen</option>
-                            @for (category of getFilteredCategories(); track category.id) {
-                                <option [value]="category.id">{{ category.name }}</option>
-                            }
+                        <option value="">Wählen</option>
+                        @for (category of getFilteredCategories(); track category.id) {
+                        <option [value]="category.id">{{ category.name }}</option>
+                        }
                         }
                     </select>
                 </div>
@@ -111,22 +110,20 @@
                 </select>
             </div>
 
-            <!-- Row 3: Date + Note -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                    <label
-                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Datum</label>
-                    <input type="date" id="transactionDate" name="date" required
-                        [value]="editingTransaction?.date || getTodayDateString()"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
-                </div>
-                <div>
-                    <label
-                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Notiz</label>
-                    <input type="text" name="note" [ngModel]="editingTransaction?.note || prefillFromFixedCost?.note"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent"
-                        placeholder="Optional...">
-                </div>
+            <!-- Row 3: Date (Full Width in Grid or separate div, keeping consistent layout) -->
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Datum</label>
+                <input type="date" id="transactionDate" name="date" required
+                    [value]="editingTransaction?.date || getTodayDateString()"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
+            </div>
+
+            <!-- Row 4: Note (Full Width) -->
+            <div>
+                <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Notiz</label>
+                <textarea name="note" [ngModel]="editingTransaction?.note || prefillFromFixedCost?.note"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent"
+                    placeholder="Optional..." rows="3"></textarea>
             </div>
 
             <!-- Action Buttons -->

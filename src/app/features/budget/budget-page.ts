@@ -521,23 +521,17 @@ export class BudgetPage {
         }
     }
 
-    onFixedCostSubmit(event: Event) {
-        event.preventDefault();
-        const form = event.target as HTMLFormElement;
-        const formData = new FormData(form);
-
-        const data = {
-            name: formData.get('fixedCostName') as string,
-            amount: parseFloat(formData.get('fixedCostAmount') as string),
-            type: formData.get('fixedCostType') as 'income' | 'expense' | 'transfer',
-            category: formData.get('fixedCostCategory') as string,
-            account: formData.get('fixedCostAccount') as string,
-            toAccount: formData.get('fixedCostToAccount') as string || undefined,
-            groupId: formData.get('fixedCostGroup') as string || undefined,
-            note: formData.get('fixedCostNote') as string || undefined,
-            excludeFromTotal: (formData.get('fixedCostExclude') as string) === 'on'
-        };
-
+    onFixedCostSubmit(data: {
+        name: string;
+        amount: number;
+        type: 'income' | 'expense' | 'transfer';
+        category: string;
+        account: string;
+        toAccount?: string;
+        groupId?: string;
+        note?: string;
+        excludeFromTotal?: boolean;
+    }) {
         if (this.editingFixedCost()) {
             this.stateService.updateFixedCost(this.editingFixedCost()!.id, data);
         } else {
@@ -545,7 +539,6 @@ export class BudgetPage {
         }
 
         this.toggleFixedCostModal();
-        form.reset();
     }
 
     createTransactionFromFixedCost(fixedCost: FixedCost) {

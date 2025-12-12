@@ -150,7 +150,8 @@ export class TransactionsViewComponent {
             account: formData.get('account') as string,
             date: formData.get('date') as string,
             type: type,
-            toAccount: type === 'transfer' ? formData.get('toAccount') as string : undefined
+            toAccount: type === 'transfer' ? formData.get('toAccount') as string : undefined,
+            note: formData.get('note') as string || undefined
         };
 
         this.stateService.updateTransaction(transactionId, updatedTransaction, transaction);
