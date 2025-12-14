@@ -9,7 +9,7 @@
                 <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
                 <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Dashboard</h1>
             </div>
-            <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
+            <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
                 <!-- Local Settings Button -->
                 <button (click)="toggleSettingsModal()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
@@ -25,31 +25,6 @@
             </div>
         </header>
 
-        <!-- Welcome Banner -->
-        <div
-            class="md:col-span-12 gradient-card p-4 sm:p-6 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-                <h2 class="text-xl sm:text-2xl font-bold text-dash-text mb-1">Willkommen zum Dashboard</h2>
-                <p class="text-xs sm:text-sm text-dash-text-dim">Verwalten Sie Ihre Projekte und Lesezeichen.</p>
-            </div>
-            <div class="flex gap-3">
-                <button (click)="navigateToJournal()"
-                    class="gradient-btn text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-sm transition-all hover:-translate-y-0.5 flex items-center gap-2">
-                    <span class="material-symbols-sharp text-lg sm:text-xl">description</span>
-                    <span class="text-sm font-medium">Journal</span>
-                </button>
-                <button (click)="navigateToAudioNotes()"
-                    class="gradient-btn text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-sm transition-all hover:-translate-y-0.5 flex items-center gap-2">
-                    <span class="material-symbols-sharp text-lg sm:text-xl">mic</span>
-                    <span class="text-sm font-medium">AudioNotes</span>
-                </button>
-                <button (click)="navigateToBudget()"
-                    class="gradient-btn text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-sm transition-all hover:-translate-y-0.5 flex items-center gap-2">
-                    <span class="material-symbols-sharp text-lg sm:text-xl">payments</span>
-                    <span class="text-sm font-medium">Budget</span>
-                </button>
-            </div>
-        </div>
 
         <!-- Local Settings Modal (Bookmark Import/Export) -->
         <div *ngIf="showSettingsModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">

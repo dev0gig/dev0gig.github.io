@@ -121,17 +121,6 @@ export class Dashboard {
         }
     }
 
-    navigateToJournal() {
-        this.router.navigate(['/journal']);
-    }
-
-    navigateToBudget() {
-        this.router.navigate(['/budget']);
-    }
-
-    navigateToAudioNotes() {
-        this.router.navigate(['/audio-notes']);
-    }
 
     exportBookmarks() {
         const bookmarks = this.bookmarkService.bookmarks();
