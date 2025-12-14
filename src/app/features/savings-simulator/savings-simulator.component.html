@@ -1,0 +1,191 @@
+<div class="min-h-screen text-dash-text p-4 md:p-8 font-sans pb-16">
+
+    <div class="max-w-7xl mx-auto flex flex-col gap-6">
+        <!-- Header -->
+        <header class="flex flex-col gap-1">
+            <h1 class="text-xl sm:text-2xl font-bold text-dash-text">Spar-Simulator</h1>
+            <p class="text-xs sm:text-sm text-dash-text-dim">Prognostiziere dein Vermögen unter Berücksichtigung der
+                KESt (Österreich).</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column: Inputs -->
+            <div class="lg:col-span-1 flex flex-col gap-4">
+
+                <!-- Card -->
+                <div class="gradient-card p-4 sm:p-6 rounded-sm flex flex-col gap-5 accent-glow">
+
+                    <h2 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Konfiguration</h2>
+
+                    <!-- Current Savings -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-dash-text-dim uppercase">Startkapital</label>
+                        <div class="relative group">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="currentSavings()"
+                                (ngModelChange)="currentSavings.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                    </div>
+
+                    <!-- Monthly Contribution -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-dash-text-dim uppercase">Monatliche Sparrate</label>
+                        <div class="relative group">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="monthlyContribution()"
+                                (ngModelChange)="monthlyContribution.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dash-border"></div>
+
+                    <!-- Allocation Split -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-dash-text-dim uppercase">Aufteilung</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Cash Input -->
+                            <div class="relative group">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                                <input type="number" min="0" [max]="monthlyContribution()" [ngModel]="cashAmount()"
+                                    (ngModelChange)="cashAmount.set($event)"
+                                    class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                                <div
+                                    class="absolute -bottom-4 left-0 w-full flex justify-between text-[10px] uppercase tracking-wider">
+                                    <span class="text-dash-text-dim">Cash</span>
+                                    <span class="text-dash-text-dim">({{ cashPercentDisplay() }}%)</span>
+                                </div>
+                            </div>
+
+                            <!-- ETF Display -->
+                            <div class="relative group opacity-70">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                                <div
+                                    class="w-full bg-dash-card border border-dash-border text-dash-text-dim py-2 pl-8 pr-3 rounded-sm text-sm">
+                                    {{ etfAmount() }}
+                                </div>
+                                <div
+                                    class="absolute -bottom-4 left-0 w-full flex justify-between text-[10px] uppercase tracking-wider">
+                                    <span class="text-emerald-500 font-bold">ETF</span>
+                                    <span class="text-dash-text-dim">({{ etfPercentDisplay() }}%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rates -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-medium text-dash-text-dim uppercase">Zinsen Cash (%)</label>
+                            <input type="number" step="0.1" [ngModel]="cashInterestRate()"
+                                (ngModelChange)="cashInterestRate.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 px-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-medium text-dash-text-dim uppercase">Rendite ETF (%)</label>
+                            <input type="number" step="0.1" [ngModel]="etfAnnualReturn()"
+                                (ngModelChange)="etfAnnualReturn.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 px-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                    </div>
+
+                    <!-- Mode Switch -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-medium text-dash-text-dim uppercase">Berechnungsmodus</label>
+                        <div class="flex bg-dash-bg border border-dash-border rounded-sm p-1">
+                            <button (click)="calculationMode.set('duration')"
+                                [class.bg-dash-card]="calculationMode() === 'duration'"
+                                [class.text-dash-accent]="calculationMode() === 'duration'"
+                                [class.text-dash-text-dim]="calculationMode() !== 'duration'"
+                                [class.shadow-sm]="calculationMode() === 'duration'"
+                                class="flex-1 py-1.5 text-xs font-medium rounded-sm transition-all text-center">
+                                Nach Laufzeit
+                            </button>
+                            <button (click)="calculationMode.set('target')"
+                                [class.bg-dash-card]="calculationMode() === 'target'"
+                                [class.text-dash-accent]="calculationMode() === 'target'"
+                                [class.text-dash-text-dim]="calculationMode() !== 'target'"
+                                [class.shadow-sm]="calculationMode() === 'target'"
+                                class="flex-1 py-1.5 text-xs font-medium rounded-sm transition-all text-center">
+                                Nach Sparziel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Timeframe (Visible only in Duration Mode) -->
+                    <div *ngIf="calculationMode() === 'duration'" class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-dash-text-dim uppercase">Laufzeit (Jahre)</label>
+                        <input type="number" [ngModel]="timeframeYears()" (ngModelChange)="timeframeYears.set($event)"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 px-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all animate-fade-in" />
+                    </div>
+
+                    <!-- Target Amount (Visible only in Target Mode) -->
+                    <div *ngIf="calculationMode() === 'target'" class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-dash-text-dim uppercase">Sparziel</label>
+                        <div class="relative group">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="targetAmount()" (ngModelChange)="targetAmount.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all animate-fade-in" />
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="lg:col-span-2 flex flex-col gap-6">
+
+                <!-- Hero Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Total Net Wealth -->
+                    <div
+                        class="gradient-card p-5 rounded-sm flex flex-col justify-between h-32 relative overflow-hidden group border-dash-accent/20">
+                        <div
+                            class="absolute right-0 top-0 opacity-5 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500 pointer-events-none">
+                            <span class="material-symbols-sharp text-9xl">savings</span>
+                        </div>
+                        <div class="relative z-10">
+                            <p class="text-dash-accent font-bold text-xs uppercase tracking-widest">Gesamtvermögen</p>
+                            <h3 class="text-3xl font-bold text-dash-text mt-1">{{ totalNetWealth() |
+                                currency:'EUR':'symbol':'1.0-0' }}</h3>
+                        </div>
+                        <div class="relative z-10 text-xs text-dash-text-dim">
+                            Nach KESt
+                        </div>
+                    </div>
+
+                    <!-- Years to Goal -->
+                    <div class="gradient-card p-5 rounded-sm flex flex-col justify-between h-32">
+                        <div>
+                            <p class="text-dash-text-dim font-bold text-xs uppercase tracking-widest">Dauer bis {{
+                                targetAmount() | currency:'EUR':'symbol':'1.0-0' }}
+                            </p>
+                            <h3 class="text-3xl font-bold text-dash-text mt-1">{{ yearsToGoal() }} <span
+                                    class="text-base font-normal text-dash-text-dim">Jahre</span></h3>
+                        </div>
+                        <div
+                            class="w-full bg-dash-bg h-1.5 rounded-full overflow-hidden mt-2 border border-dash-border/30">
+                            <div class="h-full bg-dash-accent transition-all duration-500"
+                                [style.width.%]="(totalNetWealth() / targetAmount()) * 100"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="flex-1 gradient-card p-4 rounded-sm min-h-[400px] flex flex-col accent-glow">
+                    <h3 class="text-dash-text font-bold mb-4 flex items-center gap-2">
+                        <span class="material-symbols-sharp text-dash-accent">show_chart</span>
+                        Vermögensentwicklung
+                    </h3>
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas baseChart [data]="lineChartData()" [options]="lineChartOptions" [type]="'line'">
+                        </canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
