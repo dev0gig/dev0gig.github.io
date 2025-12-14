@@ -21,7 +21,7 @@ export class SavingsSimulatorComponent {
     // --- Inputs (Signals) ---
     currentSavings = signal<number>(this.load('currentSavings', 10000));
     monthlyContribution = signal<number>(this.load('monthlyContribution', 900));
-    cashAmount = signal<number>(this.load('cashAmount', 200));
+    cashAmount = signal<number>(this.load('cashAmount', 700));
     cashInterestRate = signal<number>(this.load('cashInterestRate', 2.0));
     etfAnnualReturn = signal<number>(this.load('etfAnnualReturn', 7.0));
     timeframeYears = signal<number>(this.load('timeframeYears', 2));
