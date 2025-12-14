@@ -50,33 +50,9 @@ export class App implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Navigation shortcuts with Alt key
+    // Shortcuts with Alt key (Quick Note and Calculator only)
     if (event.altKey && !event.ctrlKey && !event.shiftKey) {
       switch (event.key.toLowerCase()) {
-        case 'd':
-          event.preventDefault();
-          this.router.navigate(['/']);
-          break;
-        case 'j':
-          event.preventDefault();
-          this.router.navigate(['/journal']);
-          break;
-        case 'b':
-          event.preventDefault();
-          this.router.navigate(['/budget']);
-          break;
-        case 'm':
-          event.preventDefault();
-          this.router.navigate(['/manga-builder']);
-          break;
-        case 'a':
-          event.preventDefault();
-          this.router.navigate(['/audio-notes']);
-          break;
-        case 's':
-          event.preventDefault();
-          this.sidebarService.toggleBoth();
-          break;
         case 'n':
           event.preventDefault();
           this.quickNote?.toggle();

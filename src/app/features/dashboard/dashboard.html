@@ -10,11 +10,6 @@
                 <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Dashboard</h1>
             </div>
             <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
-                <div>STATUS
-                    <span [class.text-dash-accent]="isOnline()" [class.text-red-500]="!isOnline()">
-                        {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
-                    </span>
-                </div>
                 <!-- Local Settings Button -->
                 <button (click)="toggleSettingsModal()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"

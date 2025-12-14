@@ -33,7 +33,6 @@ export class Dashboard {
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
     router = inject(Router);
-    isOnline = signal(true);
     showSettingsModal = signal(false);
 
     // Accent colors for theme selection

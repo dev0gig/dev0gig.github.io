@@ -64,9 +64,6 @@ export class BudgetPage {
     utilityService = inject(BudgetUtilityService);
     statsService = inject(BudgetStatsService);
 
-    // Online status
-    isOnline = signal(true);
-
     // UI State signals
     showTransactionModal = signal(false);
     showAccountModal = signal(false);
@@ -141,10 +138,6 @@ export class BudgetPage {
         );
 
         this.importExportHandlers = new BudgetPageImportExportHandlers(this.stateService);
-
-        // Event listeners
-        window.addEventListener('blur', () => this.isOnline.set(false));
-        window.addEventListener('focus', () => this.isOnline.set(true));
 
         // Close settings modal on route change
         this.router.events.subscribe(() => {

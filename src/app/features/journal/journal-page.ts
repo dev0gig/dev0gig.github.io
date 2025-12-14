@@ -21,7 +21,6 @@ export class JournalPage {
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
     router = inject(Router);
-    isOnline = signal(true);
     showSettingsModal = signal(false);
     currentYear = new Date().getFullYear();
 

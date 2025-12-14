@@ -10,11 +10,6 @@
                 <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Journal</h1>
             </div>
             <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
-                <div>STATUS
-                    <span [class.text-dash-accent]="isOnline()" [class.text-red-500]="!isOnline()">
-                        {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
-                    </span>
-                </div>
                 <div>ENTRIES <span class="text-white">{{ journal.entries().length }}</span></div>
                 <!-- Local Settings Button -->
                 <button (click)="toggleSettingsModal()"

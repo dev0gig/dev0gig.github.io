@@ -2,10 +2,20 @@
 
     <div class="max-w-7xl mx-auto flex flex-col gap-6">
         <!-- Header -->
-        <header class="flex flex-col gap-1">
-            <h1 class="text-xl sm:text-2xl font-bold text-dash-text">Spar-Simulator</h1>
-            <p class="text-xs sm:text-sm text-dash-text-dim">Prognostiziere dein Vermögen unter Berücksichtigung der
-                KESt (Österreich).</p>
+        <header class="flex items-center justify-between gradient-header p-4 rounded-sm sticky top-0 z-50 shadow-lg">
+            <div class="flex items-center gap-4">
+                <!-- Apps Launcher -->
+                <app-apps-launcher></app-apps-launcher>
+                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Spar-Simulator</h1>
+            </div>
+            <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
+                <div>MODUS
+                    <span class="text-dash-accent uppercase">
+                        {{ calculationMode() === 'duration' ? 'LAUFZEIT' : 'SPARZIEL' }}
+                    </span>
+                </div>
+                <div>ZIEL <span class="text-white">{{ targetAmount() | currency:'EUR':'symbol':'1.0-0' }}</span></div>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

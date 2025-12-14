@@ -1,13 +1,14 @@
-import { Component, computed, signal, effect, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
+import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 
 @Component({
     selector: 'app-savings-simulator',
     standalone: true,
-    imports: [CommonModule, FormsModule, BaseChartDirective],
+    imports: [CommonModule, FormsModule, BaseChartDirective, AppsLauncher],
     templateUrl: './savings-simulator.component.html',
 })
 export class SavingsSimulatorComponent {

@@ -69,34 +69,30 @@
                 <!-- Dashboard -->
                 <a routerLink="/" (click)="closeSidebarOnMobile()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Dashboard (Alt+D)">
+                    title="Dashboard">
                     <span class="material-symbols-sharp text-2xl">dashboard</span>
                     <span class="text-[10px] font-medium">Dashboard</span>
-                    <span class="text-[9px] opacity-60">Alt+D</span>
                 </a>
                 <!-- Journal App -->
                 <a routerLink="/journal" (click)="closeSidebarOnMobile()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Journal (Alt+J)">
+                    title="Journal">
                     <span class="material-symbols-sharp text-2xl">book</span>
                     <span class="text-[10px] font-medium">Journal</span>
-                    <span class="text-[9px] opacity-60">Alt+J</span>
                 </a>
                 <!-- My Budget -->
                 <a routerLink="/budget" (click)="closeSidebarOnMobile()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Budget (Alt+B)">
+                    title="Budget">
                     <span class="material-symbols-sharp text-2xl">account_balance_wallet</span>
                     <span class="text-[10px] font-medium">Budget</span>
-                    <span class="text-[9px] opacity-60">Alt+B</span>
                 </a>
                 <!-- Manga Builder -->
                 <a routerLink="/manga-builder" (click)="closeSidebarOnMobile()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Manga Builder (Alt+M)">
+                    title="Manga Builder">
                     <span class="material-symbols-sharp text-2xl">auto_stories</span>
                     <span class="text-[10px] font-medium text-center leading-tight">Manga<br>Builder</span>
-                    <span class="text-[9px] opacity-60">Alt+M</span>
                 </a>
                 <!-- Savings Simulator -->
                 <a routerLink="/savings-simulator" (click)="closeSidebarOnMobile()"
@@ -108,10 +104,9 @@
                 <!-- AudioNotes -->
                 <a routerLink="/audio-notes" (click)="closeSidebarOnMobile()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="AudioNotes (Alt+A)">
+                    title="AudioNotes">
                     <span class="material-symbols-sharp text-2xl">mic</span>
                     <span class="text-[10px] font-medium text-center leading-tight">Audio<br>Notes</span>
-                    <span class="text-[9px] opacity-60">Alt+A</span>
                 </a>
                 <!-- Install PWA -->
                 <button *ngIf="pwa.canInstall()" (click)="installPwa()"
