@@ -4,14 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
+import { ImmoCheckComponent } from './immo-check.component';
 
 @Component({
     selector: 'app-savings-simulator',
     standalone: true,
-    imports: [CommonModule, FormsModule, BaseChartDirective, AppsLauncher],
+    imports: [CommonModule, FormsModule, BaseChartDirective, AppsLauncher, ImmoCheckComponent],
     templateUrl: './savings-simulator.component.html',
 })
 export class SavingsSimulatorComponent {
+    // --- Tab Navigation ---
+    activeTab = signal<'savings' | 'immocheck'>('savings');
     // --- Persistence Helper ---
     private load<T>(key: string, def: T): T {
         const stored = localStorage.getItem('savings-sim-' + key);

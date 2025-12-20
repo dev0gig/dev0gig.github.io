@@ -6,8 +6,11 @@
             <div class="flex items-center gap-4">
                 <!-- Apps Launcher -->
                 <app-apps-launcher></app-apps-launcher>
-                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Spar-Simulator</h1>
+                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">
+                    {{ activeTab() === 'savings' ? 'Spar-Simulator' : 'ImmoCheck' }}
+                </h1>
             </div>
+            @if (activeTab() === 'savings') {
             <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
                 <div>MODUS
                     <span class="text-dash-accent uppercase">
@@ -16,8 +19,34 @@
                 </div>
                 <div>ZIEL <span class="text-white">{{ targetAmount() | currency:'EUR':'symbol':'1.0-0' }}</span></div>
             </div>
+            } @else {
+            <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
+                <span class="material-symbols-sharp text-dash-accent">real_estate_agent</span>
+                <span>Dein Finanzierungsrechner</span>
+            </div>
+            }
         </header>
 
+        <!-- Tab Navigation -->
+        <div class="flex bg-dash-card border border-dash-border rounded-sm p-1">
+            <button (click)="activeTab.set('savings')" [class.bg-dash-bg]="activeTab() === 'savings'"
+                [class.text-dash-accent]="activeTab() === 'savings'"
+                [class.text-dash-text-dim]="activeTab() !== 'savings'" [class.shadow-sm]="activeTab() === 'savings'"
+                class="flex-1 py-2 text-xs font-medium rounded-sm transition-all text-center flex items-center justify-center gap-2">
+                <span class="material-symbols-sharp text-sm">savings</span>
+                Spar-Simulator
+            </button>
+            <button (click)="activeTab.set('immocheck')" [class.bg-dash-bg]="activeTab() === 'immocheck'"
+                [class.text-dash-accent]="activeTab() === 'immocheck'"
+                [class.text-dash-text-dim]="activeTab() !== 'immocheck'" [class.shadow-sm]="activeTab() === 'immocheck'"
+                class="flex-1 py-2 text-xs font-medium rounded-sm transition-all text-center flex items-center justify-center gap-2">
+                <span class="material-symbols-sharp text-sm">real_estate_agent</span>
+                ImmoCheck
+            </button>
+        </div>
+
+        <!-- Spar-Simulator Tab Content -->
+        @if (activeTab() === 'savings') {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             <!-- Left Column: Inputs -->
@@ -197,5 +226,11 @@
 
             </div>
         </div>
+        }
+
+        <!-- ImmoCheck Tab Content -->
+        @if (activeTab() === 'immocheck') {
+        <app-immo-check></app-immo-check>
+        }
     </div>
 </div>

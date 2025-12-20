@@ -1,0 +1,267 @@
+<div class="flex flex-col gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Inputs (lg:col-span-7) -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+
+            <!-- Card 1: Budget & Einkommen -->
+            <div class="gradient-card p-4 sm:p-6 rounded-sm flex flex-col gap-5 accent-glow">
+                <h2 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-sharp text-dash-accent text-base">account_balance_wallet</span>
+                    Budget & Einkommen
+                </h2>
+
+                <!-- Nettoeinkommen -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">payments</span>
+                        Nettoeinkommen (Haushalt)
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="netIncome()" (ngModelChange)="netIncome.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                        <input type="range" min="2000" max="10000" step="100" [ngModel]="netIncome()"
+                            (ngModelChange)="netIncome.set($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                    </div>
+                </div>
+
+                <!-- Monatliche Fixkosten -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">credit_card</span>
+                        Monatliche Fixkosten
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="monthlyFixedCosts()"
+                                (ngModelChange)="monthlyFixedCosts.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                        <input type="range" min="500" max="4000" step="50" [ngModel]="monthlyFixedCosts()"
+                            (ngModelChange)="monthlyFixedCosts.set($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Immobilie & Kapital -->
+            <div class="gradient-card p-4 sm:p-6 rounded-sm flex flex-col gap-5 accent-glow">
+                <h2 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-sharp text-dash-accent text-base">home</span>
+                    Immobilie & Kapital
+                </h2>
+
+                <!-- Kaufpreis Immobilie -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">house</span>
+                        Kaufpreis Immobilie
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="housePrice()" (ngModelChange)="housePrice.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                        <input type="range" min="100000" max="600000" step="10000" [ngModel]="housePrice()"
+                            (ngModelChange)="housePrice.set($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                    </div>
+                </div>
+
+                <!-- Eigenkapital -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">savings</span>
+                        Eigenkapital
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">€</span>
+                            <input type="number" [ngModel]="equity()" (ngModelChange)="equity.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 pl-8 pr-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all" />
+                        </div>
+                        <input type="range" min="0" max="200000" step="5000" [ngModel]="equity()"
+                            (ngModelChange)="equity.set($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                        <button (click)="importFromSavingsSimulator()"
+                            class="px-2 py-2 bg-dash-card hover:bg-dash-card-hover border border-dash-border rounded-sm text-dash-text-dim hover:text-dash-accent transition-all flex items-center gap-1"
+                            title="Gesamtvermögen aus Spar-Simulator übernehmen">
+                            <span class="material-symbols-sharp text-sm">sync</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-dash-text-dim mt-1">
+                        <span>Eigenkapitalquote</span>
+                        <span [class.text-emerald-500]="equityPercentage() >= 20"
+                            [class.text-amber-500]="equityPercentage() >= 10 && equityPercentage() < 20"
+                            [class.text-red-500]="equityPercentage() < 10">
+                            {{ formatPercent(equityPercentage()) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Konditionen -->
+            <div class="gradient-card p-4 sm:p-6 rounded-sm flex flex-col gap-5 accent-glow">
+                <h2 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-sharp text-dash-accent text-base">tune</span>
+                    Konditionen
+                </h2>
+
+                <!-- Sollzins -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">trending_up</span>
+                        Sollzins
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <input type="number" step="0.1" [ngModel]="interestRate()"
+                                (ngModelChange)="interestRate.set($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 px-3 pr-8 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all text-right" />
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-dim">%</span>
+                        </div>
+                        <input type="range" min="1" max="6" step="0.1" [ngModel]="interestRate()"
+                            (ngModelChange)="interestRate.set($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                    </div>
+                </div>
+
+                <!-- Tilgung -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">trending_down</span>
+                        Tilgung
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <input type="number" step="0.1" [ngModel]="repaymentRate()"
+                                (ngModelChange)="updateFromRepayment($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 px-3 pr-8 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all text-right" />
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-dim">%</span>
+                        </div>
+                        <input type="range" min="1" max="5" step="0.1" [ngModel]="repaymentRate()"
+                            (ngModelChange)="updateFromRepayment($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                    </div>
+                </div>
+
+                <!-- Laufzeit -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-dash-text-dim uppercase flex items-center gap-2">
+                        <span class="material-symbols-sharp text-sm">timelapse</span>
+                        Laufzeit
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative group w-1/4">
+                            <input type="number" step="5" [ngModel]="loanDuration()"
+                                (ngModelChange)="updateFromDuration($event)"
+                                class="w-full bg-dash-bg border border-dash-border text-dash-text py-2 px-3 pr-14 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-all text-right" />
+                            <span
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-dim text-xs">Jahre</span>
+                        </div>
+                        <input type="range" min="10" max="40" step="5" [ngModel]="loanDuration()"
+                            (ngModelChange)="updateFromDuration($event)"
+                            class="flex-1 h-2 bg-dash-border rounded-lg appearance-none cursor-pointer accent-dash-accent" />
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-dash-bg/50 border border-dash-border/50 rounded-sm p-3 flex items-start gap-2">
+                    <span class="material-symbols-sharp text-dash-accent text-sm mt-0.5">info</span>
+                    <p class="text-[10px] text-dash-text-dim leading-relaxed">
+                        <strong class="text-dash-text">Hinweis:</strong> Tilgung und Laufzeit beeinflussen sich
+                        gegenseitig.
+                        Wenn du die Laufzeit änderst, wird die Tilgung automatisch angepasst und umgekehrt.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Outputs (lg:col-span-5) -->
+        <div class="lg:col-span-5 flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+
+            <!-- Card 1: Monatliche Rate (Hero) -->
+            <div
+                class="bg-gradient-to-br from-blue-600 to-blue-800 p-5 rounded-sm flex flex-col justify-between h-36 relative overflow-hidden">
+                <div
+                    class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4 pointer-events-none">
+                    <span class="material-symbols-sharp text-9xl">real_estate_agent</span>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-blue-200 font-bold text-xs uppercase tracking-widest">Monatliche Rate</p>
+                    <h3 class="text-4xl font-bold text-white mt-1">{{ formatCurrency(monthlyMortgage()) }}</h3>
+                </div>
+                <div class="relative z-10 flex gap-3 text-xs">
+                    <span class="bg-white/20 text-white px-2 py-1 rounded-sm">
+                        Zins {{ formatPercent(interestRate()) }}
+                    </span>
+                    <span class="bg-white/20 text-white px-2 py-1 rounded-sm">
+                        Tilgung {{ formatPercent(repaymentRate()) }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card 2: Traffic Light Status -->
+            <div class="p-5 rounded-sm flex flex-col gap-3 transition-all duration-300"
+                [class.bg-emerald-600]="trafficLightStatus() === 'green'"
+                [class.bg-amber-600]="trafficLightStatus() === 'yellow'"
+                [class.bg-red-600]="trafficLightStatus() === 'red'">
+
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-sharp text-4xl text-white/90">
+                        {{ trafficLightIcon() }}
+                    </span>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Restbudget / Monat</p>
+                        <h4 class="text-2xl font-bold text-white">
+                            {{ formatCurrency(remainingBudget()) }}
+                        </h4>
+                    </div>
+                </div>
+                <p class="text-sm text-white/90">
+                    {{ trafficLightMessage() }}
+                </p>
+            </div>
+
+            <!-- Card 3: Kostenaufstellung -->
+            <div class="gradient-card p-5 rounded-sm flex flex-col gap-3 accent-glow">
+                <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-sharp text-dash-accent text-base">receipt_long</span>
+                    Kostenaufstellung
+                </h3>
+
+                <div class="flex flex-col gap-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Kaufpreis</span>
+                        <span class="text-dash-text">{{ formatCurrency(housePrice()) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Kaufnebenkosten (10%)</span>
+                        <span class="text-dash-text">{{ formatCurrency(additionalCosts()) }}</span>
+                    </div>
+                    <div class="border-t border-dash-border my-1"></div>
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Gesamtbedarf</span>
+                        <span class="text-dash-text font-medium">{{ formatCurrency(totalNeed()) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Eigenkapital</span>
+                        <span class="text-emerald-500">- {{ formatCurrency(equity()) }}</span>
+                    </div>
+                    <div class="border-t border-dash-border my-1"></div>
+                    <div class="flex justify-between bg-dash-bg/50 p-2 rounded-sm -mx-2">
+                        <span class="text-dash-text font-bold">Darlehensbetrag</span>
+                        <span class="text-dash-accent font-bold">{{ formatCurrency(loanAmount()) }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
