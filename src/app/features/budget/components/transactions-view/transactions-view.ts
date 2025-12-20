@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, computed, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Transaction, Account, Category } from '../../budget.models';
@@ -11,7 +11,7 @@ import { BudgetUtilityService } from '../../budget.utility.service';
     imports: [CommonModule, FormsModule],
     templateUrl: './transactions-view.html'
 })
-export class TransactionsViewComponent {
+export class TransactionsViewComponent implements OnChanges {
     private stateService = inject(BudgetStateService);
     private utilityService = inject(BudgetUtilityService);
 
@@ -19,6 +19,10 @@ export class TransactionsViewComponent {
     @Input() accounts: Account[] = [];
     @Input() categories: Category[] = [];
     @Input() searchQuery = '';
+    @Input() newlyCreatedId: string | null = null;
+
+    // Track which transaction should have highlight animation
+    highlightedTransactionId = signal<string | null>(null);
 
     @Output() addTransaction = new EventEmitter<void>();
     @Output() editTransaction = new EventEmitter<Transaction>();
@@ -30,6 +34,24 @@ export class TransactionsViewComponent {
     expandedTransactionId = signal<string | null>(null);
     editingTransactionId = signal<string | null>(null);
     inlineTransactionTypes = signal<Map<string, 'income' | 'expense' | 'transfer'>>(new Map());
+
+    ngOnChanges(changes: SimpleChanges): void {
+        // When a new transaction is created, trigger highlight animation
+        if (changes['newlyCreatedId'] && changes['newlyCreatedId'].currentValue) {
+            const newId = changes['newlyCreatedId'].currentValue;
+            this.highlightedTransactionId.set(newId);
+            // Clear highlight after animation completes (1.5s)
+            setTimeout(() => {
+                if (this.highlightedTransactionId() === newId) {
+                    this.highlightedTransactionId.set(null);
+                }
+            }, 1500);
+        }
+    }
+
+    isNewlyCreated(id: string): boolean {
+        return this.highlightedTransactionId() === id;
+    }
 
     // Helper methods
     formatCurrency(amount: number): string {

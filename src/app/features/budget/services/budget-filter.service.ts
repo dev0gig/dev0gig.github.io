@@ -98,8 +98,12 @@ export class BudgetFilterService {
             return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
         });
 
-        return filtered.sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+        // Sort by date (newest first), and by ID for same-day transactions (ID contains timestamp)
+        return filtered.sort((a, b) => {
+            const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+            if (dateDiff !== 0) return dateDiff;
+            // For same-day transactions, sort by ID (newer IDs = later creation time)
+            return b.id.localeCompare(a.id);
+        });
     }
 }

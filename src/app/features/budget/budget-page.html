@@ -68,9 +68,10 @@
             <!-- TRANSACTIONS VIEW -->
             @if (viewMode() === 'transactions') {
             <app-transactions-view [transactions]="getSortedTransactions()" [accounts]="accounts()"
-                [categories]="categories()" [searchQuery]="searchQuery()" (addTransaction)="openNewTransactionModal()"
-                (editTransaction)="openEditTransactionModal($event)" (deleteTransaction)="deleteTransaction($event)"
-                (copyToFixedCost)="copyTransactionToFixedCost($event)" (search)="stateService.onSearch($event)">
+                [categories]="categories()" [searchQuery]="searchQuery()" [newlyCreatedId]="newlyCreatedTransactionId()"
+                (addTransaction)="openNewTransactionModal()" (editTransaction)="openEditTransactionModal($event)"
+                (deleteTransaction)="deleteTransaction($event)" (copyToFixedCost)="copyTransactionToFixedCost($event)"
+                (search)="stateService.onSearch($event)">
             </app-transactions-view>
             }
 
@@ -122,7 +123,7 @@
         <app-transaction-modal [editingTransaction]="editingTransaction()"
             [prefillFromFixedCost]="prefillFromFixedCost()" [accounts]="accounts()" [categories]="categories()"
             (close)="toggleTransactionModal(); editingTransaction.set(null); prefillFromFixedCost.set(null)"
-            (submit)="onTransactionModalSubmit($event)">
+            (transactionSubmit)="onTransactionModalSubmit($event)">
         </app-transaction-modal>
         }
 

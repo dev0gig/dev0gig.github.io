@@ -45,17 +45,17 @@
                 <div>
                     <label
                         class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Titel</label>
-                    <input type="text" name="description" required
+                    <input type="text" name="description"
                         [ngModel]="editingTransaction?.description || prefillFromFixedCost?.name"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent"
+                        [class]="'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasDescriptionError() ? ' validation-error' : ' border-dash-border')"
                         placeholder="z.B. Einkauf">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Betrag
                         (€)</label>
-                    <input type="number" name="amount" step="0.01" required
+                    <input type="number" name="amount" step="0.01"
                         [ngModel]="editingTransaction?.amount || prefillFromFixedCost?.amount"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent"
+                        [class]="'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasAmountError() ? ' validation-error' : ' border-dash-border')"
                         placeholder="0,00">
                 </div>
             </div>
@@ -65,11 +65,11 @@
                 <div>
                     <label
                         class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
-                    <select name="category" [required]="!isCategoryDisabled()" [disabled]="isCategoryDisabled()"
+                    <select name="category" [disabled]="isCategoryDisabled()"
                         [ngModel]="isCategoryDisabled() ? '' : (editingTransaction?.category || prefillFromFixedCost?.category)"
                         [class]="isCategoryDisabled() 
                             ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-3 py-1.5 rounded-sm cursor-not-allowed opacity-50' 
-                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent'">
+                            : 'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasCategoryError() ? ' validation-error' : ' border-dash-border')">
                         @if (isCategoryDisabled()) {
                         <option value="">Nicht verfügbar bei Transfer</option>
                         } @else if (getFilteredCategories().length === 0) {
@@ -86,9 +86,8 @@
                     <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">
                         {{ currentTransactionType() === 'transfer' ? 'Von Konto' : 'Konto' }}
                     </label>
-                    <select name="account" required
-                        [ngModel]="editingTransaction?.account || prefillFromFixedCost?.account"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
+                    <select name="account" [ngModel]="editingTransaction?.account || prefillFromFixedCost?.account"
+                        [class]="'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasAccountError() ? ' validation-error' : ' border-dash-border')">
                         <option value="">Wählen</option>
                         @for (account of accounts; track account.id) {
                         <option [value]="account.id">{{ account.name }}</option>
@@ -101,8 +100,8 @@
             <div *ngIf="currentTransactionType() === 'transfer'">
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Nach
                     Konto</label>
-                <select name="toAccount" required [ngModel]="editingTransaction?.toAccount"
-                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
+                <select name="toAccount" [ngModel]="editingTransaction?.toAccount"
+                    [class]="'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasToAccountError() ? ' validation-error' : ' border-dash-border')">
                     <option value="">Wählen</option>
                     @for (account of accounts; track account.id) {
                     <option [value]="account.id">{{ account.name }}</option>
@@ -113,9 +112,9 @@
             <!-- Row 3: Date (Full Width in Grid or separate div, keeping consistent layout) -->
             <div>
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Datum</label>
-                <input type="date" id="transactionDate" name="date" required
+                <input type="date" id="transactionDate" name="date"
                     [value]="editingTransaction?.date || getTodayDateString()"
-                    class="w-full bg-dash-bg border border-dash-border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent">
+                    [class]="'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasDateError() ? ' validation-error' : ' border-dash-border')">
             </div>
 
             <!-- Row 4: Note (Full Width) -->

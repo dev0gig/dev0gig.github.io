@@ -144,3 +144,36 @@ body {
 .animate-slide-in-up {
     animation: slideInUp 0.3s ease-out forwards;
 }
+
+/* Transaction highlight animation for newly created items */
+@keyframes transactionHighlight {
+    0% {
+        background-color: rgba(var(--color-accent-rgb), 0.3);
+        box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.4);
+    }
+    50% {
+        background-color: rgba(var(--color-accent-rgb), 0.15);
+        box-shadow: 0 0 8px rgba(var(--color-accent-rgb), 0.2);
+    }
+    100% {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
+
+.transaction-highlight {
+    animation: transactionHighlight 1.5s ease-out forwards;
+}
+
+/* Validation error shake animation */
+@keyframes validationShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+    20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+.validation-error {
+    border-color: #ef4444 !important;
+    animation: validationShake 0.5s ease-out;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}

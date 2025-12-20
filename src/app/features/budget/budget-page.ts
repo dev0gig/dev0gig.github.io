@@ -97,6 +97,10 @@ export class BudgetPage {
     toastMessage = signal<string | null>(null);
     private toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
+    // Track newly created transaction for highlight effect
+    newlyCreatedTransactionId = signal<string | null>(null);
+    private highlightTimeout: ReturnType<typeof setTimeout> | null = null;
+
     // Expose Math to template
     Math = Math;
 
@@ -225,7 +229,51 @@ export class BudgetPage {
     openEditFixedCostModal(fixedCost: FixedCost) { this.modalHandlers.openEditFixedCostModal(fixedCost); }
     openEditFixedCostGroupModal(group: FixedCostGroup) { this.modalHandlers.openEditFixedCostGroupModal(group); }
 
-    onTransactionModalSubmit(data: any) { this.modalHandlers.onTransactionModalSubmit(data); }
+    onTransactionModalSubmit(data: any) {
+        const isEditing = !!this.editingTransaction();
+        const isFromFixedCost = !!this.prefillFromFixedCost();
+
+        const transactionData = {
+            type: data.type,
+            amount: data.amount,
+            description: data.description,
+            category: data.category,
+            account: data.account,
+            toAccount: data.type === 'transfer' ? data.toAccount : undefined,
+            date: data.date
+        };
+
+        if (isEditing) {
+            const oldTransaction = this.editingTransaction()!;
+            this.stateService.updateTransaction(oldTransaction.id, transactionData, oldTransaction);
+        } else {
+            // Add new transaction and get the created transaction with ID
+            const newTransaction = this.stateService.addTransaction(transactionData);
+            // Trigger highlight effect for the new transaction
+            if (newTransaction && newTransaction.id) {
+                this.newlyCreatedTransactionId.set(newTransaction.id);
+                // Clear highlight after animation completes
+                if (this.highlightTimeout) {
+                    clearTimeout(this.highlightTimeout);
+                }
+                this.highlightTimeout = setTimeout(() => {
+                    this.newlyCreatedTransactionId.set(null);
+                }, 1500);
+            }
+        }
+
+        this.showTransactionModal.set(false);
+        this.editingTransaction.set(null);
+        this.prefillFromFixedCost.set(null);
+
+        if (isFromFixedCost) {
+            this.showToast(`Fixkosten "${data.description}" gebucht`);
+        } else if (isEditing) {
+            this.showToast('Transaktion aktualisiert');
+        } else {
+            this.showToast('Transaktion hinzugefügt');
+        }
+    }
     onAccountModalSubmit(data: { name: string; balance: number }) { this.modalHandlers.onAccountModalSubmit(data); }
     onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) { this.modalHandlers.onCategoryModalSubmit(data); }
     onFixedCostModalSubmit(data: any) { this.modalHandlers.onFixedCostModalSubmit(data); }
