@@ -22,7 +22,7 @@ export class ImmoCheckComponent {
     equity = signal<number>(this.load('equity', 80000));
     interestRate = signal<number>(this.load('interestRate', 3.5));
     repaymentRate = signal<number>(this.load('repaymentRate', 2.0));
-    loanDuration = signal<number>(this.load('loanDuration', 25));
+    loanDuration = signal<number>(this.load('loanDuration', 35));
 
     // Track which field was last changed to prevent circular updates
     private lastChanged = signal<'repayment' | 'duration' | null>(null);
