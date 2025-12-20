@@ -18,9 +18,9 @@ export class ImmoCheckComponent {
     // --- Input Signals ---
     netIncome = signal<number>(this.load('netIncome', 4600));
     monthlyFixedCosts = signal<number>(this.load('monthlyFixedCosts', 2000));
-    housePrice = signal<number>(this.load('housePrice', 350000));
+    housePrice = signal<number>(this.load('housePrice', 200000));
     equity = signal<number>(this.load('equity', 80000));
-    interestRate = signal<number>(this.load('interestRate', 3.5));
+    interestRate = signal<number>(this.load('interestRate', 4));
     repaymentRate = signal<number>(this.load('repaymentRate', 2.0));
     loanDuration = signal<number>(this.load('loanDuration', 35));
 
