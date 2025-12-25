@@ -1,0 +1,468 @@
+<div class="min-h-screen text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
+    <div class="max-w-7xl mx-auto flex flex-col gap-4">
+
+        <!-- Header -->
+        <header class="flex items-center justify-between gradient-header p-4 rounded-sm sticky top-0 z-50 shadow-lg">
+            <div class="flex items-center gap-4">
+                <app-apps-launcher></app-apps-launcher>
+                <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">MTG Inventory</h1>
+            </div>
+            <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
+                <div class="hidden sm:flex gap-3 mr-2">
+                    <span>KARTEN <span class="text-white">{{ totalCards() }}</span></span>
+                    <span>SETS <span class="text-dash-accent">{{ uniqueSets() }}</span></span>
+                </div>
+                <button (click)="toggleSettingsModal()"
+                    class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
+                    title="MTG Settings">
+                    <span class="material-symbols-sharp text-xl">settings</span>
+                </button>
+                <button (click)="toggleRightSidebar()"
+                    class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
+                    title="Rechte Sidebar">
+                    <span class="material-symbols-sharp text-xl">menu_open</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Settings Modal -->
+        @if (showSettingsModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleSettingsModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">MTG Settings</h2>
+                    <button (click)="toggleSettingsModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button (click)="exportCollection()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">download</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Export Collection</span>
+                            <span class="text-xs opacity-70">Download als Arena-Format (.txt)</span>
+                        </div>
+                    </button>
+
+                    <button (click)="copyExport()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">content_copy</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Copy to Clipboard</span>
+                            <span class="text-xs opacity-70">Arena-Format in Zwischenablage</span>
+                        </div>
+                    </button>
+
+                    <button (click)="openImportModal()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">upload</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Import Collection</span>
+                            <span class="text-xs opacity-70">Arena-Format importieren (kein API-Call)</span>
+                        </div>
+                    </button>
+
+                    <div class="border-t border-dash-border my-2"></div>
+
+                    <button (click)="clearCache()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-yellow-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">cached</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Cache leeren</span>
+                            <span class="text-xs opacity-70">Bilder werden neu geladen</span>
+                        </div>
+                    </button>
+
+                    <button (click)="clearCollection()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-red-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">delete_forever</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Sammlung löschen</span>
+                            <span class="text-xs opacity-70">Alle Karten permanent entfernen</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Controls Card -->
+        <div class="gradient-card p-4 rounded-sm">
+            <div class="flex gap-2 items-center">
+                <div class="relative group w-20">
+                    <span
+                        class="absolute left-2 top-1/2 -translate-y-1/2 text-dash-text-dim text-[10px] uppercase">SET</span>
+                    <input type="text" [ngModel]="inputSet()" (ngModelChange)="inputSet.set($event)" placeholder="MH2"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text pl-9 pr-2 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors uppercase"
+                        maxlength="5" />
+                </div>
+                <div class="relative group w-20">
+                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-dash-text-dim text-[10px]">#</span>
+                    <input type="text" [ngModel]="inputNumber()" (ngModelChange)="inputNumber.set($event)"
+                        (keydown.enter)="addCard()" placeholder="405"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text pl-6 pr-2 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors" />
+                </div>
+                <button (click)="addCard()" [disabled]="isAddingCard() || !inputSet() || !inputNumber()"
+                    class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    title="Hinzufügen">
+                    @if (isAddingCard()) {
+                    <span class="material-symbols-sharp text-lg animate-spin">progress_activity</span>
+                    } @else {
+                    <span class="material-symbols-sharp text-lg">add</span>
+                    }
+                </button>
+
+                <div class="w-px h-6 bg-dash-border mx-1"></div>
+
+                <div class="relative group flex-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">
+                        <span class="material-symbols-sharp text-lg">search</span>
+                    </span>
+                    <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                        placeholder="Sammlung durchsuchen..."
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-8 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors" />
+                    @if (searchTerm()) {
+                    <button (click)="searchTerm.set('')"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-white">
+                        <span class="material-symbols-sharp text-sm">close</span>
+                    </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content with Sidebar Layout -->
+        <div class="flex gap-4">
+            <!-- Set Filter Sidebar (Left) -->
+            @if (allSets().length > 0) {
+            <div class="w-56 flex-shrink-0">
+                <div class="gradient-card p-4 rounded-sm sticky top-24">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
+                        <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Sets</h3>
+                    </div>
+                    @if (selectedSet()) {
+                    <button (click)="selectSet(null)"
+                        class="w-full mb-3 text-xs text-dash-accent hover:text-white flex items-center justify-center gap-1 py-2 bg-dash-bg rounded-sm border border-dash-accent">
+                        <span class="material-symbols-sharp text-sm">close</span>
+                        Filter entfernen
+                    </button>
+                    }
+                    <div class="flex flex-col gap-1 max-h-[60vh] overflow-y-auto pr-1">
+                        @for (set of allSets(); track set.code) {
+                        <button (click)="selectSet(set.code)"
+                            [class]="selectedSet() === set.code
+                                ? 'bg-dash-accent text-white border-dash-accent'
+                                : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                            class="w-full px-3 py-2 rounded-sm text-xs border transition-all text-left">
+                            <div class="flex items-center justify-between">
+                                <span class="font-mono font-bold">{{ set.code }}</span>
+                                <span class="opacity-60">{{ set.count }}</span>
+                            </div>
+                            <div class="text-[10px] opacity-70 truncate mt-0.5">{{ set.name }}</div>
+                        </button>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+
+            <!-- Main Content (Right) -->
+            <div class="flex-1 flex flex-col gap-4">
+                @if (recentCards().length > 0) {
+                <div class="gradient-card p-4 rounded-sm">
+                    <h3
+                        class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span class="material-symbols-sharp text-dash-accent text-sm">schedule</span>
+                        Zuletzt Hinzugefügt
+                    </h3>
+                    <div class="grid grid-cols-5 gap-3">
+                        @for (item of recentCards(); track getCardKey(item.card) + item.index) {
+                        <div class="gradient-card rounded-sm overflow-hidden group hover:border-dash-accent transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                            (click)="openDetailModal(item.card, item.index)" (appLazyCard)="onCardVisible(item.card)">
+                            <div class="relative aspect-[5/7] overflow-hidden">
+                                @if (getDetails(item.card)?.imageUrl) {
+                                <img [src]="getDetails(item.card)!.imageUrl" [alt]="item.card.nameEN" loading="lazy"
+                                    class="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                } @else {
+                                <div
+                                    class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2 p-2">
+                                    @if (isLoading(item.card)) {
+                                    <span
+                                        class="material-symbols-sharp text-2xl text-dash-text-dim animate-pulse">image</span>
+                                    <span
+                                        class="text-[10px] text-dash-text-dim text-center leading-tight">Lädt...</span>
+                                    } @else {
+                                    <span
+                                        class="material-symbols-sharp text-2xl text-dash-text-dim opacity-50">playing_cards</span>
+                                    <span
+                                        class="text-[10px] text-dash-text-dim text-center leading-tight truncate w-full">{{
+                                        item.card.nameEN }}</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+
+                <!-- Table View with Pagination -->
+                @if (remainingCount() > 0) {
+                <div class="gradient-card rounded-sm overflow-hidden">
+                    <div class="p-4 border-b border-dash-border flex items-center justify-between">
+                        <h3
+                            class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
+                            Sammlung ({{ remainingCount() }} weitere)
+                        </h3>
+                        <!-- Pagination Info -->
+                        @if (totalPages() > 1) {
+                        <div class="flex items-center gap-2 text-xs text-dash-text-dim">
+                            <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                                class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                <span class="material-symbols-sharp text-sm">chevron_left</span>
+                            </button>
+                            <span class="font-mono">{{ currentPage() }} / {{ totalPages() }}</span>
+                            <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                                class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                <span class="material-symbols-sharp text-sm">chevron_right</span>
+                            </button>
+                        </div>
+                        }
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="text-xs text-dash-text-dim uppercase bg-dash-bg/50 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Name</th>
+                                    <th class="px-4 py-3 text-left hidden sm:table-cell">Set</th>
+                                    <th class="px-4 py-3 text-left hidden md:table-cell">Code</th>
+                                    <th class="px-4 py-3 text-left hidden lg:table-cell">Nr.</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-dash-border/50">
+                                @for (item of tableCards(); track getCardKey(item.card) + item.index) {
+                                <tr class="hover:bg-dash-bg/50 transition-colors"
+                                    (appLazyCard)="onCardVisible(item.card)">
+                                    <td class="px-4 py-2">
+                                        <button (click)="openDetailModal(item.card, item.index)"
+                                            class="text-dash-text hover:text-dash-accent transition-colors text-left">
+                                            {{ getDetails(item.card)?.nameDE || item.card.nameEN }}
+                                        </button>
+                                    </td>
+                                    <td class="px-4 py-2 text-dash-text-dim hidden sm:table-cell">
+                                        {{ getDetails(item.card)?.setName || item.card.set }}
+                                    </td>
+                                    <td class="px-4 py-2 text-dash-text-dim hidden md:table-cell font-mono">
+                                        {{ item.card.set }}
+                                    </td>
+                                    <td class="px-4 py-2 text-dash-text-dim hidden lg:table-cell font-mono">
+                                        #{{ item.card.collectorNumber }}
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Bottom Pagination -->
+                    @if (totalPages() > 1) {
+                    <div class="p-4 border-t border-dash-border flex justify-center">
+                        <div class="flex items-center gap-2 text-xs text-dash-text-dim">
+                            <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                                class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                <span class="material-symbols-sharp text-sm">chevron_left</span>
+                            </button>
+                            @for (page of [].constructor(totalPages()); track $index) {
+                            @if ($index + 1 === currentPage() || $index + 1 === 1 || $index + 1 === totalPages() ||
+                            ($index + 1
+                            >= currentPage() - 1 && $index + 1 <= currentPage() + 1)) { <button
+                                (click)="goToPage($index + 1)"
+                                [class]="currentPage() === $index + 1 ? 'bg-dash-accent text-white' : 'bg-dash-bg hover:bg-dash-accent hover:text-white'"
+                                class="w-8 h-8 flex items-center justify-center rounded-sm font-mono transition-all">
+                                {{ $index + 1 }}
+                                </button>
+                                } @else if ($index + 1 === currentPage() - 2 || $index + 1 === currentPage() + 2) {
+                                <span class="text-dash-text-dim">...</span>
+                                }
+                                }
+                                <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                                    class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                    <span class="material-symbols-sharp text-sm">chevron_right</span>
+                                </button>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+
+                <!-- Empty State -->
+                @if (filteredCards().length === 0 && cards().length === 0) {
+                <div
+                    class="gradient-card p-12 rounded-sm flex flex-col items-center justify-center text-dash-text-dim border-2 border-dashed border-dash-border">
+                    <span class="material-symbols-sharp text-5xl mb-3 opacity-50">playing_cards</span>
+                    <p class="text-lg font-medium">Keine Karten in der Sammlung</p>
+                    <p class="text-sm mt-1">Füge Karten über Set-Code und Sammlernummer hinzu,</p>
+                    <p class="text-sm">oder nutze Import in den Settings.</p>
+                </div>
+                }
+
+                <!-- No Search Results -->
+                @if (filteredCards().length === 0 && cards().length > 0) {
+                <div class="gradient-card p-8 rounded-sm flex flex-col items-center justify-center text-dash-text-dim">
+                    <span class="material-symbols-sharp text-4xl mb-2 opacity-50">search_off</span>
+                    <p>Keine Karten gefunden</p>
+                    @if (selectedSet()) {
+                    <button (click)="selectSet(null)" class="mt-2 text-dash-accent hover:underline text-sm">
+                        Set-Filter entfernen
+                    </button>
+                    }
+                </div>
+                }
+
+            </div>
+        </div>
+
+        <!-- Card Detail Modal -->
+        @if (showDetailModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" (click)="closeDetailModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-sm flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text truncate pr-4">
+                        {{ getDetails(showDetailModal()!.card)?.nameDE || showDetailModal()!.card.nameEN }}
+                    </h2>
+                    <button (click)="closeDetailModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors flex-shrink-0">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="aspect-[5/7] overflow-hidden rounded-sm">
+                    @if (getDetails(showDetailModal()!.card)?.imageUrl) {
+                    <img [src]="getDetails(showDetailModal()!.card)!.imageUrl" [alt]="showDetailModal()!.card.nameEN"
+                        class="w-full h-full object-contain" />
+                    } @else {
+                    <div class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2">
+                        @if (isLoading(showDetailModal()!.card)) {
+                        <span class="material-symbols-sharp text-4xl text-dash-text-dim animate-pulse">image</span>
+                        <span class="text-sm text-dash-text-dim">Bild wird geladen...</span>
+                        } @else {
+                        <span class="material-symbols-sharp text-4xl text-dash-text-dim opacity-50">playing_cards</span>
+                        <span class="text-sm text-dash-text-dim">Kein Bild verfügbar</span>
+                        }
+                    </div>
+                    }
+                </div>
+
+                <div class="flex flex-col gap-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">English Name</span>
+                        <span class="text-dash-text">{{ showDetailModal()!.card.nameEN }}</span>
+                    </div>
+                    @if (getDetails(showDetailModal()!.card)?.setName) {
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Set</span>
+                        <span class="text-dash-text">{{ getDetails(showDetailModal()!.card)!.setName }}</span>
+                    </div>
+                    }
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Set Code</span>
+                        <span class="text-dash-text font-mono">{{ showDetailModal()!.card.set }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-dash-text-dim">Collector #</span>
+                        <span class="text-dash-text font-mono">{{ showDetailModal()!.card.collectorNumber }}</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end border-t border-dash-border pt-4">
+                    <button (click)="removeCard(showDetailModal()!.index)"
+                        class="px-4 py-2 text-red-400 hover:bg-red-600 hover:text-white rounded-sm transition-colors flex items-center gap-2 text-sm">
+                        <span class="material-symbols-sharp text-sm">delete</span>
+                        Aus Sammlung entfernen
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Import Modal -->
+        @if (showImportModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeImportModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Lightweight Import</h2>
+                    <button (click)="closeImportModal()" class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="text-xs text-dash-text-dim space-y-1">
+                    <p>Füge eine Liste im Arena-Format ein:</p>
+                    <code class="text-dash-accent block">1 Counterspell (MH2) 405</code>
+                    <p class="text-green-400 flex items-center gap-1 mt-2">
+                        <span class="material-symbols-sharp text-sm">bolt</span>
+                        Keine API-Anfragen beim Import!
+                    </p>
+                </div>
+
+                <textarea [ngModel]="importText()" (ngModelChange)="importText.set($event)" rows="10"
+                    placeholder="1 Counterspell (MH2) 405&#10;2 Lightning Bolt (2X2) 117&#10;..."
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent font-mono resize-none"></textarea>
+
+                @if (lastImportResult()) {
+                <div class="text-sm">
+                    <span class="text-green-400">{{ lastImportResult()!.success }} Karten hinzugefügt</span>
+                    @if (lastImportResult()!.failed > 0) {
+                    <span class="text-red-400 ml-2">{{ lastImportResult()!.failed }} Zeilen nicht erkannt</span>
+                    }
+                </div>
+                }
+
+                <div class="flex justify-end gap-2">
+                    <button (click)="closeImportModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Schließen
+                    </button>
+                    <button (click)="executeImport()" [disabled]="!importText()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Importieren
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Toast Notification -->
+        @if (toastMessage()) {
+        <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">
+            <div [class]="toastType() === 'success'
+        ? 'bg-gradient-to-r from-green-600 to-emerald-500 border-2 border-green-400/50'
+        : 'bg-gradient-to-r from-red-600 to-rose-500 border-2 border-red-400/50'"
+                class="p-5 rounded-lg shadow-2xl flex items-center gap-4 max-w-lg" [style.box-shadow]="toastType() === 'success'
+            ? '0 0 30px rgba(34, 197, 94, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'
+            : '0 0 30px rgba(239, 68, 68, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'">
+                <div
+                    class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
+                    <span class="material-symbols-sharp text-white text-3xl">
+                        {{ toastType() === 'success' ? 'check_circle' : 'error' }}
+                    </span>
+                </div>
+                <div class="flex-1 text-base font-semibold text-white">{{ toastMessage() }}</div>
+                <button (click)="hideToast()"
+                    class="text-white/70 hover:text-white transition-colors flex-shrink-0 hover:scale-110">
+                    <span class="material-symbols-sharp text-xl">close</span>
+                </button>
+            </div>
+        </div>
+        }
