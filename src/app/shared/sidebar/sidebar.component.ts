@@ -6,6 +6,7 @@ import { BookmarkService } from '../bookmark.service';
 import { SidebarService } from '../sidebar.service';
 import { SettingsService } from '../settings.service';
 import { MusicPlayerComponent } from '../music-player/music-player.component';
+import { MtgInventoryService } from '../../features/mtg-inventory/mtg-inventory.service';
 
 @Component({
     selector: 'app-sidebar',
@@ -19,6 +20,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     bookmarkService = inject(BookmarkService);
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
+    mtgInventoryService = inject(MtgInventoryService);
 
     private exportHandler = () => this.exportAllData();
     private importHandler = () => this.triggerImportAll();
@@ -145,6 +147,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
             zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
         }
 
+        // Export MTG Inventory (Magic Arena Format)
+        const mtgCards = this.mtgInventoryService.cards();
+        if (mtgCards.length > 0) {
+            const arenaExport = this.mtgInventoryService.exportToArenaFormat();
+            zip.file('mtg-inventory.txt', arenaExport);
+        }
+
         // Generate and download
         const blob = await zip.generateAsync({ type: 'blob' });
         const url = window.URL.createObjectURL(blob);
@@ -181,8 +190,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
             const budgetFile = zip.file('budget.json');
             const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
+            const mtgInventoryFile = zip.file('mtg-inventory.txt');
 
-            if (!bookmarksFile && !journalFile && !budgetFile && !audioNotesFile && !recentlyPlayedFile) {
+            if (!bookmarksFile && !journalFile && !budgetFile && !audioNotesFile && !recentlyPlayedFile && !mtgInventoryFile) {
                 alert('Keine passenden Daten in der Backup-Datei gefunden.');
                 return;
             }
@@ -256,6 +266,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 const recentlyPlayedData = JSON.parse(content);
                 localStorage.setItem('youtube_url_history', JSON.stringify(recentlyPlayedData.data || []));
                 importedProjects.push('Zuletzt gespielt');
+            }
+
+            // Import MTG Inventory (Magic Arena Format)
+            if (mtgInventoryFile) {
+                const content = await mtgInventoryFile.async('string');
+                // Clear existing cards before import
+                this.mtgInventoryService.clearCollection();
+                const result = this.mtgInventoryService.importFromArenaFormat(content);
+                importedProjects.push(`MTG Inventory (${result.success} Karten)`);
             }
 
             alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);

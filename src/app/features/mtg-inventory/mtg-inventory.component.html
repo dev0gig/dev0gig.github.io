@@ -177,12 +177,19 @@
                     </h3>
                     <div class="grid grid-cols-5 gap-3">
                         @for (item of recentCards(); track getCardKey(item.card) + item.index) {
-                        <div class="gradient-card rounded-sm overflow-hidden group hover:border-dash-accent transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                        <div class="gradient-card rounded-sm overflow-hidden group hover:border-dash-accent transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer relative"
                             (click)="openDetailModal(item.card, item.index)" (appLazyCard)="onCardVisible(item.card)">
-                            <div class="relative aspect-[5/7] overflow-hidden">
+                            <!-- Quantity Badge -->
+                            @if (getCardCount(item.card) > 1) {
+                            <div
+                                class="absolute top-1 right-1 z-10 bg-dash-accent text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
+                                {{ getCardCount(item.card) }}
+                            </div>
+                            }
+                            <div class="relative aspect-[5/7] overflow-hidden rounded-lg">
                                 @if (getDetails(item.card)?.imageUrl) {
                                 <img [src]="getDetails(item.card)!.imageUrl" [alt]="item.card.nameEN" loading="lazy"
-                                    class="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                    class="w-full h-full object-cover transition-transform group-hover:scale-105 rounded-lg" />
                                 } @else {
                                 <div
                                     class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2 p-2">
@@ -239,6 +246,7 @@
                                     <th class="px-4 py-3 text-left hidden sm:table-cell">Set</th>
                                     <th class="px-4 py-3 text-left hidden md:table-cell">Code</th>
                                     <th class="px-4 py-3 text-left hidden lg:table-cell">Nr.</th>
+                                    <th class="px-4 py-3 text-center w-16">Anz.</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-dash-border/50">
@@ -259,6 +267,14 @@
                                     </td>
                                     <td class="px-4 py-2 text-dash-text-dim hidden lg:table-cell font-mono">
                                         #{{ item.card.collectorNumber }}
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
+                                        @if (getCardCount(item.card) > 1) {
+                                        <span
+                                            class="bg-dash-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                            {{ getCardCount(item.card) }}x
+                                        </span>
+                                        }
                                     </td>
                                 </tr>
                                 }
@@ -339,10 +355,10 @@
                     </button>
                 </div>
 
-                <div class="aspect-[5/7] overflow-hidden rounded-sm">
+                <div class="aspect-[5/7] overflow-hidden rounded-lg">
                     @if (getDetails(showDetailModal()!.card)?.imageUrl) {
                     <img [src]="getDetails(showDetailModal()!.card)!.imageUrl" [alt]="showDetailModal()!.card.nameEN"
-                        class="w-full h-full object-contain" />
+                        class="w-full h-full object-contain rounded-lg" />
                     } @else {
                     <div class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2">
                         @if (isLoading(showDetailModal()!.card)) {
@@ -377,11 +393,28 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end border-t border-dash-border pt-4">
+                <!-- Quantity Controls -->
+                <div class="flex items-center justify-between border-t border-dash-border pt-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-dash-text-dim text-sm">Anzahl:</span>
+                        <div class="flex items-center gap-1">
+                            <button (click)="updateQuantity(showDetailModal()!.card, -1)"
+                                class="w-8 h-8 bg-dash-bg hover:bg-red-600 hover:text-white rounded-sm flex items-center justify-center transition-colors text-dash-text-dim">
+                                <span class="material-symbols-sharp text-sm">remove</span>
+                            </button>
+                            <span class="w-10 text-center font-bold text-lg text-dash-text">
+                                {{ getCardCount(showDetailModal()!.card) }}
+                            </span>
+                            <button (click)="updateQuantity(showDetailModal()!.card, 1)"
+                                class="w-8 h-8 bg-dash-bg hover:bg-green-600 hover:text-white rounded-sm flex items-center justify-center transition-colors text-dash-text-dim">
+                                <span class="material-symbols-sharp text-sm">add</span>
+                            </button>
+                        </div>
+                    </div>
                     <button (click)="removeCard(showDetailModal()!.index)"
-                        class="px-4 py-2 text-red-400 hover:bg-red-600 hover:text-white rounded-sm transition-colors flex items-center gap-2 text-sm">
+                        class="px-3 py-2 text-red-400 hover:bg-red-600 hover:text-white rounded-sm transition-colors flex items-center gap-1 text-sm"
+                        title="Alle Kopien entfernen">
                         <span class="material-symbols-sharp text-sm">delete</span>
-                        Aus Sammlung entfernen
                     </button>
                 </div>
             </div>

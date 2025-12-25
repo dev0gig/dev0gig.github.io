@@ -336,6 +336,59 @@ export class MtgInventoryService {
         return new Set(this.cards().map(c => c.set)).size;
     }
 
+    /**
+     * Get count of a specific card in the collection
+     */
+    getCardCount(set: string, collectorNumber: string): number {
+        return this.cards().filter(c =>
+            c.set.toUpperCase() === set.toUpperCase() &&
+            c.collectorNumber === collectorNumber
+        ).length;
+    }
+
+    /**
+     * Update quantity of a card (add or remove copies)
+     * @param set Set code
+     * @param collectorNumber Collector number
+     * @param delta Change in quantity (+1 to add, -1 to remove)
+     */
+    updateCardQuantity(set: string, collectorNumber: string, delta: number): void {
+        const setCode = set.toUpperCase();
+
+        if (delta > 0) {
+            // Add copies
+            const existingCard = this.cards().find(c =>
+                c.set.toUpperCase() === setCode &&
+                c.collectorNumber === collectorNumber
+            );
+
+            if (existingCard) {
+                // Use existing card data
+                for (let i = 0; i < delta; i++) {
+                    this.cards.update(cards => [...cards, { ...existingCard }]);
+                }
+            }
+        } else if (delta < 0) {
+            // Remove copies
+            const removeCount = Math.abs(delta);
+            let removed = 0;
+
+            this.cards.update(cards => {
+                const newCards = [...cards];
+                for (let i = newCards.length - 1; i >= 0 && removed < removeCount; i--) {
+                    if (newCards[i].set.toUpperCase() === setCode &&
+                        newCards[i].collectorNumber === collectorNumber) {
+                        newCards.splice(i, 1);
+                        removed++;
+                    }
+                }
+                return newCards;
+            });
+        }
+
+        this.saveCardsToStorage();
+    }
+
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

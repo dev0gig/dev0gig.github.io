@@ -133,6 +133,23 @@ export class MtgInventoryComponent {
         return getCardKey(card.set, card.collectorNumber);
     }
 
+    getCardCount(card: MtgCardBasic): number {
+        return this.inventoryService.getCardCount(card.set, card.collectorNumber);
+    }
+
+    updateQuantity(card: MtgCardBasic, delta: number): void {
+        const currentCount = this.getCardCount(card);
+        if (currentCount + delta <= 0) {
+            // Would remove all - close modal and remove
+            this.inventoryService.updateCardQuantity(card.set, card.collectorNumber, -currentCount);
+            this.showDetailModal.set(null);
+            this.showToast('Karte aus Sammlung entfernt.', 'success');
+        } else {
+            this.inventoryService.updateCardQuantity(card.set, card.collectorNumber, delta);
+            this.showToast(delta > 0 ? 'Kopie hinzugefügt!' : 'Kopie entfernt.', 'success');
+        }
+    }
+
     // --- Set Filter ---
     selectSet(setCode: string | null): void {
         this.selectedSet.set(setCode);
