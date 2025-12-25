@@ -25,8 +25,7 @@
                 [class.hover:border-dash-accent/50]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)">
                 <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy •
-                            HH:mm':'Europe/Vienna' }}</span>
+                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy':'Europe/Vienna' }}</span>
                         @if (journal.hasDuplicateDate(entry)) {
                         <span class="text-[10px] text-red-400 font-medium">duplicate date</span>
                         }

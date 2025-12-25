@@ -60,7 +60,12 @@ export class JournalService {
       result = result.filter(e => e.text.toLowerCase().includes(query));
     }
 
-    return result.sort((a, b) => b.date.getTime() - a.date.getTime());
+    // Sort by date only (ignore time)
+    return result.sort((a, b) => {
+      const dateA = new Date(a.date.getFullYear(), a.date.getMonth(), a.date.getDate()).getTime();
+      const dateB = new Date(b.date.getFullYear(), b.date.getMonth(), b.date.getDate()).getTime();
+      return dateB - dateA;
+    });
   });
 
   // Detect duplicate dates (entries with the same date)
