@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -18,13 +18,14 @@ export class MtgInventoryComponent {
     protected inventoryService = inject(MtgInventoryService);
     private sidebarService = inject(SidebarService);
 
+    @ViewChild('setNumberInput') setNumberInput!: ElementRef<HTMLInputElement>;
+
     // --- Signals from Service ---
     cards = this.inventoryService.cards;
     cacheVersion = this.inventoryService.cacheVersion;
 
     // --- Local UI State ---
-    inputSet = signal<string>('');
-    inputNumber = signal<string>('');
+    inputSetNumber = signal<string>('');
     searchTerm = signal<string>('');
     selectedSet = signal<string | null>(null);
     currentPage = signal<number>(1);
@@ -164,10 +165,30 @@ export class MtgInventoryComponent {
 
     // --- Card Actions ---
     async addCard(): Promise<void> {
-        const set = this.inputSet().trim();
-        const number = this.inputNumber().trim();
+        const input = this.inputSetNumber().trim().toUpperCase();
 
-        if (!set || !number) return;
+        if (!input) return;
+
+        // Parse the input: expects format "SET-NUMBER" (e.g., "MH2-405")
+        const separatorIndex = input.lastIndexOf('-');
+
+        let set: string;
+        let number: string;
+
+        if (separatorIndex > 0) {
+            // Found a hyphen, split accordingly
+            set = input.substring(0, separatorIndex).trim();
+            number = input.substring(separatorIndex + 1).trim();
+        } else {
+            // No hyphen found, show error
+            this.showToast('Format: SET-# (z.B. MH2-405)', 'error');
+            return;
+        }
+
+        if (!set || !number) {
+            this.showToast('Format: SET-# (z.B. MH2-405)', 'error');
+            return;
+        }
 
         this.isAddingCard.set(true);
 
@@ -175,14 +196,15 @@ export class MtgInventoryComponent {
             const success = await this.inventoryService.addCardManually(set, number);
 
             if (success) {
-                this.inputSet.set('');
-                this.inputNumber.set('');
+                this.inputSetNumber.set('');
                 this.showToast('Karte hinzugefügt!', 'success');
             } else {
                 this.showToast('Karte nicht gefunden.', 'error');
             }
         } finally {
             this.isAddingCard.set(false);
+            // Re-focus input for quick consecutive entries
+            setTimeout(() => this.setNumberInput?.nativeElement?.focus(), 0);
         }
     }
 
