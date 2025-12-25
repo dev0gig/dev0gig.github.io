@@ -177,7 +177,7 @@
                     </h3>
                     <div class="grid grid-cols-5 gap-3">
                         @for (item of recentCards(); track getCardKey(item.card) + item.index) {
-                        <div class="gradient-card rounded-sm overflow-hidden group hover:border-dash-accent transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer relative"
+                        <div class="gradient-card rounded-lg overflow-hidden group hover:border-dash-accent transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer relative"
                             (click)="openDetailModal(item.card, item.index)" (appLazyCard)="onCardVisible(item.card)">
                             <!-- Quantity Badge -->
                             @if (getCardCount(item.card) > 1) {
