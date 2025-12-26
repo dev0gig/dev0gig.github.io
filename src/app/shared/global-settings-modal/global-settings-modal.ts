@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ThemeService, ACCENT_COLORS } from '../theme.service';
 import { BookmarkService } from '../bookmark.service';
 import { JournalService } from '../../features/journal/journal';
+import { FlashcardsService } from '../../features/flashcards/flashcards.service';
 
 export interface ProjectSelection {
     bookmarks: boolean;
@@ -13,6 +14,7 @@ export interface ProjectSelection {
     budget: boolean;
     audioNotes: boolean;
     recentlyPlayed: boolean;
+    flashcards: boolean;
 }
 
 @Component({
@@ -27,6 +29,7 @@ export class GlobalSettingsModal {
     themeService = inject(ThemeService);
     bookmarkService = inject(BookmarkService);
     journalService = inject(JournalService);
+    flashcardsService = inject(FlashcardsService);
 
     accentColors = ACCENT_COLORS;
 
@@ -35,7 +38,8 @@ export class GlobalSettingsModal {
         journal: true,
         budget: true,
         audioNotes: true,
-        recentlyPlayed: true
+        recentlyPlayed: true,
+        flashcards: true
     });
 
     onClose() {
@@ -55,7 +59,8 @@ export class GlobalSettingsModal {
             journal: true,
             budget: true,
             audioNotes: true,
-            recentlyPlayed: true
+            recentlyPlayed: true,
+            flashcards: true
         });
     }
 
@@ -65,13 +70,14 @@ export class GlobalSettingsModal {
             journal: false,
             budget: false,
             audioNotes: false,
-            recentlyPlayed: false
+            recentlyPlayed: false,
+            flashcards: false
         });
     }
 
     hasAnyProjectSelected(): boolean {
         const sel = this.projectSelection();
-        return sel.bookmarks || sel.journal || sel.budget || sel.audioNotes || sel.recentlyPlayed;
+        return sel.bookmarks || sel.journal || sel.budget || sel.audioNotes || sel.recentlyPlayed || sel.flashcards;
     }
 
     async exportAllData() {
@@ -152,6 +158,21 @@ export class GlobalSettingsModal {
             zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
         }
 
+        if (selection.flashcards) {
+            const flashcardsData = localStorage.getItem('flashcards_data');
+            const flashcardsDecks = localStorage.getItem('flashcards_decks');
+            const exportData = {
+                exportDate,
+                version: '1.0',
+                project: 'flashcards',
+                data: {
+                    cards: flashcardsData ? JSON.parse(flashcardsData) : [],
+                    decks: flashcardsDecks ? JSON.parse(flashcardsDecks) : []
+                }
+            };
+            zip.file('flashcards.json', JSON.stringify(exportData, null, 2));
+        }
+
         const blob = await zip.generateAsync({ type: 'blob' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -166,6 +187,7 @@ export class GlobalSettingsModal {
         if (selection.budget) selectedProjects.push('Budget');
         if (selection.audioNotes) selectedProjects.push('AudioNotes');
         if (selection.recentlyPlayed) selectedProjects.push('Zuletzt gespielt');
+        if (selection.flashcards) selectedProjects.push('Flashcards');
 
         alert(`Export erfolgreich!\nExportierte Projekte: ${selectedProjects.join(', ')}`);
     }
@@ -197,6 +219,7 @@ export class GlobalSettingsModal {
             const budgetFile = zip.file('budget.json');
             const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
+            const flashcardsFile = zip.file('flashcards.json');
             const legacyFile = zip.file('dashboard_backup.json');
 
             if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
@@ -204,6 +227,7 @@ export class GlobalSettingsModal {
             if (selection.budget && budgetFile) projectsToImport.push('Budget');
             if (selection.audioNotes && audioNotesFile) projectsToImport.push('AudioNotes');
             if (selection.recentlyPlayed && recentlyPlayedFile) projectsToImport.push('Zuletzt gespielt');
+            if (selection.flashcards && flashcardsFile) projectsToImport.push('Flashcards');
 
             if (projectsToImport.length === 0 && legacyFile) {
                 await this.processLegacyImport(legacyFile, selection);
@@ -279,6 +303,20 @@ export class GlobalSettingsModal {
                 const recentlyPlayedData = JSON.parse(content);
                 localStorage.setItem('youtube_url_history', JSON.stringify(recentlyPlayedData.data || []));
                 importedProjects.push('Zuletzt gespielt');
+            }
+
+            if (selection.flashcards && flashcardsFile) {
+                const content = await flashcardsFile.async('string');
+                const importData = JSON.parse(content);
+                if (importData.data) {
+                    if (importData.data.cards) {
+                        localStorage.setItem('flashcards_data', JSON.stringify(importData.data.cards));
+                    }
+                    if (importData.data.decks) {
+                        localStorage.setItem('flashcards_decks', JSON.stringify(importData.data.decks));
+                    }
+                    importedProjects.push('Flashcards');
+                }
             }
 
             this.onClose();
@@ -462,6 +500,7 @@ export class GlobalSettingsModal {
         if (selection.budget) projectsToDelete.push('Budget');
         if (selection.audioNotes) projectsToDelete.push('AudioNotes');
         if (selection.recentlyPlayed) projectsToDelete.push('Zuletzt gespielt');
+        if (selection.flashcards) projectsToDelete.push('Flashcards');
 
         if (!confirm(`WARNUNG: Dies löscht ALLE Daten für:\n${projectsToDelete.join(', ')}\n\nDiese Aktion kann nicht rückgängig gemacht werden!\n\nFortfahren?`)) {
             return;
@@ -493,6 +532,11 @@ export class GlobalSettingsModal {
 
         if (selection.recentlyPlayed) {
             localStorage.removeItem('youtube_url_history');
+        }
+
+        if (selection.flashcards) {
+            localStorage.removeItem('flashcards_data');
+            localStorage.removeItem('flashcards_decks');
         }
 
         this.onClose();

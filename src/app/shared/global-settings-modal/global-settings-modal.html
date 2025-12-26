@@ -52,6 +52,11 @@
                     <span class="material-symbols-sharp text-xl">history</span>
                     <span class="text-xs font-medium">Zuletzt</span>
                 </button>
+                <button (click)="toggleProjectSelection('flashcards')"
+                    [class]="projectSelection().flashcards ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
+                    <span class="material-symbols-sharp text-xl">style</span>
+                    <span class="text-xs font-medium">Flashcards</span>
+                </button>
             </div>
         </div>
 

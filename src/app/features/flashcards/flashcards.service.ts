@@ -145,8 +145,17 @@ export class FlashcardsService {
         return { success, failed };
     }
 
-    exportToText(): string {
-        return this._cards()
+    exportToText(deckId?: string): string {
+        let cardsToExport = this._cards();
+
+        if (deckId) {
+            const deck = this._decks().find(d => d.id === deckId);
+            if (deck) {
+                cardsToExport = deck.cards;
+            }
+        }
+
+        return cardsToExport
             .map(card => `${card.front};${card.back}`)
             .join('\n');
     }

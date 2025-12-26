@@ -40,6 +40,18 @@
                 </div>
 
                 <div class="flex flex-col gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Export
+                            Quelle</label>
+                        <select [(ngModel)]="exportDeckId"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text p-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                            <option value="">Alle geladenen Karten</option>
+                            @for (deck of flashcardsService.decks(); track deck.id) {
+                            <option [value]="deck.id">{{ deck.name }}</option>
+                            }
+                        </select>
+                    </div>
+
                     <button (click)="exportCards()"
                         class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
                         <span class="material-symbols-sharp">download</span>
@@ -74,29 +86,29 @@
         }
 
         <!-- Left Sidebar -->
-        <aside class="md:col-span-3 lg:col-span-2 flex flex-col gap-4 order-1">
+        <aside class="md:col-span-3 lg:col-span-2 flex flex-col gap-4 order-2 md:order-1">
             <!-- Study Mode Toggle -->
-            <div class="gradient-card p-4 rounded-sm sticky top-20">
+            <div class="gradient-card p-4 rounded-sm sticky top-20 z-30">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="material-symbols-sharp text-dash-accent text-sm">school</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Lernmodus</h3>
                 </div>
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-row md:flex-col gap-2">
                     <button (click)="toggleRandomMode()"
                         [class]="flashcardsService.isRandomMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
-                        class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
+                        class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center justify-center md:justify-start gap-2">
                         <span class="material-symbols-sharp text-lg">shuffle</span>
-                        Zufällig
+                        <span class="hidden md:inline">Zufällig</span>
                     </button>
                     <button (click)="toggleReversedMode()"
                         [class]="flashcardsService.isReversedMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
-                        class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
+                        class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center justify-center md:justify-start gap-2">
                         <span class="material-symbols-sharp text-lg">swap_horiz</span>
-                        Switch
+                        <span class="hidden md:inline">Switch</span>
                     </button>
                 </div>
             </div>
@@ -109,13 +121,7 @@
                         <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
                         <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Decks</h3>
                     </div>
-                    @if (flashcardsService.cards().length > 0) {
-                    <button (click)="openSaveDeckModal()"
-                        class="text-xs text-dash-text-dim hover:text-dash-accent transition-colors flex items-center gap-1"
-                        title="Aktuelles Deck speichern">
-                        <span class="material-symbols-sharp text-sm">add</span>
-                    </button>
-                    }
+
                 </div>
                 @if (flashcardsService.decks().length > 0) {
                 <div class="flex flex-col gap-2 max-h-64 overflow-y-auto">
@@ -146,7 +152,7 @@
 
 
         <!-- Main Content Area -->
-        <main class="md:col-span-6 lg:col-span-7 flex flex-col gap-4 order-2">
+        <main class="md:col-span-6 lg:col-span-7 flex flex-col gap-4 order-1 md:order-2">
             @if (flashcardsService.currentCard()) {
             <div class="gradient-card p-6 rounded-sm flex flex-col gap-4">
                 <!-- Progress -->
@@ -186,7 +192,7 @@
                         </button>
                     </div>
                     <div class="border border-dash-border rounded-sm overflow-hidden">
-                        <canvas #drawingCanvas width="900" height="280"
+                        <canvas #drawingCanvas width="900" height="500"
                             class="w-full cursor-crosshair touch-none canvas-dotted" (mousedown)="onMouseDown($event)"
                             (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp()" (mouseleave)="onMouseLeave()">
                         </canvas>
@@ -238,7 +244,8 @@
         </main>
 
         <!-- Right Sidebar: Card List -->
-        <aside class="md:col-span-3 lg:col-span-3 flex flex-col gap-4 order-3 h-[calc(100vh-8rem)] sticky top-20">
+        <aside
+            class="hidden md:flex md:col-span-3 lg:col-span-3 flex-col gap-4 order-3 h-[calc(100vh-8rem)] sticky top-20">
             <div class="gradient-card p-4 rounded-sm flex flex-col h-full">
                 <div class="flex items-center gap-2 mb-3 flex-shrink-0">
                     <span class="material-symbols-sharp text-dash-accent text-sm">list</span>

@@ -41,6 +41,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     importText = signal<string>('');
     deckNameInput = signal<string>('');
     saveDeckName = signal<string>('');
+    exportDeckId = signal<string>('');
     selectedFileName = signal<string>('');
     selectedFileContent = signal<string>('');
     editFrontInput = signal<string>('');
@@ -104,7 +105,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
 
         if (this.ctx) {
             this.ctx.strokeStyle = '#e4e4e7';
-            this.ctx.lineWidth = 3;
+            this.ctx.lineWidth = 5;
             this.ctx.lineCap = 'round';
             this.ctx.lineJoin = 'round';
         }
@@ -377,7 +378,8 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
 
 
     exportCards(): void {
-        const text = this.flashcardsService.exportToText();
+        const deckId = this.exportDeckId() || undefined;
+        const text = this.flashcardsService.exportToText(deckId);
         if (!text) {
             this.showToast('Keine Karten zum Exportieren.', 'error');
             return;
@@ -403,7 +405,8 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
 
     async copyExport(): Promise<void> {
         try {
-            const text = this.flashcardsService.exportToText();
+            const deckId = this.exportDeckId() || undefined;
+            const text = this.flashcardsService.exportToText(deckId);
             await navigator.clipboard.writeText(text);
             this.showToast('In Zwischenablage kopiert!', 'success');
         } catch {
