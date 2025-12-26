@@ -1,8 +1,8 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SidebarService } from '../sidebar.service';
-import { JournalService } from '../../features/journal/journal';
+import { MusicPlayerComponent } from '../music-player/music-player.component';
 
 interface WeatherData {
     temperature: number;
@@ -19,38 +19,15 @@ interface ForecastDay {
     weatherCode: number;
 }
 
-// Budget data interfaces (matching budget-page.ts)
-interface Transaction {
-    id: string;
-    type: 'income' | 'expense' | 'transfer';
-    amount: number;
-    description: string;
-    category: string;
-    account: string;
-    toAccount?: string;
-    date: string;
-}
-
-interface Account {
-    id: string;
-    name: string;
-    balance: number;
-}
-
 @Component({
     selector: 'app-right-sidebar',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MusicPlayerComponent],
     templateUrl: './right-sidebar.component.html',
     styleUrl: './right-sidebar.component.css'
 })
 export class RightSidebarComponent implements OnInit, OnDestroy {
     sidebarService = inject(SidebarService);
-    journalService = inject(JournalService);
-
-    // Budget data signals
-    budgetTransactions = signal<Transaction[]>([]);
-    budgetAccounts = signal<Account[]>([]);
 
     // Clock signals
     currentTime = signal('');
@@ -67,99 +44,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private clockInterval: ReturnType<typeof setInterval> | null = null;
     private weatherInterval: ReturnType<typeof setInterval> | null = null;
 
-    // Journal widget computed values
-    totalJournalEntries = computed(() => this.journalService.entries().length);
-
-    // Budget widget computed values
-    budgetStats = computed(() => {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const transactions = this.budgetTransactions();
-        const accounts = this.budgetAccounts();
-
-        // Total balance across all accounts
-        const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
-
-        // This month's transactions
-        const thisMonthTransactions = transactions.filter(t => {
-            const date = new Date(t.date);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        });
-
-        const income = thisMonthTransactions
-            .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
-
-        const expenses = thisMonthTransactions
-            .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
-
-        return { totalBalance, income, expenses };
-    });
-
-    // Budget trend data - calculate running balance for last 5 days
-    budgetTrendData = computed(() => {
-        const transactions = this.budgetTransactions();
-        const accounts = this.budgetAccounts();
-
-        // Get current total balance
-        const currentBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
-
-        // Get last 5 days
-        const days: { date: Date; balance: number }[] = [];
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
-
-        // Calculate balance changes for each day going backwards
-        for (let i = 4; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            date.setHours(0, 0, 0, 0);
-            days.push({ date, balance: 0 });
-        }
-
-        // Start with current balance and work backwards
-        let runningBalance = currentBalance;
-
-        // Sort transactions by date descending
-        const sortedTransactions = [...transactions].sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-
-        // Set today's balance
-        days[4].balance = runningBalance;
-
-        // Calculate balance for each previous day
-        for (let i = 3; i >= 0; i--) {
-            const dayStart = days[i].date;
-            const dayEnd = new Date(dayStart);
-            dayEnd.setHours(23, 59, 59, 999);
-            const nextDayStart = days[i + 1].date;
-
-            // Find transactions between this day and next day
-            const dayTransactions = sortedTransactions.filter(t => {
-                const tDate = new Date(t.date);
-                return tDate >= dayStart && tDate < nextDayStart;
-            });
-
-            // Reverse the effect of these transactions to get previous balance
-            for (const t of dayTransactions) {
-                if (t.type === 'income') {
-                    runningBalance -= t.amount;
-                } else if (t.type === 'expense') {
-                    runningBalance += t.amount;
-                }
-                // Transfers don't affect total balance
-            }
-
-            days[i].balance = runningBalance;
-        }
-
-        return days;
-    });
-
     ngOnInit() {
         this.updateClock();
         this.clockInterval = setInterval(() => this.updateClock(), 1000);
@@ -168,21 +52,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         this.loadWeather();
         // Refresh weather every 30 minutes
         this.weatherInterval = setInterval(() => this.loadWeather(), 30 * 60 * 1000);
-
-        // Load budget data from localStorage
-        this.loadBudgetData();
-    }
-
-    private loadBudgetData() {
-        const transactionsData = localStorage.getItem('mybudget_transactions');
-        const accountsData = localStorage.getItem('mybudget_accounts');
-
-        if (transactionsData) {
-            this.budgetTransactions.set(JSON.parse(transactionsData));
-        }
-        if (accountsData) {
-            this.budgetAccounts.set(JSON.parse(accountsData));
-        }
     }
 
     ngOnDestroy() {
@@ -389,81 +258,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     getDayName(date: Date, index: number): string {
         if (index === 0) return 'Heute';
         if (index === 1) return 'Morgen';
-        return date.toLocaleDateString('de-DE', { weekday: 'short' });
-    }
-
-    // Budget widget helpers
-    formatCurrency(amount: number): string {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
-    }
-
-    getCurrentMonthName(): string {
-        return new Date().toLocaleDateString('de-DE', { month: 'long' });
-    }
-
-    // Budget trend chart helpers
-    getBudgetTrendLinePoints(): string {
-        const data = this.budgetTrendData();
-        if (data.length < 2) return '';
-
-        const values = data.map(d => d.balance);
-        const maxVal = Math.max(...values);
-        const minVal = Math.min(...values);
-        const range = maxVal - minVal || 1;
-
-        const width = 100;
-        const height = 38; // Leave room for x-axis labels
-        const padding = 2;
-
-        return data.map((d, i) => {
-            const x = (i / (data.length - 1)) * width;
-            const normalizedValue = (d.balance - minVal) / range;
-            const y = height - padding - (normalizedValue * (height - padding * 2));
-            return `${x},${y}`;
-        }).join(' ');
-    }
-
-    getBudgetTrendAreaPoints(): string {
-        const linePoints = this.getBudgetTrendLinePoints();
-        if (!linePoints) return '';
-
-        const height = 38; // Leave room for x-axis labels
-        return `0,${height} ${linePoints} 100,${height}`;
-    }
-
-    getLastTrendPoint(): { x: number; y: number } | null {
-        const data = this.budgetTrendData();
-        if (data.length < 2) return null;
-
-        const values = data.map(d => d.balance);
-        const maxVal = Math.max(...values);
-        const minVal = Math.min(...values);
-        const range = maxVal - minVal || 1;
-
-        const height = 38; // Leave room for x-axis labels
-        const padding = 2;
-
-        const lastIndex = data.length - 1;
-        const x = 100;
-        const normalizedValue = (data[lastIndex].balance - minVal) / range;
-        const y = height - padding - (normalizedValue * (height - padding * 2));
-
-        return { x, y };
-    }
-
-    // Get label for trend chart x-axis
-    getTrendDayLabel(date: Date, index: number): string {
-        const data = this.budgetTrendData();
-        const isToday = index === data.length - 1;
-
-        if (isToday) {
-            return 'Heute';
-        }
-
-        // Return short weekday name (Mo, Di, Mi, Do, Fr, Sa, So)
         return date.toLocaleDateString('de-DE', { weekday: 'short' });
     }
 }

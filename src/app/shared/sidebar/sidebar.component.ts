@@ -5,13 +5,12 @@ import { PwaService } from '../pwa.service';
 import { BookmarkService } from '../bookmark.service';
 import { SidebarService } from '../sidebar.service';
 import { SettingsService } from '../settings.service';
-import { MusicPlayerComponent } from '../music-player/music-player.component';
 import { MtgInventoryService } from '../../features/mtg-inventory/mtg-inventory.service';
 
 @Component({
     selector: 'app-sidebar',
     standalone: true,
-    imports: [CommonModule, RouterModule, MusicPlayerComponent],
+    imports: [CommonModule, RouterModule],
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.css'
 })

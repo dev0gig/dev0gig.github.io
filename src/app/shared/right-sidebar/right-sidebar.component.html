@@ -113,71 +113,8 @@
         }
     </div>
 
-    <!-- Journal Widget -->
-    <div class="gradient-card p-4">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-sharp text-dash-accent">book</span>
-                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Journal</span>
-            </div>
-            <a routerLink="/journal" class="text-dash-text-dim hover:text-dash-accent transition-colors">
-                <span class="material-symbols-sharp text-lg">arrow_forward</span>
-            </a>
-        </div>
-
-        <!-- Entry Count Display -->
-        <div class="text-center mt-3">
-            <div class="text-3xl font-bold text-white">{{ totalJournalEntries() }}</div>
-            <div class="text-xs text-dash-text-dim">Einträge</div>
-        </div>
-    </div>
-
-    <!-- Budget Widget -->
-    <div class="gradient-card p-4">
-        <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-sharp text-dash-accent">account_balance_wallet</span>
-                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Budget</span>
-            </div>
-            <a routerLink="/budget" class="text-dash-text-dim hover:text-dash-accent transition-colors">
-                <span class="material-symbols-sharp text-lg">arrow_forward</span>
-            </a>
-        </div>
-
-        <!-- Trend Chart -->
-        @if (budgetTrendData().length > 1) {
-        <div class="bg-black/20 rounded-lg p-2">
-            <div class="text-xs text-dash-text-dim text-center mb-2">Trend (letzte 5 Tage)</div>
-            <svg viewBox="0 0 100 50" class="w-full h-16" preserveAspectRatio="none">
-                <!-- Grid lines -->
-                <line x1="0" y1="20" x2="100" y2="20" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"
-                    stroke-dasharray="2,2" />
-
-                <!-- Area fill -->
-                <polygon [attr.points]="getBudgetTrendAreaPoints()"
-                    [attr.fill]="budgetStats().totalBalance >= 0 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(248, 113, 113, 0.2)'" />
-
-                <!-- Trend line -->
-                <polyline [attr.points]="getBudgetTrendLinePoints()" fill="none"
-                    [attr.stroke]="budgetStats().totalBalance >= 0 ? '#4ade80' : '#f87171'" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round" />
-
-                <!-- End point dot -->
-                @let lastPoint = getLastTrendPoint();
-                @if (lastPoint) {
-                <circle [attr.cx]="lastPoint.x" [attr.cy]="lastPoint.y" r="2"
-                    [attr.fill]="budgetStats().totalBalance >= 0 ? '#4ade80' : '#f87171'" />
-                }
-
-                <!-- X-Axis Day Labels -->
-                @for (day of budgetTrendData(); track day.date; let i = $index) {
-                <text [attr.x]="(i / (budgetTrendData().length - 1)) * 100" y="48" font-size="5"
-                    fill="rgba(255,255,255,0.5)" text-anchor="middle">
-                    {{ getTrendDayLabel(day.date, i) }}
-                </text>
-                }
-            </svg>
-        </div>
-        }
+    <!-- Music Player -->
+    <div class="music-player-wrapper mt-auto pt-2">
+        <app-music-player></app-music-player>
     </div>
 </div>
