@@ -29,6 +29,29 @@ export interface MtgCardDetails {
     imageUrl: string;
     /** Timestamp when fetched (for cache validation) */
     fetchedAt: number;
+    /** Price in EUR (from Cardmarket via Scryfall) */
+    priceEur?: string | null;
+    /** Foil price in EUR */
+    priceEurFoil?: string | null;
+    /** Price in USD */
+    priceUsd?: string | null;
+    /** Foil price in USD */
+    priceUsdFoil?: string | null;
+    /** Card rarity (common, uncommon, rare, mythic) */
+    rarity?: string;
+    /** Mana cost string (e.g., "{2}{U}{U}") */
+    manaCost?: string | null;
+    /** Legalities in different formats */
+    legalities?: {
+        standard?: string;
+        modern?: string;
+        commander?: string;
+        legacy?: string;
+        pioneer?: string;
+        pauper?: string;
+    };
+    /** Direct link to Cardmarket */
+    cardmarketUrl?: string;
 }
 
 /**
@@ -66,6 +89,31 @@ export interface ScryfallCard {
             normal: string;
             small: string;
         };
+        mana_cost?: string;
     }>;
     lang: string;
+    /** Price data from Scryfall */
+    prices?: {
+        eur?: string | null;
+        eur_foil?: string | null;
+        usd?: string | null;
+        usd_foil?: string | null;
+    };
+    /** Card rarity */
+    rarity?: string;
+    /** Mana cost */
+    mana_cost?: string;
+    /** Format legalities */
+    legalities?: {
+        standard?: string;
+        modern?: string;
+        commander?: string;
+        legacy?: string;
+        pioneer?: string;
+        pauper?: string;
+    };
+    /** Purchase URIs */
+    purchase_uris?: {
+        cardmarket?: string;
+    };
 }

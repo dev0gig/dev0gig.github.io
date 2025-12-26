@@ -169,7 +169,22 @@ export class MtgInventoryService {
                     nameDE: germanCard?.printed_name || germanCard?.name || englishCard.name,
                     setName: englishCard.set_name,
                     imageUrl: this.extractImageUrl(germanCard || englishCard),
-                    fetchedAt: Date.now()
+                    fetchedAt: Date.now(),
+                    priceEur: englishCard.prices?.eur ?? null,
+                    priceEurFoil: englishCard.prices?.eur_foil ?? null,
+                    priceUsd: englishCard.prices?.usd ?? null,
+                    priceUsdFoil: englishCard.prices?.usd_foil ?? null,
+                    rarity: englishCard.rarity,
+                    manaCost: englishCard.mana_cost || englishCard.card_faces?.[0]?.mana_cost || null,
+                    legalities: englishCard.legalities ? {
+                        standard: englishCard.legalities.standard,
+                        modern: englishCard.legalities.modern,
+                        commander: englishCard.legalities.commander,
+                        legacy: englishCard.legalities.legacy,
+                        pioneer: englishCard.legalities.pioneer,
+                        pauper: englishCard.legalities.pauper
+                    } : undefined,
+                    cardmarketUrl: englishCard.purchase_uris?.cardmarket
                 };
 
                 // Store in cache
@@ -201,6 +216,43 @@ export class MtgInventoryService {
             return card.image_uris.small;
         }
         return '';
+    }
+
+    /**
+     * Fetch prices for a specific card (called when opening detail modal)
+     * Only fetches if prices are not already cached
+     */
+    async fetchPricesForDetailView(set: string, collectorNumber: string): Promise<void> {
+        const key = getCardKey(set, collectorNumber);
+        const cached = this.detailsCache.get(key);
+
+        // If we already have prices, don't fetch again
+        if (cached && (cached.priceEur !== undefined || cached.priceUsd !== undefined)) {
+            return;
+        }
+
+        const setCode = set.toLowerCase();
+
+        try {
+            const englishCard = await firstValueFrom(
+                this.http.get<ScryfallCard>(`${this.API_BASE}/${setCode}/${collectorNumber}`)
+            );
+
+            if (englishCard && cached) {
+                // Update existing cache with prices
+                cached.priceEur = englishCard.prices?.eur ?? null;
+                cached.priceEurFoil = englishCard.prices?.eur_foil ?? null;
+                cached.priceUsd = englishCard.prices?.usd ?? null;
+                cached.priceUsdFoil = englishCard.prices?.usd_foil ?? null;
+                cached.fetchedAt = Date.now();
+
+                this.detailsCache.set(key, cached);
+                this.saveCacheToStorage();
+                this.cacheVersion.update(v => v + 1);
+            }
+        } catch (error) {
+            console.warn('Failed to fetch price data:', error);
+        }
     }
 
     // --- Collection Management ---

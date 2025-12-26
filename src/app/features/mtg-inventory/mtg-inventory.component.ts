@@ -28,6 +28,7 @@ export class MtgInventoryComponent {
     inputSetNumber = signal<string>('');
     searchTerm = signal<string>('');
     selectedSet = signal<string | null>(null);
+    selectedRarity = signal<string | null>(null);
     currentPage = signal<number>(1);
     readonly pageSize = 50;
 
@@ -71,12 +72,21 @@ export class MtgInventoryComponent {
 
         const term = this.searchTerm().toLowerCase().trim();
         const setFilter = this.selectedSet();
+        const rarityFilter = this.selectedRarity();
 
         let filtered = this.cards().map((card, index) => ({ card, index }));
 
         // Filter by set
         if (setFilter) {
             filtered = filtered.filter(({ card }) => card.set === setFilter);
+        }
+
+        // Filter by rarity
+        if (rarityFilter) {
+            filtered = filtered.filter(({ card }) => {
+                const details = this.inventoryService.getDetails(card.set, card.collectorNumber);
+                return details?.rarity === rarityFilter;
+            });
         }
 
         // Filter by search term
@@ -157,6 +167,12 @@ export class MtgInventoryComponent {
         this.currentPage.set(1);
     }
 
+    // --- Rarity Filter ---
+    selectRarity(rarity: string | null): void {
+        this.selectedRarity.set(rarity);
+        this.currentPage.set(1);
+    }
+
     // --- Pagination ---
     goToPage(page: number): void {
         if (page >= 1 && page <= this.totalPages()) {
@@ -234,6 +250,8 @@ export class MtgInventoryComponent {
 
     openDetailModal(card: MtgCardBasic, index: number): void {
         this.inventoryService.queueFetch(card.set, card.collectorNumber);
+        // Fetch prices specifically for detail view
+        this.inventoryService.fetchPricesForDetailView(card.set, card.collectorNumber);
         this.showDetailModal.set({ card, index });
     }
 
