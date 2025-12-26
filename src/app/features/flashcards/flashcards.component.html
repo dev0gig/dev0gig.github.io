@@ -1,0 +1,316 @@
+<div class="min-h-screen text-dash-text p-4 md:p-8 font-sans selection:bg-dash-accent selection:text-white pb-16">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4">
+
+        <!-- Header -->
+        <header
+            class="md:col-span-12 flex items-center justify-between gradient-header p-3 md:p-4 rounded-sm sticky top-0 z-50 shadow-lg">
+            <div class="flex items-center gap-2 md:gap-4">
+                <app-apps-launcher></app-apps-launcher>
+                <h1 class="text-xs md:text-sm font-bold tracking-widest text-dash-text-dim uppercase">Flashcards</h1>
+            </div>
+            <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
+                <div class="hidden sm:flex gap-3 mr-2">
+                    <span>KARTEN <span class="text-white">{{ flashcardsService.totalCards() }}</span></span>
+                    @if (flashcardsService.studyMode() === 'spaced') {
+                    <span>FÄLLIG <span class="text-dash-accent">{{ flashcardsService.dueCards() }}</span></span>
+                    }
+                </div>
+                <button (click)="toggleSettingsModal()"
+                    class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
+                    title="Einstellungen">
+                    <span class="material-symbols-sharp text-xl">settings</span>
+                </button>
+                <button (click)="toggleRightSidebar()"
+                    class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
+                    title="Rechte Sidebar">
+                    <span class="material-symbols-sharp text-xl">menu_open</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Settings Modal -->
+        @if (showSettingsModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleSettingsModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Flashcard Einstellungen</h2>
+                    <button (click)="toggleSettingsModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button (click)="exportCards()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">download</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Export Karten</span>
+                            <span class="text-xs opacity-70">Download als .txt (Front;Back)</span>
+                        </div>
+                    </button>
+
+                    <button (click)="openImportModal()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">upload</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Import Karten</span>
+                            <span class="text-xs opacity-70">Text-Format importieren</span>
+                        </div>
+                    </button>
+
+                    <div class="border-t border-dash-border my-2"></div>
+
+                    <button (click)="clearAllCards()"
+                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-red-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                        <span class="material-symbols-sharp">delete_forever</span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm">Alle Karten löschen</span>
+                            <span class="text-xs opacity-70">Permanent entfernen</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Left Sidebar: Study Mode Selector -->
+        <aside class="md:col-span-3 lg:col-span-2 flex flex-col gap-4 order-1">
+            <div class="gradient-card p-4 rounded-sm sticky top-20">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-sharp text-dash-accent text-sm">school</span>
+                    <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Lernmodus</h3>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button (click)="setStudyMode('sequential')"
+                        [class]="flashcardsService.studyMode() === 'sequential'
+                            ? 'bg-dash-accent text-white border-dash-accent'
+                            : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                        class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
+                        <span class="material-symbols-sharp text-lg">format_list_numbered</span>
+                        Reihenfolge
+                    </button>
+                    <button (click)="setStudyMode('random')"
+                        [class]="flashcardsService.studyMode() === 'random'
+                            ? 'bg-dash-accent text-white border-dash-accent'
+                            : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                        class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
+                        <span class="material-symbols-sharp text-lg">shuffle</span>
+                        Zufällig
+                    </button>
+                    <button (click)="setStudyMode('spaced')"
+                        [class]="flashcardsService.studyMode() === 'spaced'
+                            ? 'bg-dash-accent text-white border-dash-accent'
+                            : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                        class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
+                        <span class="material-symbols-sharp text-lg">event_repeat</span>
+                        Spaced Repetition
+                    </button>
+                </div>
+                @if (flashcardsService.studyMode() === 'spaced') {
+                <div class="mt-4 pt-3 border-t border-dash-border">
+                    <div class="text-xs text-dash-text-dim mb-2">Leitner Boxen</div>
+                    <div class="flex flex-col gap-1 text-xs">
+                        <div class="flex justify-between text-dash-text-dim">
+                            <span>Box 1</span><span class="text-dash-accent">Sofort</span>
+                        </div>
+                        <div class="flex justify-between text-dash-text-dim">
+                            <span>Box 2</span><span>1 Tag</span>
+                        </div>
+                        <div class="flex justify-between text-dash-text-dim">
+                            <span>Box 3</span><span>3 Tage</span>
+                        </div>
+                        <div class="flex justify-between text-dash-text-dim">
+                            <span>Box 4</span><span>7 Tage</span>
+                        </div>
+                        <div class="flex justify-between text-dash-text-dim">
+                            <span>Box 5</span><span>14 Tage</span>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="md:col-span-9 lg:col-span-10 flex flex-col gap-4 order-2">
+            @if (flashcardsService.currentCard()) {
+            <div class="gradient-card p-6 rounded-sm flex flex-col gap-4">
+                <!-- Progress -->
+                <div class="flex items-center justify-between text-xs text-dash-text-dim">
+                    <span>Karte {{ flashcardsService.currentIndex() + 1 }} von {{ flashcardsService.studyQueue().length
+                        }}</span>
+                    @if (flashcardsService.studyMode() === 'spaced') {
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-sharp text-sm">inventory_2</span>
+                        Box {{ flashcardsService.currentCard()!.box }}
+                    </span>
+                    }
+                </div>
+
+                <!-- Card Text (Front / Back) -->
+                <div
+                    class="bg-dash-bg p-6 rounded-sm text-center min-h-[100px] flex flex-col items-center justify-center">
+                    @if (!isFlipped()) {
+                    <h2 class="text-2xl font-bold text-dash-text">{{ flashcardsService.currentCard()!.front }}</h2>
+                    } @else {
+                    <span class="text-xs text-green-400 uppercase tracking-wider mb-2">Antwort</span>
+                    <h2 class="text-2xl font-bold text-green-400">{{ flashcardsService.currentCard()!.back }}</h2>
+                    }
+                </div>
+
+                <!-- Drawing Canvas -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-dash-text-dim uppercase tracking-wider flex items-center gap-1">
+                            <span class="material-symbols-sharp text-sm">draw</span>
+                            Zeichenbereich
+                        </span>
+                        <button (click)="clearCanvas()"
+                            class="px-3 py-1 bg-dash-bg hover:bg-dash-accent rounded-sm text-xs text-dash-text-dim hover:text-white transition-all flex items-center gap-1">
+                            <span class="material-symbols-sharp text-sm">delete</span>
+                            Löschen
+                        </button>
+                    </div>
+                    <div class="border border-dash-border rounded-sm overflow-hidden">
+                        <canvas #drawingCanvas width="900" height="280"
+                            class="w-full cursor-crosshair touch-none canvas-dotted" (mousedown)="onMouseDown($event)"
+                            (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp()" (mouseleave)="onMouseLeave()">
+                        </canvas>
+                    </div>
+                </div>
+
+
+                <!-- Controls -->
+                <div class="flex items-center justify-between gap-4">
+                    <!-- Navigation Left -->
+                    <button (click)="prevCard()"
+                        class="w-12 h-12 bg-dash-bg hover:bg-dash-accent rounded-sm flex items-center justify-center text-dash-text-dim hover:text-white transition-all">
+                        <span class="material-symbols-sharp text-xl">chevron_left</span>
+                    </button>
+
+                    <!-- Center Actions -->
+                    <div class="flex-1 flex items-center justify-center gap-3">
+                        @if (!isFlipped()) {
+                        <button (click)="flipCard()"
+                            class="px-6 py-3 gradient-btn text-white rounded-sm font-medium flex items-center gap-2 transition-all">
+                            <span class="material-symbols-sharp">flip</span>
+                            Umdrehen
+                            <span class="text-[10px] opacity-60 ml-1">Space</span>
+                        </button>
+                        } @else {
+                        <button (click)="markUnknown()"
+                            class="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-sm font-medium flex items-center gap-2 transition-all">
+                            <span class="material-symbols-sharp">close</span>
+                            Nicht gewusst
+                            <span class="text-[10px] opacity-60 ml-1">N</span>
+                        </button>
+                        <button (click)="markKnown()"
+                            class="px-4 py-3 bg-green-600 hover:bg-green-500 text-white rounded-sm font-medium flex items-center gap-2 transition-all">
+                            <span class="material-symbols-sharp">check</span>
+                            Gewusst
+                            <span class="text-[10px] opacity-60 ml-1">Y</span>
+                        </button>
+                        }
+                    </div>
+
+
+                    <!-- Navigation Right -->
+                    <button (click)="nextCard()"
+                        class="w-12 h-12 bg-dash-bg hover:bg-dash-accent rounded-sm flex items-center justify-center text-dash-text-dim hover:text-white transition-all">
+                        <span class="material-symbols-sharp text-xl">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+            } @else {
+            <!-- Empty State -->
+            <div
+                class="gradient-card p-12 rounded-sm flex flex-col items-center justify-center text-dash-text-dim border-2 border-dashed border-dash-border">
+                <span class="material-symbols-sharp text-5xl mb-3 opacity-50">style</span>
+                <p class="text-lg font-medium">Keine Karten vorhanden</p>
+                <p class="text-sm mt-1">Importiere Karten über die Einstellungen.</p>
+                <p class="text-xs mt-2 opacity-70">Format: Vorderseite;Rückseite</p>
+                <button (click)="openImportModal()"
+                    class="mt-4 px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium flex items-center gap-2">
+                    <span class="material-symbols-sharp">upload</span>
+                    Karten importieren
+                </button>
+            </div>
+            }
+        </main>
+
+
+        <!-- Import Modal -->
+        @if (showImportModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeImportModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Karten importieren</h2>
+                    <button (click)="closeImportModal()" class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="text-xs text-dash-text-dim space-y-1">
+                    <p>Füge Karten im Format <code class="text-dash-accent">Vorderseite;Rückseite</code> hinzu:</p>
+                    <code class="text-dash-accent block bg-dash-bg p-2 rounded-sm">Car;Auto
+House;Haus
+Dog;Hund</code>
+                </div>
+
+                <textarea [(ngModel)]="importText" placeholder="Karten hier einfügen..."
+                    class="w-full h-40 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors font-mono"></textarea>
+
+                @if (lastImportResult()) {
+                <div class="text-sm">
+                    <span class="text-green-400">{{ lastImportResult()!.success }} Karten hinzugefügt</span>
+                    @if (lastImportResult()!.failed > 0) {
+                    <span class="text-red-400 ml-2">{{ lastImportResult()!.failed }} Zeilen nicht erkannt</span>
+                    }
+                </div>
+                }
+
+                <div class="flex justify-end gap-2">
+                    <button (click)="closeImportModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Schließen
+                    </button>
+                    <button (click)="executeImport()" [disabled]="!importText()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Importieren
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Toast Notification -->
+        @if (toastMessage()) {
+        <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">
+            <div [class]="toastType() === 'success'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-500 border-2 border-green-400/50'
+                : 'bg-gradient-to-r from-red-600 to-rose-500 border-2 border-red-400/50'"
+                class="p-5 rounded-lg shadow-2xl flex items-center gap-4 max-w-lg" [style.box-shadow]="toastType() === 'success'
+                ? '0 0 30px rgba(34, 197, 94, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'
+                : '0 0 30px rgba(239, 68, 68, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'">
+                <div
+                    class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
+                    <span class="material-symbols-sharp text-white text-3xl">
+                        {{ toastType() === 'success' ? 'check_circle' : 'error' }}
+                    </span>
+                </div>
+                <div class="flex-1 text-base font-semibold text-white">{{ toastMessage() }}</div>
+                <button (click)="hideToast()"
+                    class="text-white/70 hover:text-white transition-colors flex-shrink-0 hover:scale-110">
+                    <span class="material-symbols-sharp text-xl">close</span>
+                </button>
+            </div>
+        </div>
+        }
+
+    </div>
+</div>

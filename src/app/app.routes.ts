@@ -32,5 +32,9 @@ export const routes: Routes = [
     {
         path: 'mtg-inventory',
         loadComponent: () => import('./features/mtg-inventory/mtg-inventory.component').then(m => m.MtgInventoryComponent)
+    },
+    {
+        path: 'flashcards',
+        loadComponent: () => import('./features/flashcards/flashcards.component').then(m => m.FlashcardsComponent)
     }
 ];
