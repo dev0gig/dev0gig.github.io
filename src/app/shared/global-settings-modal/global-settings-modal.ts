@@ -327,9 +327,13 @@ export class GlobalSettingsModal {
                 const content = await flashcardsFile.async('string');
                 const importData = JSON.parse(content);
                 if (importData.data) {
+                    // Ensure we import both cards and decks arrays
+                    const cardsToImport = Array.isArray(importData.data.cards) ? importData.data.cards : [];
+                    const decksToImport = Array.isArray(importData.data.decks) ? importData.data.decks : [];
+
                     this.flashcardsService.importData({
-                        cards: importData.data.cards || [],
-                        decks: importData.data.decks || []
+                        cards: cardsToImport,
+                        decks: decksToImport
                     });
                     importedProjects.push('Flashcards');
                 }

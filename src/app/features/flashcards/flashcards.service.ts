@@ -113,11 +113,13 @@ export class FlashcardsService {
      * Import cards and decks from a data object (used by global settings import)
      */
     importData(data: { cards?: Flashcard[]; decks?: Deck[] }): void {
-        if (data.cards) {
+        // Always set cards if the property exists (even if empty array)
+        if (data.cards !== undefined) {
             this._cards.set(data.cards);
             this.saveCards();
         }
-        if (data.decks) {
+        // Always set decks if the property exists (even if empty array)
+        if (data.decks !== undefined) {
             this._decks.set(data.decks);
             this.saveDecks();
         }

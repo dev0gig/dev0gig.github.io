@@ -385,11 +385,20 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
             return;
         }
 
+        // Determine filename: use deck name if exporting a specific deck, otherwise 'flashcards'
+        let filename = 'flashcards';
+        if (deckId) {
+            const deck = this.flashcardsService.decks().find(d => d.id === deckId);
+            if (deck) {
+                filename = deck.name;
+            }
+        }
+
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'flashcards.txt';
+        a.download = `${filename}.txt`;
         a.click();
         URL.revokeObjectURL(url);
         this.showToast('Export gestartet!', 'success');

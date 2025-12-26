@@ -5,7 +5,7 @@ import { PwaService } from '../pwa.service';
 import { BookmarkService } from '../bookmark.service';
 import { SidebarService } from '../sidebar.service';
 import { SettingsService } from '../settings.service';
-import { MtgInventoryService } from '../../features/mtg-inventory/mtg-inventory.service';
+import { FlashcardsService } from '../../features/flashcards/flashcards.service';
 
 @Component({
     selector: 'app-sidebar',
@@ -19,7 +19,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     bookmarkService = inject(BookmarkService);
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
-    mtgInventoryService = inject(MtgInventoryService);
+    flashcardsService = inject(FlashcardsService);
 
     private exportHandler = () => this.exportAllData();
     private importHandler = () => this.triggerImportAll();
@@ -91,15 +91,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
         // Export Journal
         const journalEntries = localStorage.getItem('terminal_journal_entries');
-        if (journalEntries) {
-            const journalData = {
-                exportDate,
-                version: '1.0',
-                project: 'journal',
-                data: JSON.parse(journalEntries)
-            };
-            zip.file('journal.json', JSON.stringify(journalData, null, 2));
-        }
+        const journalData = {
+            exportDate,
+            version: '1.0',
+            project: 'journal',
+            data: journalEntries ? JSON.parse(journalEntries) : []
+        };
+        zip.file('journal.json', JSON.stringify(journalData, null, 2));
 
         // Export Budget
         const transactions = localStorage.getItem('mybudget_transactions');
@@ -124,34 +122,47 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
         // Export AudioNotes
         const audioNotes = localStorage.getItem('audio_notes_entries');
-        if (audioNotes) {
-            const audioNotesData = {
-                exportDate,
-                version: '1.0',
-                project: 'audioNotes',
-                data: JSON.parse(audioNotes)
-            };
-            zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
-        }
+        const audioNotesData = {
+            exportDate,
+            version: '1.0',
+            project: 'audioNotes',
+            data: audioNotes ? JSON.parse(audioNotes) : []
+        };
+        zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
 
         // Export RecentlyPlayed (YouTube URL History)
         const urlHistory = localStorage.getItem('youtube_url_history');
-        if (urlHistory) {
-            const recentlyPlayedData = {
-                exportDate,
-                version: '1.0',
-                project: 'recentlyPlayed',
-                data: JSON.parse(urlHistory)
-            };
-            zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
-        }
+        const recentlyPlayedData = {
+            exportDate,
+            version: '1.0',
+            project: 'recentlyPlayed',
+            data: urlHistory ? JSON.parse(urlHistory) : []
+        };
+        zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
 
-        // Export MTG Inventory (Magic Arena Format)
-        const mtgCards = this.mtgInventoryService.cards();
-        if (mtgCards.length > 0) {
-            const arenaExport = this.mtgInventoryService.exportToArenaFormat();
-            zip.file('mtg-inventory.txt', arenaExport);
-        }
+        // Export Flashcards
+        const flashcardsExport = this.flashcardsService.exportData();
+        const flashcardsData = {
+            exportDate,
+            version: '1.0',
+            project: 'flashcards',
+            data: flashcardsExport
+        };
+        zip.file('flashcards.json', JSON.stringify(flashcardsData, null, 2));
+
+        // Export MTG Inventory (JSON format like GlobalSettingsModal)
+        const mtgCards = localStorage.getItem('mtg-cards');
+        const mtgCache = localStorage.getItem('mtg-cache');
+        const mtgData = {
+            exportDate,
+            version: '1.0',
+            project: 'mtgInventory',
+            data: {
+                cards: mtgCards ? JSON.parse(mtgCards) : [],
+                cache: mtgCache ? JSON.parse(mtgCache) : {}
+            }
+        };
+        zip.file('mtginventory.json', JSON.stringify(mtgData, null, 2));
 
         // Generate and download
         const blob = await zip.generateAsync({ type: 'blob' });
@@ -189,14 +200,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
             const budgetFile = zip.file('budget.json');
             const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
-            const mtgInventoryFile = zip.file('mtg-inventory.txt');
+            const flashcardsFile = zip.file('flashcards.json');
+            const mtgInventoryFile = zip.file('mtginventory.json');
 
-            if (!bookmarksFile && !journalFile && !budgetFile && !audioNotesFile && !recentlyPlayedFile && !mtgInventoryFile) {
+            if (!bookmarksFile && !journalFile && !budgetFile && !audioNotesFile && !recentlyPlayedFile && !flashcardsFile && !mtgInventoryFile) {
                 alert('Keine passenden Daten in der Backup-Datei gefunden.');
                 return;
             }
 
-            if (!confirm('Warnung: Der Import überschreibt alle bestehenden Daten.\\n\\nFortfahren?')) {
+            if (!confirm('Warnung: Der Import überschreibt alle bestehenden Daten.\n\nFortfahren?')) {
                 return;
             }
 
@@ -267,13 +279,34 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 importedProjects.push('Zuletzt gespielt');
             }
 
-            // Import MTG Inventory (Magic Arena Format)
+            // Import Flashcards
+            if (flashcardsFile) {
+                const content = await flashcardsFile.async('string');
+                const importData = JSON.parse(content);
+                if (importData.data) {
+                    const cardsToImport = Array.isArray(importData.data.cards) ? importData.data.cards : [];
+                    const decksToImport = Array.isArray(importData.data.decks) ? importData.data.decks : [];
+                    this.flashcardsService.importData({
+                        cards: cardsToImport,
+                        decks: decksToImport
+                    });
+                    importedProjects.push('Flashcards');
+                }
+            }
+
+            // Import MTG Inventory (JSON format like GlobalSettingsModal)
             if (mtgInventoryFile) {
                 const content = await mtgInventoryFile.async('string');
-                // Clear existing cards before import
-                this.mtgInventoryService.clearCollection();
-                const result = this.mtgInventoryService.importFromArenaFormat(content);
-                importedProjects.push(`MTG Inventory (${result.success} Karten)`);
+                const mtgData = JSON.parse(content);
+                if (mtgData.data) {
+                    if (mtgData.data.cards) {
+                        localStorage.setItem('mtg-cards', JSON.stringify(mtgData.data.cards));
+                    }
+                    if (mtgData.data.cache) {
+                        localStorage.setItem('mtg-cache', JSON.stringify(mtgData.data.cache));
+                    }
+                    importedProjects.push('MTG Inventory');
+                }
             }
 
             alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
