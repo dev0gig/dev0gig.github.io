@@ -49,15 +49,6 @@
                         </div>
                     </button>
 
-                    <button (click)="copyExport()"
-                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
-                        <span class="material-symbols-sharp">content_copy</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Copy to Clipboard</span>
-                            <span class="text-xs opacity-70">Arena-Format in Zwischenablage</span>
-                        </div>
-                    </button>
-
                     <button (click)="openImportModal()"
                         class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
                         <span class="material-symbols-sharp">upload</span>
@@ -428,14 +419,14 @@
             <div
                 class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Lightweight Import</h2>
+                    <h2 class="text-lg font-bold text-dash-text">TXT-Datei importieren</h2>
                     <button (click)="closeImportModal()" class="text-dash-text-dim hover:text-white transition-colors">
                         <span class="material-symbols-sharp">close</span>
                     </button>
                 </div>
 
                 <div class="text-xs text-dash-text-dim space-y-1">
-                    <p>Füge eine Liste im Arena-Format ein:</p>
+                    <p>Wähle eine .txt Datei im Arena-Format:</p>
                     <code class="text-dash-accent block">1 Counterspell (MH2) 405</code>
                     <p class="text-green-400 flex items-center gap-1 mt-2">
                         <span class="material-symbols-sharp text-sm">bolt</span>
@@ -443,9 +434,19 @@
                     </p>
                 </div>
 
-                <textarea [ngModel]="importText()" (ngModelChange)="importText.set($event)" rows="10"
-                    placeholder="1 Counterspell (MH2) 405&#10;2 Lightning Bolt (2X2) 117&#10;..."
-                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent font-mono resize-none"></textarea>
+                <div class="flex flex-col gap-3">
+                    <label
+                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-dash-border rounded-sm cursor-pointer bg-dash-bg hover:bg-dash-card hover:border-dash-accent transition-all">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <span class="material-symbols-sharp text-3xl text-dash-text-dim mb-2">upload_file</span>
+                            <p class="text-sm text-dash-text-dim">Klicken, um .txt Datei auszuwählen</p>
+                            @if (selectedFileName()) {
+                            <p class="text-xs text-dash-accent mt-2 font-mono">{{ selectedFileName() }}</p>
+                            }
+                        </div>
+                        <input #fileInput type="file" accept=".txt" class="hidden" (change)="onFileSelected($event)" />
+                    </label>
+                </div>
 
                 @if (lastImportResult()) {
                 <div class="text-sm">

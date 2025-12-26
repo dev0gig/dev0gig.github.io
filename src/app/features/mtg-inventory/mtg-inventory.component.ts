@@ -36,6 +36,7 @@ export class MtgInventoryComponent {
     showImportModal = signal<boolean>(false);
     showDetailModal = signal<{ card: MtgCardBasic; index: number } | null>(null);
     importText = signal<string>('');
+    selectedFileName = signal<string>('');
     lastImportResult = signal<{ success: number; failed: number } | null>(null);
     toastMessage = signal<string>('');
     toastType = signal<'success' | 'error'>('success');
@@ -243,6 +244,7 @@ export class MtgInventoryComponent {
     // --- Import/Export ---
     openImportModal(): void {
         this.importText.set('');
+        this.selectedFileName.set('');
         this.lastImportResult.set(null);
         this.showImportModal.set(true);
         this.showSettingsModal.set(false);
@@ -250,6 +252,21 @@ export class MtgInventoryComponent {
 
     closeImportModal(): void {
         this.showImportModal.set(false);
+    }
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+
+        if (file) {
+            this.selectedFileName.set(file.name);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target?.result as string;
+                this.importText.set(content || '');
+            };
+            reader.readAsText(file);
+        }
     }
 
     executeImport(): void {
