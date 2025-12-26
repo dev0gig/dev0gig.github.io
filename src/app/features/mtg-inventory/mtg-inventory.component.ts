@@ -36,6 +36,7 @@ export class MtgInventoryComponent {
     showSettingsModal = signal<boolean>(false);
     showImportModal = signal<boolean>(false);
     showDetailModal = signal<{ card: MtgCardBasic; index: number } | null>(null);
+    showMobileSetFilter = signal<boolean>(false);
     importText = signal<string>('');
     selectedFileName = signal<string>('');
     lastImportResult = signal<{ success: number; failed: number } | null>(null);
@@ -229,6 +230,10 @@ export class MtgInventoryComponent {
 
     toggleRightSidebar(): void {
         this.sidebarService.toggleRight();
+    }
+
+    toggleMobileSetFilter(): void {
+        this.showMobileSetFilter.update(v => !v);
     }
 
     // --- Card Actions ---

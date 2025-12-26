@@ -84,25 +84,37 @@
 
         <!-- Controls Card -->
         <div class="gradient-card p-4 rounded-sm">
-            <div class="flex gap-2 items-center">
-                <div class="relative group w-32">
-                    <span
-                        class="absolute left-2 top-1/2 -translate-y-1/2 text-dash-text-dim text-[10px] uppercase">SET-#</span>
-                    <input #setNumberInput type="text" [ngModel]="inputSetNumber()"
-                        (ngModelChange)="inputSetNumber.set($event)" (keydown.enter)="addCard()" placeholder="MH2-405"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text pl-12 pr-2 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors uppercase" />
-                </div>
-                <button (click)="addCard()" [disabled]="isAddingCard() || !inputSetNumber()"
-                    class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    title="Hinzufügen">
-                    @if (isAddingCard()) {
-                    <span class="material-symbols-sharp text-lg animate-spin">progress_activity</span>
-                    } @else {
-                    <span class="material-symbols-sharp text-lg">add</span>
+            <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+                <div class="flex gap-2 items-center">
+                    <div class="relative group flex-1 sm:flex-none sm:w-32">
+                        <span
+                            class="absolute left-2 top-1/2 -translate-y-1/2 text-dash-text-dim text-[10px] uppercase">SET-#</span>
+                        <input #setNumberInput type="text" [ngModel]="inputSetNumber()"
+                            (ngModelChange)="inputSetNumber.set($event)" (keydown.enter)="addCard()"
+                            placeholder="MH2-405"
+                            class="w-full bg-dash-bg border border-dash-border text-dash-text pl-12 pr-2 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors uppercase" />
+                    </div>
+                    <button (click)="addCard()" [disabled]="isAddingCard() || !inputSetNumber()"
+                        class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0"
+                        title="Hinzufügen">
+                        @if (isAddingCard()) {
+                        <span class="material-symbols-sharp text-lg animate-spin">progress_activity</span>
+                        } @else {
+                        <span class="material-symbols-sharp text-lg">add</span>
+                        }
+                    </button>
+                    <!-- Mobile Set Filter Toggle -->
+                    @if (allSets().length > 0) {
+                    <button (click)="toggleMobileSetFilter()"
+                        class="sm:hidden bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all flex items-center justify-center flex-shrink-0"
+                        [class.bg-dash-accent]="showMobileSetFilter()"
+                        [class.border-dash-accent]="showMobileSetFilter()" title="Sets filtern">
+                        <span class="material-symbols-sharp text-lg">folder</span>
+                    </button>
                     }
-                </button>
+                </div>
 
-                <div class="w-px h-6 bg-dash-border mx-1"></div>
+                <div class="hidden sm:block w-px h-6 bg-dash-border mx-1"></div>
 
                 <div class="relative group flex-1">
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">
@@ -121,11 +133,39 @@
             </div>
         </div>
 
+        <!-- Mobile Set Filter Dropdown -->
+        @if (showMobileSetFilter() && allSets().length > 0) {
+        <div class="sm:hidden gradient-card p-4 rounded-sm">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
+                <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Sets</h3>
+                @if (selectedSet()) {
+                <button (click)="selectSet(null)"
+                    class="ml-auto text-xs text-dash-accent hover:text-white flex items-center gap-1 py-1 px-2 bg-dash-bg rounded-sm border border-dash-accent">
+                    <span class="material-symbols-sharp text-sm">close</span>
+                    Filter entfernen
+                </button>
+                }
+            </div>
+            <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                @for (set of allSets(); track set.code) {
+                <button (click)="selectSet(set.code)" [class]="selectedSet() === set.code
+                        ? 'bg-dash-accent text-white border-dash-accent'
+                        : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                    class="px-3 py-2 rounded-sm text-xs border transition-all">
+                    <span class="font-mono">{{ set.code }}</span>
+                    <span class="opacity-60 ml-1">({{ set.count }})</span>
+                </button>
+                }
+            </div>
+        </div>
+        }
+
         <!-- Main Content with Sidebar Layout -->
         <div class="flex gap-4">
-            <!-- Set Filter Sidebar (Left) -->
+            <!-- Set Filter Sidebar (Left) - Hidden on mobile -->
             @if (allSets().length > 0) {
-            <div class="w-56 flex-shrink-0">
+            <div class="hidden sm:block w-56 flex-shrink-0">
                 <div class="gradient-card p-4 rounded-sm sticky top-24">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
@@ -158,47 +198,61 @@
             }
 
             <!-- Main Content (Right) -->
-            <div class="flex-1 flex flex-col gap-4">
+            <div class="flex-1 flex flex-col gap-4 min-w-0">
                 <!-- Rarity Filter -->
-                <div class="gradient-card p-4 rounded-sm">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-sharp text-dash-accent text-sm">auto_awesome</span>
-                            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Rarity</h3>
+                <div class="gradient-card p-3 sm:p-4 rounded-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+                        <div class="flex items-center justify-between sm:justify-start gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-sharp text-dash-accent text-sm">auto_awesome</span>
+                                <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Rarity</h3>
+                            </div>
+                            <div
+                                class="flex sm:hidden items-center gap-1 text-xs text-dash-text-dim font-mono whitespace-nowrap">
+                                <span class="text-white">{{ filteredCardsTotal() }}</span>
+                                <span>/</span>
+                                <span>{{ totalCards() }}</span>
+                            </div>
                         </div>
-                        <div class="flex gap-2 flex-wrap items-center justify-center flex-1 mx-4">
+                        <div
+                            class="flex gap-1.5 sm:gap-2 flex-wrap items-center justify-start sm:justify-center flex-1 sm:mx-4">
                             <button (click)="selectRarity(null)" [class]="!selectedRarity()
                                     ? 'bg-dash-accent ring-2 ring-white/50'
                                     : 'bg-dash-bg hover:bg-dash-accent/50'"
-                                class="text-[10px] uppercase font-bold px-3 py-1 rounded-full text-white transition-all cursor-pointer">
+                                class="text-[10px] uppercase font-bold px-2 sm:px-3 py-1 rounded-full text-white transition-all cursor-pointer">
                                 ALLE
                             </button>
                             <button (click)="selectRarity('common')" [class]="selectedRarity() === 'common'
                                     ? 'bg-gray-600 ring-2 ring-white/50'
                                     : 'bg-gray-600/50 hover:bg-gray-600'"
-                                class="text-[10px] uppercase font-bold px-3 py-1 rounded-full text-white transition-all cursor-pointer">
-                                COMMON
+                                class="text-[10px] uppercase font-bold px-2 sm:px-3 py-1 rounded-full text-white transition-all cursor-pointer">
+                                <span class="hidden sm:inline">COMMON</span>
+                                <span class="sm:hidden">C</span>
                             </button>
                             <button (click)="selectRarity('uncommon')" [class]="selectedRarity() === 'uncommon'
                                     ? 'bg-gray-400 ring-2 ring-white/50'
                                     : 'bg-gray-400/50 hover:bg-gray-400'"
-                                class="text-[10px] uppercase font-bold px-3 py-1 rounded-full text-white transition-all cursor-pointer">
-                                UNCOMMON
+                                class="text-[10px] uppercase font-bold px-2 sm:px-3 py-1 rounded-full text-white transition-all cursor-pointer">
+                                <span class="hidden sm:inline">UNCOMMON</span>
+                                <span class="sm:hidden">U</span>
                             </button>
                             <button (click)="selectRarity('rare')" [class]="selectedRarity() === 'rare'
                                     ? 'bg-yellow-600 ring-2 ring-white/50'
                                     : 'bg-yellow-600/50 hover:bg-yellow-600'"
-                                class="text-[10px] uppercase font-bold px-3 py-1 rounded-full text-white transition-all cursor-pointer">
-                                RARE
+                                class="text-[10px] uppercase font-bold px-2 sm:px-3 py-1 rounded-full text-white transition-all cursor-pointer">
+                                <span class="hidden sm:inline">RARE</span>
+                                <span class="sm:hidden">R</span>
                             </button>
                             <button (click)="selectRarity('mythic')" [class]="selectedRarity() === 'mythic'
                                     ? 'bg-orange-500 ring-2 ring-white/50'
                                     : 'bg-orange-500/50 hover:bg-orange-500'"
-                                class="text-[10px] uppercase font-bold px-3 py-1 rounded-full text-white transition-all cursor-pointer">
-                                MYTHIC
+                                class="text-[10px] uppercase font-bold px-2 sm:px-3 py-1 rounded-full text-white transition-all cursor-pointer">
+                                <span class="hidden sm:inline">MYTHIC</span>
+                                <span class="sm:hidden">M</span>
                             </button>
                         </div>
-                        <div class="flex items-center gap-1 text-xs text-dash-text-dim font-mono whitespace-nowrap">
+                        <div
+                            class="hidden sm:flex items-center gap-1 text-xs text-dash-text-dim font-mono whitespace-nowrap">
                             <span class="text-white">{{ filteredCardsTotal() }}</span>
                             <span>/</span>
                             <span>{{ totalCards() }}</span>
@@ -207,20 +261,20 @@
                 </div>
 
                 @if (recentCards().length > 0) {
-                <div class="gradient-card p-4 rounded-sm">
+                <div class="gradient-card p-3 sm:p-4 rounded-sm">
                     <h3
                         class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span class="material-symbols-sharp text-dash-accent text-sm">schedule</span>
                         Zuletzt Hinzugefügt
                     </h3>
-                    <div class="grid grid-cols-5 gap-3">
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
                         @for (item of recentCards(); track getCardKey(item.card) + item.index) {
                         <div class="gradient-card rounded-lg overflow-hidden group hover:border-dash-accent transition-all hover:-translate-y-1 hover:shadow-lg cursor-pointer relative"
                             (click)="openDetailModal(item.card, item.index)" (appLazyCard)="onCardVisible(item.card)">
                             <!-- Quantity Badge -->
                             @if (getCardCount(item.card) > 1) {
                             <div
-                                class="absolute top-1 right-1 z-10 bg-dash-accent text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
+                                class="absolute top-1 right-1 z-10 bg-dash-accent text-white text-[10px] sm:text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-lg">
                                 {{ getCardCount(item.card) }}
                             </div>
                             }
@@ -230,17 +284,17 @@
                                     class="w-full h-full object-cover transition-transform group-hover:scale-105 rounded-lg" />
                                 } @else {
                                 <div
-                                    class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2 p-2">
+                                    class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-1 sm:gap-2 p-1 sm:p-2">
                                     @if (isLoading(item.card)) {
                                     <span
-                                        class="material-symbols-sharp text-2xl text-dash-text-dim animate-pulse">image</span>
+                                        class="material-symbols-sharp text-xl sm:text-2xl text-dash-text-dim animate-pulse">image</span>
                                     <span
-                                        class="text-[10px] text-dash-text-dim text-center leading-tight">Lädt...</span>
+                                        class="text-[8px] sm:text-[10px] text-dash-text-dim text-center leading-tight">Lädt...</span>
                                     } @else {
                                     <span
-                                        class="material-symbols-sharp text-2xl text-dash-text-dim opacity-50">playing_cards</span>
+                                        class="material-symbols-sharp text-xl sm:text-2xl text-dash-text-dim opacity-50">playing_cards</span>
                                     <span
-                                        class="text-[10px] text-dash-text-dim text-center leading-tight truncate w-full">{{
+                                        class="text-[8px] sm:text-[10px] text-dash-text-dim text-center leading-tight truncate w-full">{{
                                         item.card.nameEN }}</span>
                                     }
                                 </div>
@@ -255,61 +309,63 @@
                 <!-- Table View with Pagination -->
                 @if (remainingCount() > 0) {
                 <div class="gradient-card rounded-sm overflow-hidden">
-                    <div class="p-4 border-b border-dash-border flex items-center justify-between">
+                    <div class="p-3 sm:p-4 border-b border-dash-border flex items-center justify-between gap-2">
                         <h3
-                            class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                            class="text-[10px] sm:text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-1 sm:gap-2">
                             <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
-                            Sammlung ({{ remainingCount() }} weitere)
+                            <span class="hidden sm:inline">Sammlung ({{ remainingCount() }} weitere)</span>
+                            <span class="sm:hidden">{{ remainingCount() }} weitere</span>
                         </h3>
                         <!-- Pagination Info -->
                         @if (totalPages() > 1) {
-                        <div class="flex items-center gap-2 text-xs text-dash-text-dim">
+                        <div class="flex items-center gap-1 sm:gap-2 text-xs text-dash-text-dim">
                             <button (click)="prevPage()" [disabled]="currentPage() === 1"
-                                class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                                 <span class="material-symbols-sharp text-sm">chevron_left</span>
                             </button>
-                            <span class="font-mono">{{ currentPage() }} / {{ totalPages() }}</span>
+                            <span class="font-mono text-[10px] sm:text-xs">{{ currentPage() }}/{{ totalPages() }}</span>
                             <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-                                class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                                 <span class="material-symbols-sharp text-sm">chevron_right</span>
                             </button>
                         </div>
                         }
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="text-xs text-dash-text-dim uppercase bg-dash-bg/50 sticky top-0">
+                        <table class="w-full text-xs sm:text-sm">
+                            <thead
+                                class="text-[10px] sm:text-xs text-dash-text-dim uppercase bg-dash-bg/50 sticky top-0">
                                 <tr>
-                                    <th class="px-4 py-3 text-left">Name</th>
-                                    <th class="px-4 py-3 text-left hidden sm:table-cell">Set</th>
-                                    <th class="px-4 py-3 text-left hidden md:table-cell">Code</th>
-                                    <th class="px-4 py-3 text-left hidden lg:table-cell">Nr.</th>
-                                    <th class="px-4 py-3 text-center w-16">Anz.</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Name</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-left hidden sm:table-cell">Set</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-left hidden md:table-cell">Code</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-left hidden lg:table-cell">Nr.</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-center w-12 sm:w-16">Anz.</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-dash-border/50">
                                 @for (item of tableCards(); track getCardKey(item.card) + item.index) {
                                 <tr class="hover:bg-dash-bg/50 transition-colors"
                                     (appLazyCard)="onCardVisible(item.card)">
-                                    <td class="px-4 py-2">
+                                    <td class="px-2 sm:px-4 py-2">
                                         <button (click)="openDetailModal(item.card, item.index)"
-                                            class="text-dash-text hover:text-dash-accent transition-colors text-left">
+                                            class="text-dash-text hover:text-dash-accent transition-colors text-left truncate max-w-[150px] sm:max-w-none block">
                                             {{ getDetails(item.card)?.nameDE || item.card.nameEN }}
                                         </button>
                                     </td>
-                                    <td class="px-4 py-2 text-dash-text-dim hidden sm:table-cell">
+                                    <td class="px-2 sm:px-4 py-2 text-dash-text-dim hidden sm:table-cell">
                                         {{ getDetails(item.card)?.setName || item.card.set }}
                                     </td>
-                                    <td class="px-4 py-2 text-dash-text-dim hidden md:table-cell font-mono">
+                                    <td class="px-2 sm:px-4 py-2 text-dash-text-dim hidden md:table-cell font-mono">
                                         {{ item.card.set }}
                                     </td>
-                                    <td class="px-4 py-2 text-dash-text-dim hidden lg:table-cell font-mono">
+                                    <td class="px-2 sm:px-4 py-2 text-dash-text-dim hidden lg:table-cell font-mono">
                                         #{{ item.card.collectorNumber }}
                                     </td>
-                                    <td class="px-4 py-2 text-center">
+                                    <td class="px-2 sm:px-4 py-2 text-center">
                                         @if (getCardCount(item.card) > 1) {
                                         <span
-                                            class="bg-dash-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                            class="bg-dash-accent text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
                                             {{ getCardCount(item.card) }}x
                                         </span>
                                         }
@@ -321,10 +377,10 @@
                     </div>
                     <!-- Bottom Pagination -->
                     @if (totalPages() > 1) {
-                    <div class="p-4 border-t border-dash-border flex justify-center">
-                        <div class="flex items-center gap-2 text-xs text-dash-text-dim">
+                    <div class="p-3 sm:p-4 border-t border-dash-border flex justify-center">
+                        <div class="flex items-center gap-1 sm:gap-2 text-xs text-dash-text-dim">
                             <button (click)="prevPage()" [disabled]="currentPage() === 1"
-                                class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                                 <span class="material-symbols-sharp text-sm">chevron_left</span>
                             </button>
                             @for (page of [].constructor(totalPages()); track $index) {
@@ -333,15 +389,15 @@
                             >= currentPage() - 1 && $index + 1 <= currentPage() + 1)) { <button
                                 (click)="goToPage($index + 1)"
                                 [class]="currentPage() === $index + 1 ? 'bg-dash-accent text-white' : 'bg-dash-bg hover:bg-dash-accent hover:text-white'"
-                                class="w-8 h-8 flex items-center justify-center rounded-sm font-mono transition-all">
+                                class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-sm font-mono transition-all text-[10px] sm:text-xs">
                                 {{ $index + 1 }}
                                 </button>
                                 } @else if ($index + 1 === currentPage() - 2 || $index + 1 === currentPage() + 2) {
-                                <span class="text-dash-text-dim">...</span>
+                                <span class="text-dash-text-dim hidden sm:inline">...</span>
                                 }
                                 }
                                 <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-                                    class="w-8 h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                                    class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-dash-bg rounded-sm hover:bg-dash-accent hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                                     <span class="material-symbols-sharp text-sm">chevron_right</span>
                                 </button>
                         </div>
@@ -353,21 +409,23 @@
                 <!-- Empty State -->
                 @if (filteredCards().length === 0 && cards().length === 0) {
                 <div
-                    class="gradient-card p-12 rounded-sm flex flex-col items-center justify-center text-dash-text-dim border-2 border-dashed border-dash-border">
-                    <span class="material-symbols-sharp text-5xl mb-3 opacity-50">playing_cards</span>
-                    <p class="text-lg font-medium">Keine Karten in der Sammlung</p>
-                    <p class="text-sm mt-1">Füge Karten über Set-Code und Sammlernummer hinzu,</p>
-                    <p class="text-sm">oder nutze Import in den Settings.</p>
+                    class="gradient-card p-6 sm:p-12 rounded-sm flex flex-col items-center justify-center text-dash-text-dim border-2 border-dashed border-dash-border text-center">
+                    <span
+                        class="material-symbols-sharp text-4xl sm:text-5xl mb-2 sm:mb-3 opacity-50">playing_cards</span>
+                    <p class="text-base sm:text-lg font-medium">Keine Karten in der Sammlung</p>
+                    <p class="text-xs sm:text-sm mt-1">Füge Karten über Set-Code und Sammlernummer hinzu,</p>
+                    <p class="text-xs sm:text-sm">oder nutze Import in den Settings.</p>
                 </div>
                 }
 
                 <!-- No Search Results -->
                 @if (filteredCards().length === 0 && cards().length > 0) {
-                <div class="gradient-card p-8 rounded-sm flex flex-col items-center justify-center text-dash-text-dim">
-                    <span class="material-symbols-sharp text-4xl mb-2 opacity-50">search_off</span>
-                    <p>Keine Karten gefunden</p>
+                <div
+                    class="gradient-card p-6 sm:p-8 rounded-sm flex flex-col items-center justify-center text-dash-text-dim text-center">
+                    <span class="material-symbols-sharp text-3xl sm:text-4xl mb-2 opacity-50">search_off</span>
+                    <p class="text-sm sm:text-base">Keine Karten gefunden</p>
                     @if (selectedSet()) {
-                    <button (click)="selectSet(null)" class="mt-2 text-dash-accent hover:underline text-sm">
+                    <button (click)="selectSet(null)" class="mt-2 text-dash-accent hover:underline text-xs sm:text-sm">
                         Set-Filter entfernen
                     </button>
                     }
@@ -379,26 +437,30 @@
 
         <!-- Card Detail Modal -->
         @if (showDetailModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" (click)="closeDetailModal()"></div>
-            <div class="relative gradient-card p-5 rounded-sm shadow-2xl w-full max-w-4xl flex gap-6 accent-glow">
+            <div
+                class="relative gradient-card p-4 sm:p-5 rounded-sm shadow-2xl w-full max-w-4xl flex flex-col sm:flex-row gap-4 sm:gap-6 accent-glow max-h-[90vh] overflow-y-auto">
 
                 <!-- Left: Card Image -->
-                <div class="w-96 flex-shrink-0">
-                    <div class="aspect-[5/7] overflow-hidden rounded-2xl">
+                <div class="w-full sm:w-96 flex-shrink-0">
+                    <div
+                        class="aspect-[5/7] overflow-hidden rounded-xl sm:rounded-2xl max-w-[200px] sm:max-w-none mx-auto sm:mx-0">
                         @if (getDetails(showDetailModal()!.card)?.imageUrl) {
                         <img [src]="getDetails(showDetailModal()!.card)!.imageUrl"
-                            [alt]="showDetailModal()!.card.nameEN" class="w-full h-full object-contain rounded-2xl" />
+                            [alt]="showDetailModal()!.card.nameEN"
+                            class="w-full h-full object-contain rounded-xl sm:rounded-2xl" />
                         } @else {
                         <div
-                            class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2 rounded-2xl">
+                            class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2 rounded-xl sm:rounded-2xl">
                             @if (isLoading(showDetailModal()!.card)) {
-                            <span class="material-symbols-sharp text-4xl text-dash-text-dim animate-pulse">image</span>
-                            <span class="text-sm text-dash-text-dim">Lädt...</span>
+                            <span
+                                class="material-symbols-sharp text-3xl sm:text-4xl text-dash-text-dim animate-pulse">image</span>
+                            <span class="text-xs sm:text-sm text-dash-text-dim">Lädt...</span>
                             } @else {
                             <span
-                                class="material-symbols-sharp text-4xl text-dash-text-dim opacity-50">playing_cards</span>
-                            <span class="text-sm text-dash-text-dim">Kein Bild</span>
+                                class="material-symbols-sharp text-3xl sm:text-4xl text-dash-text-dim opacity-50">playing_cards</span>
+                            <span class="text-xs sm:text-sm text-dash-text-dim">Kein Bild</span>
                             }
                         </div>
                         }
@@ -406,11 +468,11 @@
                 </div>
 
                 <!-- Right: Card Details -->
-                <div class="flex-1 flex flex-col gap-3 min-w-0">
+                <div class="flex-1 flex flex-col gap-2 sm:gap-3 min-w-0">
                     <!-- Header with Rarity Badge -->
                     <div class="flex items-start justify-between gap-2">
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-lg font-bold text-dash-text leading-tight">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="text-base sm:text-lg font-bold text-dash-text leading-tight">
                                 {{ getDetails(showDetailModal()!.card)?.nameDE || showDetailModal()!.card.nameEN }}
                             </h2>
                             @if (getDetails(showDetailModal()!.card)?.rarity) {
@@ -431,7 +493,7 @@
                     </div>
 
                     <!-- Card Info -->
-                    <div class="flex flex-col gap-1.5 text-sm">
+                    <div class="flex flex-col gap-1 sm:gap-1.5 text-xs sm:text-sm">
                         <div class="flex justify-between">
                             <span class="text-dash-text-dim">English</span>
                             <span class="text-dash-text text-right">{{ showDetailModal()!.card.nameEN }}</span>
@@ -439,7 +501,8 @@
                         @if (getDetails(showDetailModal()!.card)?.setName) {
                         <div class="flex justify-between">
                             <span class="text-dash-text-dim">Set</span>
-                            <span class="text-dash-text text-right">{{ getDetails(showDetailModal()!.card)!.setName
+                            <span class="text-dash-text text-right truncate ml-2">{{
+                                getDetails(showDetailModal()!.card)!.setName
                                 }}</span>
                         </div>
                         }
@@ -459,79 +522,83 @@
 
                     <!-- Legalities -->
                     @if (getDetails(showDetailModal()!.card)?.legalities) {
-                    <div class="bg-dash-bg p-3 rounded-sm">
-                        <div class="text-xs text-dash-text-dim uppercase tracking-wider mb-2">Formate</div>
-                        <div class="flex flex-wrap gap-1.5">
+                    <div class="bg-dash-bg p-2 sm:p-3 rounded-sm">
+                        <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1.5 sm:mb-2">
+                            Formate</div>
+                        <div class="flex flex-wrap gap-1 sm:gap-1.5">
                             @if (getDetails(showDetailModal()!.card)?.legalities?.standard) {
                             <span
                                 [class]="getDetails(showDetailModal()!.card)!.legalities!.standard === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white">Standard</span>
+                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Standard</span>
                             }
                             @if (getDetails(showDetailModal()!.card)?.legalities?.modern) {
                             <span
                                 [class]="getDetails(showDetailModal()!.card)!.legalities!.modern === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white">Modern</span>
+                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Modern</span>
                             }
                             @if (getDetails(showDetailModal()!.card)?.legalities?.commander) {
                             <span
                                 [class]="getDetails(showDetailModal()!.card)!.legalities!.commander === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white">Commander</span>
+                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Commander</span>
                             }
                             @if (getDetails(showDetailModal()!.card)?.legalities?.pioneer) {
                             <span
                                 [class]="getDetails(showDetailModal()!.card)!.legalities!.pioneer === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white">Pioneer</span>
+                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Pioneer</span>
                             }
                             @if (getDetails(showDetailModal()!.card)?.legalities?.legacy) {
                             <span
                                 [class]="getDetails(showDetailModal()!.card)!.legalities!.legacy === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white">Legacy</span>
+                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Legacy</span>
                             }
                             @if (getDetails(showDetailModal()!.card)?.legalities?.pauper) {
                             <span
                                 [class]="getDetails(showDetailModal()!.card)!.legalities!.pauper === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white">Pauper</span>
+                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Pauper</span>
                             }
                         </div>
                     </div>
                     }
 
                     <!-- EUR Prices -->
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-1.5 sm:gap-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-dash-text-dim uppercase tracking-wider">Preise</span>
+                            <span
+                                class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider">Preise</span>
                             <button (click)="refreshPrices()" [disabled]="isRefreshingPrices()"
-                                class="flex items-center gap-1 px-2 py-1 text-xs bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                class="flex items-center gap-1 px-2 py-1 text-[10px] sm:text-xs bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 title="Preise aktualisieren">
                                 @if (isRefreshingPrices()) {
                                 <span class="material-symbols-sharp text-sm animate-spin">progress_activity</span>
                                 } @else {
                                 <span class="material-symbols-sharp text-sm">refresh</span>
                                 }
-                                <span>Aktualisieren</span>
+                                <span class="hidden sm:inline">Aktualisieren</span>
                             </button>
                         </div>
                         @if (getDetails(showDetailModal()!.card)?.priceEur) {
-                        <div class="bg-dash-bg p-3 rounded-sm flex items-center justify-between">
+                        <div class="bg-dash-bg p-2 sm:p-3 rounded-sm flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="material-symbols-sharp text-dash-accent text-lg">payments</span>
-                                <span class="text-sm text-dash-text-dim">Preis (Cardmarket)</span>
+                                <span
+                                    class="material-symbols-sharp text-dash-accent text-base sm:text-lg">payments</span>
+                                <span class="text-xs sm:text-sm text-dash-text-dim">Preis</span>
                             </div>
-                            <span class="font-bold text-xl text-green-400">€{{
+                            <span class="font-bold text-lg sm:text-xl text-green-400">€{{
                                 getDetails(showDetailModal()!.card)!.priceEur }}</span>
                         </div>
                         }
                         @if (getDetails(showDetailModal()!.card)?.priceEurFoil) {
-                        <div class="bg-dash-bg p-3 rounded-sm flex items-center justify-between">
+                        <div class="bg-dash-bg p-2 sm:p-3 rounded-sm flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="material-symbols-sharp text-yellow-400 text-lg">auto_awesome</span>
-                                <span class="text-sm text-dash-text-dim">Foil (Cardmarket)</span>
+                                <span
+                                    class="material-symbols-sharp text-yellow-400 text-base sm:text-lg">auto_awesome</span>
+                                <span class="text-xs sm:text-sm text-dash-text-dim">Foil</span>
                             </div>
-                            <span class="font-bold text-xl text-yellow-400">€{{
+                            <span class="font-bold text-lg sm:text-xl text-yellow-400">€{{
                                 getDetails(showDetailModal()!.card)!.priceEurFoil }}</span>
                         </div>
                         } @else if (!getDetails(showDetailModal()!.card)?.priceEur) {
-                        <div class="bg-dash-bg p-3 rounded-sm text-center text-dash-text-dim text-sm">
+                        <div class="bg-dash-bg p-2 sm:p-3 rounded-sm text-center text-dash-text-dim text-xs sm:text-sm">
                             Keine Preisdaten verfügbar
                         </div>
                         }
@@ -540,22 +607,22 @@
                     <!-- Cardmarket Link -->
                     @if (getDetails(showDetailModal()!.card)?.cardmarketUrl) {
                     <a [href]="getDetails(showDetailModal()!.card)!.cardmarketUrl" target="_blank" rel="noopener"
-                        class="bg-blue-600 hover:bg-blue-500 p-3 rounded-sm flex items-center justify-center gap-2 text-white font-bold transition-colors">
-                        <span class="material-symbols-sharp text-lg">shopping_cart</span>
+                        class="bg-blue-600 hover:bg-blue-500 p-2 sm:p-3 rounded-sm flex items-center justify-center gap-2 text-white font-bold transition-colors text-sm">
+                        <span class="material-symbols-sharp text-base sm:text-lg">shopping_cart</span>
                         Auf Cardmarket kaufen
                     </a>
                     }
 
                     <!-- Quantity Controls -->
-                    <div class="flex items-center justify-between border-t border-dash-border pt-3 mt-auto">
+                    <div class="flex items-center justify-between border-t border-dash-border pt-2 sm:pt-3 mt-auto">
                         <div class="flex items-center gap-2">
-                            <span class="text-dash-text-dim text-sm">Anzahl:</span>
+                            <span class="text-dash-text-dim text-xs sm:text-sm">Anzahl:</span>
                             <div class="flex items-center gap-1">
                                 <button (click)="updateQuantity(showDetailModal()!.card, -1)"
                                     class="w-8 h-8 bg-dash-bg hover:bg-red-600 hover:text-white rounded-sm flex items-center justify-center transition-colors text-dash-text-dim">
                                     <span class="material-symbols-sharp text-sm">remove</span>
                                 </button>
-                                <span class="w-10 text-center font-bold text-lg text-dash-text">
+                                <span class="w-8 sm:w-10 text-center font-bold text-base sm:text-lg text-dash-text">
                                     {{ getCardCount(showDetailModal()!.card) }}
                                 </span>
                                 <button (click)="updateQuantity(showDetailModal()!.card, 1)"
@@ -565,9 +632,10 @@
                             </div>
                         </div>
                         <button (click)="removeCard(showDetailModal()!.index)"
-                            class="px-3 py-2 text-red-400 hover:bg-red-600 hover:text-white rounded-sm transition-colors flex items-center gap-1 text-sm"
+                            class="px-2 sm:px-3 py-2 text-red-400 hover:bg-red-600 hover:text-white rounded-sm transition-colors flex items-center gap-1 text-xs sm:text-sm"
                             title="Alle Kopien entfernen">
                             <span class="material-symbols-sharp text-sm">delete</span>
+                            <span class="hidden sm:inline">Entfernen</span>
                         </button>
                     </div>
                 </div>
@@ -636,23 +704,25 @@
 
         <!-- Toast Notification -->
         @if (toastMessage()) {
-        <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">
+        <div
+            class="fixed bottom-4 sm:bottom-8 left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 animate-slide-in-up">
             <div [class]="toastType() === 'success'
         ? 'bg-gradient-to-r from-green-600 to-emerald-500 border-2 border-green-400/50'
         : 'bg-gradient-to-r from-red-600 to-rose-500 border-2 border-red-400/50'"
-                class="p-5 rounded-lg shadow-2xl flex items-center gap-4 max-w-lg" [style.box-shadow]="toastType() === 'success'
+                class="p-3 sm:p-5 rounded-lg shadow-2xl flex items-center gap-2 sm:gap-4 max-w-lg mx-auto"
+                [style.box-shadow]="toastType() === 'success'
             ? '0 0 30px rgba(34, 197, 94, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'
             : '0 0 30px rgba(239, 68, 68, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'">
                 <div
-                    class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
-                    <span class="material-symbols-sharp text-white text-3xl">
+                    class="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
+                    <span class="material-symbols-sharp text-white text-xl sm:text-3xl">
                         {{ toastType() === 'success' ? 'check_circle' : 'error' }}
                     </span>
                 </div>
-                <div class="flex-1 text-base font-semibold text-white">{{ toastMessage() }}</div>
+                <div class="flex-1 text-sm sm:text-base font-semibold text-white">{{ toastMessage() }}</div>
                 <button (click)="hideToast()"
                     class="text-white/70 hover:text-white transition-colors flex-shrink-0 hover:scale-110">
-                    <span class="material-symbols-sharp text-xl">close</span>
+                    <span class="material-symbols-sharp text-lg sm:text-xl">close</span>
                 </button>
             </div>
         </div>

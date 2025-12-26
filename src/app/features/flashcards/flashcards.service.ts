@@ -109,6 +109,42 @@ export class FlashcardsService {
 
     // --- Import/Export ---
 
+    /**
+     * Import cards and decks from a data object (used by global settings import)
+     */
+    importData(data: { cards?: Flashcard[]; decks?: Deck[] }): void {
+        if (data.cards) {
+            this._cards.set(data.cards);
+            this.saveCards();
+        }
+        if (data.decks) {
+            this._decks.set(data.decks);
+            this.saveDecks();
+        }
+        this._currentIndex.set(0);
+        this._activeDeckId.set(null);
+    }
+
+    /**
+     * Export all cards and decks as a data object (used by global settings export)
+     */
+    exportData(): { cards: Flashcard[]; decks: Deck[] } {
+        return {
+            cards: this._cards(),
+            decks: this._decks()
+        };
+    }
+
+    /**
+     * Reload data from localStorage (useful after external changes)
+     */
+    reloadFromStorage(): void {
+        this._cards.set(this.loadCards());
+        this._decks.set(this.loadDecks());
+        this._currentIndex.set(0);
+        this._activeDeckId.set(null);
+    }
+
     importFromText(text: string, deckName?: string): { success: number; failed: number } {
         const lines = text.split('\n').filter(line => line.trim());
         let success = 0;

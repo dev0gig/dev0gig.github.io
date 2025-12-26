@@ -15,6 +15,7 @@ export interface ProjectSelection {
     audioNotes: boolean;
     recentlyPlayed: boolean;
     flashcards: boolean;
+    mtgInventory: boolean;
 }
 
 @Component({
@@ -39,7 +40,8 @@ export class GlobalSettingsModal {
         budget: true,
         audioNotes: true,
         recentlyPlayed: true,
-        flashcards: true
+        flashcards: true,
+        mtgInventory: true
     });
 
     onClose() {
@@ -60,7 +62,8 @@ export class GlobalSettingsModal {
             budget: true,
             audioNotes: true,
             recentlyPlayed: true,
-            flashcards: true
+            flashcards: true,
+            mtgInventory: true
         });
     }
 
@@ -71,13 +74,14 @@ export class GlobalSettingsModal {
             budget: false,
             audioNotes: false,
             recentlyPlayed: false,
-            flashcards: false
+            flashcards: false,
+            mtgInventory: false
         });
     }
 
     hasAnyProjectSelected(): boolean {
         const sel = this.projectSelection();
-        return sel.bookmarks || sel.journal || sel.budget || sel.audioNotes || sel.recentlyPlayed || sel.flashcards;
+        return sel.bookmarks || sel.journal || sel.budget || sel.audioNotes || sel.recentlyPlayed || sel.flashcards || sel.mtgInventory;
     }
 
     async exportAllData() {
@@ -159,18 +163,29 @@ export class GlobalSettingsModal {
         }
 
         if (selection.flashcards) {
-            const flashcardsData = localStorage.getItem('flashcards_data');
-            const flashcardsDecks = localStorage.getItem('flashcards_decks');
+            const flashcardsExport = this.flashcardsService.exportData();
             const exportData = {
                 exportDate,
                 version: '1.0',
                 project: 'flashcards',
-                data: {
-                    cards: flashcardsData ? JSON.parse(flashcardsData) : [],
-                    decks: flashcardsDecks ? JSON.parse(flashcardsDecks) : []
-                }
+                data: flashcardsExport
             };
             zip.file('flashcards.json', JSON.stringify(exportData, null, 2));
+        }
+
+        if (selection.mtgInventory) {
+            const mtgCards = localStorage.getItem('mtg-cards');
+            const mtgCache = localStorage.getItem('mtg-cache');
+            const mtgData = {
+                exportDate,
+                version: '1.0',
+                project: 'mtgInventory',
+                data: {
+                    cards: mtgCards ? JSON.parse(mtgCards) : [],
+                    cache: mtgCache ? JSON.parse(mtgCache) : {}
+                }
+            };
+            zip.file('mtginventory.json', JSON.stringify(mtgData, null, 2));
         }
 
         const blob = await zip.generateAsync({ type: 'blob' });
@@ -188,6 +203,7 @@ export class GlobalSettingsModal {
         if (selection.audioNotes) selectedProjects.push('AudioNotes');
         if (selection.recentlyPlayed) selectedProjects.push('Zuletzt gespielt');
         if (selection.flashcards) selectedProjects.push('Flashcards');
+        if (selection.mtgInventory) selectedProjects.push('MTG Inventory');
 
         alert(`Export erfolgreich!\nExportierte Projekte: ${selectedProjects.join(', ')}`);
     }
@@ -220,6 +236,7 @@ export class GlobalSettingsModal {
             const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
             const flashcardsFile = zip.file('flashcards.json');
+            const mtgInventoryFile = zip.file('mtginventory.json');
             const legacyFile = zip.file('dashboard_backup.json');
 
             if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
@@ -228,6 +245,7 @@ export class GlobalSettingsModal {
             if (selection.audioNotes && audioNotesFile) projectsToImport.push('AudioNotes');
             if (selection.recentlyPlayed && recentlyPlayedFile) projectsToImport.push('Zuletzt gespielt');
             if (selection.flashcards && flashcardsFile) projectsToImport.push('Flashcards');
+            if (selection.mtgInventory && mtgInventoryFile) projectsToImport.push('MTG Inventory');
 
             if (projectsToImport.length === 0 && legacyFile) {
                 await this.processLegacyImport(legacyFile, selection);
@@ -309,13 +327,25 @@ export class GlobalSettingsModal {
                 const content = await flashcardsFile.async('string');
                 const importData = JSON.parse(content);
                 if (importData.data) {
-                    if (importData.data.cards) {
-                        localStorage.setItem('flashcards_data', JSON.stringify(importData.data.cards));
-                    }
-                    if (importData.data.decks) {
-                        localStorage.setItem('flashcards_decks', JSON.stringify(importData.data.decks));
-                    }
+                    this.flashcardsService.importData({
+                        cards: importData.data.cards || [],
+                        decks: importData.data.decks || []
+                    });
                     importedProjects.push('Flashcards');
+                }
+            }
+
+            if (selection.mtgInventory && mtgInventoryFile) {
+                const content = await mtgInventoryFile.async('string');
+                const mtgData = JSON.parse(content);
+                if (mtgData.data) {
+                    if (mtgData.data.cards) {
+                        localStorage.setItem('mtg-cards', JSON.stringify(mtgData.data.cards));
+                    }
+                    if (mtgData.data.cache) {
+                        localStorage.setItem('mtg-cache', JSON.stringify(mtgData.data.cache));
+                    }
+                    importedProjects.push('MTG Inventory');
                 }
             }
 
@@ -501,6 +531,7 @@ export class GlobalSettingsModal {
         if (selection.audioNotes) projectsToDelete.push('AudioNotes');
         if (selection.recentlyPlayed) projectsToDelete.push('Zuletzt gespielt');
         if (selection.flashcards) projectsToDelete.push('Flashcards');
+        if (selection.mtgInventory) projectsToDelete.push('MTG Inventory');
 
         if (!confirm(`WARNUNG: Dies löscht ALLE Daten für:\n${projectsToDelete.join(', ')}\n\nDiese Aktion kann nicht rückgängig gemacht werden!\n\nFortfahren?`)) {
             return;
@@ -535,8 +566,12 @@ export class GlobalSettingsModal {
         }
 
         if (selection.flashcards) {
-            localStorage.removeItem('flashcards_data');
-            localStorage.removeItem('flashcards_decks');
+            this.flashcardsService.importData({ cards: [], decks: [] });
+        }
+
+        if (selection.mtgInventory) {
+            localStorage.removeItem('mtg-cards');
+            localStorage.removeItem('mtg-cache');
         }
 
         this.onClose();
