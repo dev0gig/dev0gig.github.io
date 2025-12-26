@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, signal, computed, ViewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -41,6 +41,22 @@ export class MtgInventoryComponent {
     lastImportResult = signal<{ success: number; failed: number } | null>(null);
     toastMessage = signal<string>('');
     toastType = signal<'success' | 'error'>('success');
+
+    constructor() {
+        // Effect to ensure set names are loaded for each unique set
+        effect(() => {
+            const cards = this.cards();
+            const seenSets = new Set<string>();
+
+            for (const card of cards) {
+                if (!seenSets.has(card.set)) {
+                    seenSets.add(card.set);
+                    // Queue fetch for one card from this set to get the set name
+                    this.inventoryService.queueFetch(card.set, card.collectorNumber);
+                }
+            }
+        });
+    }
 
     // --- Computed Values ---
 
