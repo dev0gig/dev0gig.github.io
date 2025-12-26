@@ -1,42 +1,31 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Flashcard, StudyMode, LEITNER_INTERVALS, createFlashcard } from './flashcard.model';
+import { Flashcard, Deck, createFlashcard, createDeck } from './flashcard.model';
 
 const STORAGE_KEY = 'flashcards_data';
+const DECKS_STORAGE_KEY = 'flashcards_decks';
 
 @Injectable({ providedIn: 'root' })
 export class FlashcardsService {
     private _cards = signal<Flashcard[]>(this.loadCards());
-    private _studyMode = signal<StudyMode>('sequential');
+    private _decks = signal<Deck[]>(this.loadDecks());
+    private _isRandomMode = signal<boolean>(false);
+    private _isReversedMode = signal<boolean>(false);
     private _currentIndex = signal<number>(0);
+    private _activeDeckId = signal<string | null>(null);
 
     // Public readonly signals
     readonly cards = this._cards.asReadonly();
-    readonly studyMode = this._studyMode.asReadonly();
+    readonly decks = this._decks.asReadonly();
+    readonly isRandomMode = this._isRandomMode.asReadonly();
+    readonly isReversedMode = this._isReversedMode.asReadonly();
     readonly currentIndex = this._currentIndex.asReadonly();
+    readonly activeDeckId = this._activeDeckId.asReadonly();
 
-    /** Cards ordered by current study mode */
+
+    /** Cards ordered by current mode (sequential or random) */
     readonly studyQueue = computed(() => {
         const cards = [...this._cards()];
-        const mode = this._studyMode();
-
-        switch (mode) {
-            case 'sequential':
-                return cards;
-            case 'random':
-                return this.shuffleArray(cards);
-            case 'spaced':
-                // Sort by nextReview (due first), then by box (lower first)
-                return cards.sort((a, b) => {
-                    const now = Date.now();
-                    const aDue = a.nextReview <= now;
-                    const bDue = b.nextReview <= now;
-                    if (aDue !== bDue) return aDue ? -1 : 1;
-                    if (a.nextReview !== b.nextReview) return a.nextReview - b.nextReview;
-                    return a.box - b.box;
-                });
-            default:
-                return cards;
-        }
+        return this._isRandomMode() ? this.shuffleArray(cards) : cards;
     });
 
     readonly currentCard = computed(() => {
@@ -46,11 +35,6 @@ export class FlashcardsService {
     });
 
     readonly totalCards = computed(() => this._cards().length);
-
-    readonly dueCards = computed(() => {
-        const now = Date.now();
-        return this._cards().filter(c => c.nextReview <= now).length;
-    });
 
     // --- Card Management ---
 
@@ -64,32 +48,83 @@ export class FlashcardsService {
     removeCard(id: string): void {
         this._cards.update(cards => cards.filter(c => c.id !== id));
         this.saveCards();
-        // Adjust index if needed
         if (this._currentIndex() >= this._cards().length) {
             this._currentIndex.set(Math.max(0, this._cards().length - 1));
         }
     }
 
+    updateCard(id: string, front: string, back: string): void {
+        this._cards.update(cards =>
+            cards.map(c => c.id === id ? { ...c, front: front.trim(), back: back.trim() } : c)
+        );
+        this.saveCards();
+    }
+
+
     clearAllCards(): void {
         this._cards.set([]);
         this._currentIndex.set(0);
+        this._activeDeckId.set(null);
         this.saveCards();
+    }
+
+    // --- Deck Management ---
+
+    saveDeck(name: string): Deck | null {
+        const cards = this._cards();
+        if (cards.length === 0 || !name.trim()) return null;
+
+        const deck = createDeck(name, cards);
+        this._decks.update(decks => [...decks, deck]);
+        this._activeDeckId.set(deck.id);
+        this.saveDecks();
+        return deck;
+    }
+
+    loadDeck(deckId: string): void {
+        const deck = this._decks().find(d => d.id === deckId);
+        if (!deck) return;
+
+        this._cards.set([...deck.cards]);
+        this._currentIndex.set(0);
+        this._activeDeckId.set(deck.id);
+        this.saveCards();
+    }
+
+    deleteDeck(deckId: string): void {
+        this._decks.update(decks => decks.filter(d => d.id !== deckId));
+        if (this._activeDeckId() === deckId) {
+            this._activeDeckId.set(null);
+        }
+        this.saveDecks();
+    }
+
+    renameDeck(deckId: string, newName: string): void {
+        if (!newName.trim()) return;
+        this._decks.update(decks =>
+            decks.map(d => d.id === deckId ? { ...d, name: newName.trim() } : d)
+        );
+        this.saveDecks();
     }
 
     // --- Import/Export ---
 
-    importFromText(text: string): { success: number; failed: number } {
+    importFromText(text: string, deckName?: string): { success: number; failed: number } {
         const lines = text.split('\n').filter(line => line.trim());
         let success = 0;
         let failed = 0;
+
+        // Clear existing cards before import
+        this._cards.set([]);
 
         for (const line of lines) {
             const parts = line.split(';');
             if (parts.length >= 2) {
                 const front = parts[0].trim();
-                const back = parts.slice(1).join(';').trim(); // Handle semicolons in back text
+                const back = parts.slice(1).join(';').trim();
                 if (front && back) {
-                    this.addCard(front, back);
+                    const card = createFlashcard(front, back);
+                    this._cards.update(cards => [...cards, card]);
                     success++;
                 } else {
                     failed++;
@@ -97,6 +132,14 @@ export class FlashcardsService {
             } else {
                 failed++;
             }
+        }
+
+        this._currentIndex.set(0);
+        this.saveCards();
+
+        // Auto-save as deck if name provided
+        if (deckName && success > 0) {
+            this.saveDeck(deckName);
         }
 
         return { success, failed };
@@ -110,9 +153,13 @@ export class FlashcardsService {
 
     // --- Study Mode ---
 
-    setStudyMode(mode: StudyMode): void {
-        this._studyMode.set(mode);
+    toggleRandomMode(): void {
+        this._isRandomMode.update(v => !v);
         this._currentIndex.set(0);
+    }
+
+    toggleReversedMode(): void {
+        this._isReversedMode.update(v => !v);
     }
 
     // --- Navigation ---
@@ -133,42 +180,6 @@ export class FlashcardsService {
         this._currentIndex.set(0);
     }
 
-    // --- Spaced Repetition (Leitner) ---
-
-    markKnown(card: Flashcard): void {
-        this._cards.update(cards =>
-            cards.map(c => {
-                if (c.id !== card.id) return c;
-                const newBox = Math.min(c.box + 1, 5);
-                const interval = LEITNER_INTERVALS[newBox] || 0;
-                return {
-                    ...c,
-                    box: newBox,
-                    lastReviewed: Date.now(),
-                    nextReview: Date.now() + interval,
-                };
-            })
-        );
-        this.saveCards();
-        this.goToNext();
-    }
-
-    markUnknown(card: Flashcard): void {
-        this._cards.update(cards =>
-            cards.map(c => {
-                if (c.id !== card.id) return c;
-                return {
-                    ...c,
-                    box: 1,
-                    lastReviewed: Date.now(),
-                    nextReview: Date.now(), // Immediate review
-                };
-            })
-        );
-        this.saveCards();
-        this.goToNext();
-    }
-
     // --- Persistence ---
 
     private loadCards(): Flashcard[] {
@@ -186,6 +197,24 @@ export class FlashcardsService {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(this._cards()));
         } catch (e) {
             console.error('Failed to save flashcards:', e);
+        }
+    }
+
+    private loadDecks(): Deck[] {
+        try {
+            const data = localStorage.getItem(DECKS_STORAGE_KEY);
+            if (!data) return [];
+            return JSON.parse(data) as Deck[];
+        } catch {
+            return [];
+        }
+    }
+
+    private saveDecks(): void {
+        try {
+            localStorage.setItem(DECKS_STORAGE_KEY, JSON.stringify(this._decks()));
+        } catch (e) {
+            console.error('Failed to save decks:', e);
         }
     }
 

@@ -1,10 +1,9 @@
-import { Component, inject, signal, ViewChild, ElementRef, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, inject, signal, ViewChild, ElementRef, AfterViewInit, OnDestroy, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { SidebarService } from '../../shared/sidebar.service';
 import { FlashcardsService } from './flashcards.service';
-import { StudyMode } from './flashcard.model';
 
 @Component({
     selector: 'app-flashcards',
@@ -14,6 +13,17 @@ import { StudyMode } from './flashcard.model';
 })
 export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     protected flashcardsService = inject(FlashcardsService);
+
+    constructor() {
+        effect(() => {
+            const currentCard = this.flashcardsService.currentCard();
+            if (currentCard) {
+                // Wait for DOM update
+                setTimeout(() => this.scrollToCard(currentCard.id), 100);
+            }
+        });
+    }
+
     private sidebarService = inject(SidebarService);
 
     @ViewChild('drawingCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -26,10 +36,20 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     isFlipped = signal<boolean>(false);
     showSettingsModal = signal<boolean>(false);
     showImportModal = signal<boolean>(false);
+    showSaveDeckModal = signal<boolean>(false);
+    showEditModal = signal<boolean>(false);
     importText = signal<string>('');
+    deckNameInput = signal<string>('');
+    saveDeckName = signal<string>('');
+    selectedFileName = signal<string>('');
+    selectedFileContent = signal<string>('');
+    editFrontInput = signal<string>('');
+    editBackInput = signal<string>('');
+    editingCardId = signal<string | null>(null);
     lastImportResult = signal<{ success: number; failed: number } | null>(null);
     toastMessage = signal<string>('');
     toastType = signal<'success' | 'error'>('success');
+
 
     // Touch event handlers bound to instance
     private boundTouchStart = this.handleTouchStart.bind(this);
@@ -54,18 +74,6 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
                 event.preventDefault();
                 this.flipCard();
                 break;
-            case 'KeyY':
-                if (this.isFlipped()) {
-                    event.preventDefault();
-                    this.markKnown();
-                }
-                break;
-            case 'KeyN':
-                if (this.isFlipped()) {
-                    event.preventDefault();
-                    this.markUnknown();
-                }
-                break;
             case 'ArrowLeft':
                 event.preventDefault();
                 this.prevCard();
@@ -78,6 +86,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
+
         this.initCanvas();
     }
 
@@ -192,7 +201,6 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     private handleTouchEnd(event: TouchEvent): void {
         event.preventDefault();
         this.isDrawing = false;
-
     }
 
     // --- Canvas Actions ---
@@ -221,35 +229,21 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         this.clearCanvas();
     }
 
-    markKnown(): void {
-        const card = this.flashcardsService.currentCard();
-        if (card) {
-            this.flashcardsService.markKnown(card);
-            this.isFlipped.set(false);
-            this.clearCanvas();
-            this.showToast('Karte als bekannt markiert!', 'success');
-        }
-    }
-
-    markUnknown(): void {
-        const card = this.flashcardsService.currentCard();
-        if (card) {
-            this.flashcardsService.markUnknown(card);
-            this.isFlipped.set(false);
-            this.clearCanvas();
-            this.showToast('Karte wird wiederholt.', 'error');
-        }
-    }
-
     // --- Study Mode ---
 
-    setStudyMode(mode: StudyMode): void {
-        this.flashcardsService.setStudyMode(mode);
+    toggleRandomMode(): void {
+        this.flashcardsService.toggleRandomMode();
         this.isFlipped.set(false);
         this.clearCanvas();
     }
 
+    toggleReversedMode(): void {
+        this.flashcardsService.toggleReversedMode();
+        this.isFlipped.set(false);
+    }
+
     // --- Modals ---
+
 
     toggleSettingsModal(): void {
         this.showSettingsModal.update(v => !v);
@@ -261,6 +255,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
 
     openImportModal(): void {
         this.importText.set('');
+        this.deckNameInput.set('');
         this.lastImportResult.set(null);
         this.showImportModal.set(true);
         this.showSettingsModal.set(false);
@@ -270,16 +265,116 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         this.showImportModal.set(false);
     }
 
+    openSaveDeckModal(): void {
+        this.saveDeckName.set('');
+        this.showSaveDeckModal.set(true);
+    }
+
+    closeSaveDeckModal(): void {
+        this.showSaveDeckModal.set(false);
+    }
+
+    openEditCardModal(card: any): void {
+        this.editingCardId.set(card.id);
+        this.editFrontInput.set(card.front);
+        this.editBackInput.set(card.back);
+        this.showEditModal.set(true);
+    }
+
+    closeEditModal(): void {
+        this.showEditModal.set(false);
+        this.editingCardId.set(null);
+    }
+
+    saveCardEdit(): void {
+        const id = this.editingCardId();
+        const front = this.editFrontInput().trim();
+        const back = this.editBackInput().trim();
+
+        if (id && front && back) {
+            this.flashcardsService.updateCard(id, front, back);
+            this.showToast('Karte aktualisiert', 'success');
+            this.closeEditModal();
+        }
+    }
+
+    deleteCard(id: string): void {
+        if (confirm('Karte wirklich löschen?')) {
+            this.flashcardsService.removeCard(id);
+            this.showToast('Karte gelöscht', 'success');
+        }
+    }
+
+    // --- Deck Management ---
+
+    loadDeck(deckId: string): void {
+        this.flashcardsService.loadDeck(deckId);
+        this.isFlipped.set(false);
+        this.clearCanvas();
+        this.showToast('Deck geladen!', 'success');
+    }
+
+    deleteDeck(deckId: string): void {
+        if (confirm('Deck wirklich löschen?')) {
+            this.flashcardsService.deleteDeck(deckId);
+            this.showToast('Deck gelöscht.', 'success');
+        }
+    }
+
+    executeSaveDeck(): void {
+        const name = this.saveDeckName().trim();
+        if (!name) return;
+
+        const deck = this.flashcardsService.saveDeck(name);
+        if (deck) {
+            this.showToast(`Deck "${name}" gespeichert!`, 'success');
+            this.closeSaveDeckModal();
+        }
+    }
+
     // --- Import/Export ---
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (!input.files?.length) return;
+
+        const file = input.files[0];
+        // Extract filename without extension as deck name
+        const fileName = file.name.replace(/\.txt$/i, '');
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            this.selectedFileName.set(fileName);
+            this.selectedFileContent.set(reader.result as string);
+        };
+        reader.readAsText(file);
+    }
+
+    clearSelectedFile(): void {
+        this.selectedFileName.set('');
+        this.selectedFileContent.set('');
+    }
+
+    executeFileImport(): void {
+        const content = this.selectedFileContent().trim();
+        const deckName = this.selectedFileName().trim();
+        if (!content) return;
+
+        const result = this.flashcardsService.importFromText(content, deckName || undefined);
+        this.lastImportResult.set(result);
+        this.showToast(`Deck "${deckName}" mit ${result.success} Karten importiert!`, 'success');
+    }
 
     executeImport(): void {
         const text = this.importText().trim();
         if (!text) return;
 
-        const result = this.flashcardsService.importFromText(text);
+        const deckName = this.deckNameInput().trim() || undefined;
+        const result = this.flashcardsService.importFromText(text, deckName);
         this.lastImportResult.set(result);
         this.showToast(`Import: ${result.success} Karten hinzugefügt`, 'success');
     }
+
 
     exportCards(): void {
         const text = this.flashcardsService.exportToText();
@@ -298,6 +393,14 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         this.showToast('Export gestartet!', 'success');
     }
 
+    private scrollToCard(cardId: string): void {
+        const element = document.getElementById(`card-list-${cardId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+
     async copyExport(): Promise<void> {
         try {
             const text = this.flashcardsService.exportToText();
@@ -306,6 +409,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         } catch {
             this.showToast('Kopieren fehlgeschlagen.', 'error');
         }
+
     }
 
     // --- Clear ---

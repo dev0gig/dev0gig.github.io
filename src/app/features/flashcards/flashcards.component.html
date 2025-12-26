@@ -11,9 +11,6 @@
             <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
                 <div class="hidden sm:flex gap-3 mr-2">
                     <span>KARTEN <span class="text-white">{{ flashcardsService.totalCards() }}</span></span>
-                    @if (flashcardsService.studyMode() === 'spaced') {
-                    <span>FÄLLIG <span class="text-dash-accent">{{ flashcardsService.dueCards() }}</span></span>
-                    }
                 </div>
                 <button (click)="toggleSettingsModal()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
@@ -76,88 +73,102 @@
         </div>
         }
 
-        <!-- Left Sidebar: Study Mode Selector -->
+        <!-- Left Sidebar -->
         <aside class="md:col-span-3 lg:col-span-2 flex flex-col gap-4 order-1">
+            <!-- Study Mode Toggle -->
             <div class="gradient-card p-4 rounded-sm sticky top-20">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="material-symbols-sharp text-dash-accent text-sm">school</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Lernmodus</h3>
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button (click)="setStudyMode('sequential')"
-                        [class]="flashcardsService.studyMode() === 'sequential'
-                            ? 'bg-dash-accent text-white border-dash-accent'
-                            : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
-                        class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
-                        <span class="material-symbols-sharp text-lg">format_list_numbered</span>
-                        Reihenfolge
-                    </button>
-                    <button (click)="setStudyMode('random')"
-                        [class]="flashcardsService.studyMode() === 'random'
+                    <button (click)="toggleRandomMode()"
+                        [class]="flashcardsService.isRandomMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                         class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
                         <span class="material-symbols-sharp text-lg">shuffle</span>
                         Zufällig
                     </button>
-                    <button (click)="setStudyMode('spaced')"
-                        [class]="flashcardsService.studyMode() === 'spaced'
+                    <button (click)="toggleReversedMode()"
+                        [class]="flashcardsService.isReversedMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                         class="w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center gap-2">
-                        <span class="material-symbols-sharp text-lg">event_repeat</span>
-                        Spaced Repetition
+                        <span class="material-symbols-sharp text-lg">swap_horiz</span>
+                        Switch
                     </button>
                 </div>
-                @if (flashcardsService.studyMode() === 'spaced') {
-                <div class="mt-4 pt-3 border-t border-dash-border">
-                    <div class="text-xs text-dash-text-dim mb-2">Leitner Boxen</div>
-                    <div class="flex flex-col gap-1 text-xs">
-                        <div class="flex justify-between text-dash-text-dim">
-                            <span>Box 1</span><span class="text-dash-accent">Sofort</span>
-                        </div>
-                        <div class="flex justify-between text-dash-text-dim">
-                            <span>Box 2</span><span>1 Tag</span>
-                        </div>
-                        <div class="flex justify-between text-dash-text-dim">
-                            <span>Box 3</span><span>3 Tage</span>
-                        </div>
-                        <div class="flex justify-between text-dash-text-dim">
-                            <span>Box 4</span><span>7 Tage</span>
-                        </div>
-                        <div class="flex justify-between text-dash-text-dim">
-                            <span>Box 5</span><span>14 Tage</span>
-                        </div>
+            </div>
+
+
+            <!-- Saved Decks -->
+            <div class="gradient-card p-4 rounded-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
+                        <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Decks</h3>
                     </div>
+                    @if (flashcardsService.cards().length > 0) {
+                    <button (click)="openSaveDeckModal()"
+                        class="text-xs text-dash-text-dim hover:text-dash-accent transition-colors flex items-center gap-1"
+                        title="Aktuelles Deck speichern">
+                        <span class="material-symbols-sharp text-sm">add</span>
+                    </button>
+                    }
                 </div>
+                @if (flashcardsService.decks().length > 0) {
+                <div class="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                    @for (deck of flashcardsService.decks(); track deck.id) {
+                    <div class="group flex items-center gap-2">
+                        <button (click)="loadDeck(deck.id)"
+                            [class]="flashcardsService.activeDeckId() === deck.id
+                                ? 'bg-dash-accent/20 border-dash-accent text-dash-accent'
+                                : 'bg-dash-bg border-dash-border text-dash-text-dim hover:border-dash-accent hover:text-white'"
+                            class="flex-1 px-3 py-2 rounded-sm text-sm text-left border transition-all truncate">
+                            <span class="font-medium">{{ deck.name }}</span>
+                            <span class="text-xs opacity-60 ml-1">({{ deck.cards.length }})</span>
+                        </button>
+                        <button (click)="deleteDeck(deck.id)"
+                            class="w-8 h-8 flex items-center justify-center border border-dash-border rounded-sm text-dash-text-dim hover:text-red-500 hover:border-red-500 transition-all"
+                            title="Deck löschen">
+                            <span class="material-symbols-sharp text-sm">delete</span>
+                        </button>
+
+                    </div>
+                    }
+                </div>
+                } @else {
+                <p class="text-xs text-dash-text-dim opacity-70">Keine gespeicherten Decks</p>
                 }
             </div>
         </aside>
 
+
         <!-- Main Content Area -->
-        <main class="md:col-span-9 lg:col-span-10 flex flex-col gap-4 order-2">
+        <main class="md:col-span-6 lg:col-span-7 flex flex-col gap-4 order-2">
             @if (flashcardsService.currentCard()) {
             <div class="gradient-card p-6 rounded-sm flex flex-col gap-4">
                 <!-- Progress -->
                 <div class="flex items-center justify-between text-xs text-dash-text-dim">
                     <span>Karte {{ flashcardsService.currentIndex() + 1 }} von {{ flashcardsService.studyQueue().length
                         }}</span>
-                    @if (flashcardsService.studyMode() === 'spaced') {
-                    <span class="flex items-center gap-1">
-                        <span class="material-symbols-sharp text-sm">inventory_2</span>
-                        Box {{ flashcardsService.currentCard()!.box }}
-                    </span>
-                    }
                 </div>
 
                 <!-- Card Text (Front / Back) -->
                 <div
                     class="bg-dash-bg p-6 rounded-sm text-center min-h-[100px] flex flex-col items-center justify-center">
                     @if (!isFlipped()) {
-                    <h2 class="text-2xl font-bold text-dash-text">{{ flashcardsService.currentCard()!.front }}</h2>
+                    <h2 class="text-2xl font-bold text-dash-text">
+                        {{ flashcardsService.isReversedMode() ? flashcardsService.currentCard()!.back :
+                        flashcardsService.currentCard()!.front }}
+                    </h2>
                     } @else {
                     <span class="text-xs text-green-400 uppercase tracking-wider mb-2">Antwort</span>
-                    <h2 class="text-2xl font-bold text-green-400">{{ flashcardsService.currentCard()!.back }}</h2>
+                    <h2 class="text-2xl font-bold text-green-400">
+                        {{ flashcardsService.isReversedMode() ? flashcardsService.currentCard()!.front :
+                        flashcardsService.currentCard()!.back }}
+                    </h2>
                     }
                 </div>
 
@@ -193,29 +204,13 @@
 
                     <!-- Center Actions -->
                     <div class="flex-1 flex items-center justify-center gap-3">
-                        @if (!isFlipped()) {
                         <button (click)="flipCard()"
                             class="px-6 py-3 gradient-btn text-white rounded-sm font-medium flex items-center gap-2 transition-all">
                             <span class="material-symbols-sharp">flip</span>
                             Umdrehen
                             <span class="text-[10px] opacity-60 ml-1">Space</span>
                         </button>
-                        } @else {
-                        <button (click)="markUnknown()"
-                            class="px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-sm font-medium flex items-center gap-2 transition-all">
-                            <span class="material-symbols-sharp">close</span>
-                            Nicht gewusst
-                            <span class="text-[10px] opacity-60 ml-1">N</span>
-                        </button>
-                        <button (click)="markKnown()"
-                            class="px-4 py-3 bg-green-600 hover:bg-green-500 text-white rounded-sm font-medium flex items-center gap-2 transition-all">
-                            <span class="material-symbols-sharp">check</span>
-                            Gewusst
-                            <span class="text-[10px] opacity-60 ml-1">Y</span>
-                        </button>
-                        }
                     </div>
-
 
                     <!-- Navigation Right -->
                     <button (click)="nextCard()"
@@ -225,6 +220,7 @@
                 </div>
             </div>
             } @else {
+
             <!-- Empty State -->
             <div
                 class="gradient-card p-12 rounded-sm flex flex-col items-center justify-center text-dash-text-dim border-2 border-dashed border-dash-border">
@@ -241,6 +237,97 @@
             }
         </main>
 
+        <!-- Right Sidebar: Card List -->
+        <aside class="md:col-span-3 lg:col-span-3 flex flex-col gap-4 order-3 h-[calc(100vh-8rem)] sticky top-20">
+            <div class="gradient-card p-4 rounded-sm flex flex-col h-full">
+                <div class="flex items-center gap-2 mb-3 flex-shrink-0">
+                    <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
+                    <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Karten Liste</h3>
+                    <span class="ml-auto text-xs text-dash-text-dim bg-dash-bg px-2 py-0.5 rounded-sm">
+                        {{ flashcardsService.totalCards() }}
+                    </span>
+                </div>
+
+                @if (flashcardsService.cards().length > 0) {
+                <div class="flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar pr-1">
+                    @for (card of flashcardsService.cards(); track card.id) {
+                    <div id="card-list-{{ card.id }}"
+                        [class]="flashcardsService.currentCard()?.id === card.id ? 'border-dash-accent bg-dash-accent/5' : 'bg-dash-bg border-dash-border'"
+                        class="group border hover:border-dash-accent rounded-sm h-14 p-2 transition-all flex items-center justify-between gap-2">
+                        <div class="flex flex-col min-w-0 flex-1">
+                            <div class="text-xs font-bold text-dash-text truncate" title="{{ card.front }}">
+                                {{ card.front }}
+                            </div>
+                            <div class="text-[10px] text-dash-text-dim truncate opacity-70" title="{{ card.back }}">
+                                {{ card.back }}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button (click)="openEditCardModal(card)"
+                                class="w-6 h-6 flex items-center justify-center hover:bg-dash-accent/10 rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors"
+                                title="Bearbeiten">
+                                <span class="material-symbols-sharp text-xs">edit</span>
+                            </button>
+                            <button (click)="deleteCard(card.id)"
+                                class="w-6 h-6 flex items-center justify-center hover:bg-red-500/10 rounded-sm text-dash-text-dim hover:text-red-500 transition-colors"
+                                title="Löschen">
+                                <span class="material-symbols-sharp text-xs">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    }
+
+
+                </div>
+                } @else {
+                <div class="flex-1 flex items-center justify-center text-dash-text-dim opacity-50 text-xs">
+                    Keine Karten
+                </div>
+                }
+            </div>
+        </aside>
+
+        <!-- Edit Card Modal -->
+        @if (showEditModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeEditModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Karte bearbeiten</h2>
+                    <button (click)="closeEditModal()" class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Vorderseite</label>
+                        <textarea [(ngModel)]="editFrontInput"
+                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Rückseite</label>
+                        <textarea [(ngModel)]="editBackInput"
+                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                    <button (click)="closeEditModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Abbrechen
+                    </button>
+                    <button (click)="saveCardEdit()" [disabled]="!editFrontInput() || !editBackInput()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+
 
         <!-- Import Modal -->
         @if (showImportModal()) {
@@ -249,21 +336,36 @@
             <div
                 class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Karten importieren</h2>
+                    <h2 class="text-lg font-bold text-dash-text">Deck importieren</h2>
                     <button (click)="closeImportModal()" class="text-dash-text-dim hover:text-white transition-colors">
                         <span class="material-symbols-sharp">close</span>
                     </button>
                 </div>
 
                 <div class="text-xs text-dash-text-dim space-y-1">
-                    <p>Füge Karten im Format <code class="text-dash-accent">Vorderseite;Rückseite</code> hinzu:</p>
-                    <code class="text-dash-accent block bg-dash-bg p-2 rounded-sm">Car;Auto
-House;Haus
-Dog;Hund</code>
+                    <p>Importiere eine .txt Datei mit Karten im Format:</p>
+                    <code class="text-dash-accent block bg-dash-bg p-2 rounded-sm">Vorderseite;Rückseite</code>
+                    <p class="mt-2">Der Dateiname wird als Deck-Name verwendet.</p>
                 </div>
 
-                <textarea [(ngModel)]="importText" placeholder="Karten hier einfügen..."
-                    class="w-full h-40 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors font-mono"></textarea>
+                <!-- File Input -->
+                <label
+                    class="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-dash-border rounded-sm hover:border-dash-accent cursor-pointer transition-colors bg-dash-bg/50">
+                    <span class="material-symbols-sharp text-4xl text-dash-text-dim">upload_file</span>
+                    <span class="text-sm text-dash-text-dim">Klicke zum Auswählen einer .txt Datei</span>
+                    <input #fileInput type="file" accept=".txt" (change)="onFileSelected($event)" class="hidden">
+                </label>
+
+                @if (selectedFileName()) {
+                <div class="flex items-center gap-2 bg-dash-bg p-3 rounded-sm">
+                    <span class="material-symbols-sharp text-dash-accent">description</span>
+                    <span class="text-sm text-dash-text flex-1 truncate">{{ selectedFileName() }}</span>
+                    <button (click)="clearSelectedFile()"
+                        class="text-dash-text-dim hover:text-red-500 transition-colors">
+                        <span class="material-symbols-sharp text-sm">close</span>
+                    </button>
+                </div>
+                }
 
                 @if (lastImportResult()) {
                 <div class="text-sm">
@@ -279,9 +381,45 @@ Dog;Hund</code>
                         class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
                         Schließen
                     </button>
-                    <button (click)="executeImport()" [disabled]="!importText()"
+                    <button (click)="executeFileImport()" [disabled]="!selectedFileContent()"
                         class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
                         Importieren
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+
+        <!-- Save Deck Modal -->
+        @if (showSaveDeckModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeSaveDeckModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Deck speichern</h2>
+                    <button (click)="closeSaveDeckModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <p class="text-sm text-dash-text-dim">Speichere die aktuellen {{ flashcardsService.totalCards() }}
+                    Karten als Deck.</p>
+
+                <input [(ngModel)]="saveDeckName" type="text" placeholder="Deck-Name eingeben..."
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors"
+                    (keydown.enter)="executeSaveDeck()">
+
+                <div class="flex justify-end gap-2">
+                    <button (click)="closeSaveDeckModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Abbrechen
+                    </button>
+                    <button (click)="executeSaveDeck()" [disabled]="!saveDeckName()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Speichern
                     </button>
                 </div>
             </div>
