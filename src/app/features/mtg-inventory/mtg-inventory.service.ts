@@ -231,6 +231,16 @@ export class MtgInventoryService {
             return;
         }
 
+        await this.refreshPricesForDetailView(set, collectorNumber);
+    }
+
+    /**
+     * Force refresh prices for a specific card (bypasses cache check)
+     * Called when user clicks the refresh price button in detail modal
+     */
+    async refreshPricesForDetailView(set: string, collectorNumber: string): Promise<void> {
+        const key = getCardKey(set, collectorNumber);
+        const cached = this.detailsCache.get(key);
         const setCode = set.toLowerCase();
 
         try {

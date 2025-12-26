@@ -66,7 +66,7 @@ export class MtgInventoryComponent {
         return Array.from(setMap.values()).sort((a, b) => a.code.localeCompare(b.code));
     });
 
-    /** Cards filtered by search and set */
+    /** Cards filtered by search and set - grouped by unique card key */
     filteredCards = computed(() => {
         this.cacheVersion();
 
@@ -74,7 +74,18 @@ export class MtgInventoryComponent {
         const setFilter = this.selectedSet();
         const rarityFilter = this.selectedRarity();
 
-        let filtered = this.cards().map((card, index) => ({ card, index }));
+        // First, group all cards by unique key to avoid duplicates
+        const cardMap = new Map<string, { card: MtgCardBasic; index: number }>();
+
+        this.cards().forEach((card, index) => {
+            const key = getCardKey(card.set, card.collectorNumber);
+            // Only keep the first occurrence (use the earliest index for reference)
+            if (!cardMap.has(key)) {
+                cardMap.set(key, { card, index });
+            }
+        });
+
+        let filtered = Array.from(cardMap.values());
 
         // Filter by set
         if (setFilter) {
@@ -122,6 +133,13 @@ export class MtgInventoryComponent {
 
     /** Total remaining cards (after recent 5) */
     remainingCount = computed(() => Math.max(0, this.filteredCards().length - 5));
+
+    /** Total filtered cards count including quantities */
+    filteredCardsTotal = computed(() => {
+        return this.filteredCards().reduce((sum, { card }) => {
+            return sum + this.inventoryService.getCardCount(card.set, card.collectorNumber);
+        }, 0);
+    });
 
     totalCards = computed(() => this.inventoryService.getTotalCards());
     uniqueSets = computed(() => this.inventoryService.getUniqueSets());
@@ -257,6 +275,26 @@ export class MtgInventoryComponent {
 
     closeDetailModal(): void {
         this.showDetailModal.set(null);
+    }
+
+    isRefreshingPrices = signal<boolean>(false);
+
+    async refreshPrices(): Promise<void> {
+        const modalData = this.showDetailModal();
+        if (!modalData) return;
+
+        this.isRefreshingPrices.set(true);
+        try {
+            await this.inventoryService.refreshPricesForDetailView(
+                modalData.card.set,
+                modalData.card.collectorNumber
+            );
+            this.showToast('Preise aktualisiert!', 'success');
+        } catch {
+            this.showToast('Preis-Aktualisierung fehlgeschlagen.', 'error');
+        } finally {
+            this.isRefreshingPrices.set(false);
+        }
     }
 
     // --- Import/Export ---

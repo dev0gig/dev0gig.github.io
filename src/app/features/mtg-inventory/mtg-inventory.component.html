@@ -145,11 +145,11 @@
                                 ? 'bg-dash-accent text-white border-dash-accent'
                                 : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                             class="w-full px-3 py-2 rounded-sm text-xs border transition-all text-left">
-                            <div class="flex items-center justify-between">
-                                <span class="font-mono font-bold">{{ set.code }}</span>
-                                <span class="opacity-60">{{ set.count }}</span>
+                            <div class="truncate font-medium">{{ set.name }}</div>
+                            <div class="flex items-center justify-between mt-0.5 opacity-60 text-[10px]">
+                                <span class="font-mono">{{ set.code }}</span>
+                                <span>{{ set.count }}</span>
                             </div>
-                            <div class="text-[10px] opacity-70 truncate mt-0.5">{{ set.name }}</div>
                         </button>
                         }
                     </div>
@@ -161,12 +161,12 @@
             <div class="flex-1 flex flex-col gap-4">
                 <!-- Rarity Filter -->
                 <div class="gradient-card p-4 rounded-sm">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-sharp text-dash-accent text-sm">auto_awesome</span>
                             <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Rarity</h3>
                         </div>
-                        <div class="flex gap-2 flex-wrap items-center">
+                        <div class="flex gap-2 flex-wrap items-center justify-center flex-1 mx-4">
                             <button (click)="selectRarity(null)" [class]="!selectedRarity()
                                     ? 'bg-dash-accent ring-2 ring-white/50'
                                     : 'bg-dash-bg hover:bg-dash-accent/50'"
@@ -197,6 +197,11 @@
                                 class="text-[10px] uppercase font-bold px-3 py-1 rounded-full text-white transition-all cursor-pointer">
                                 MYTHIC
                             </button>
+                        </div>
+                        <div class="flex items-center gap-1 text-xs text-dash-text-dim font-mono whitespace-nowrap">
+                            <span class="text-white">{{ filteredCardsTotal() }}</span>
+                            <span>/</span>
+                            <span>{{ totalCards() }}</span>
                         </div>
                     </div>
                 </div>
@@ -492,9 +497,20 @@
                     }
 
                     <!-- EUR Prices -->
-                    @if (getDetails(showDetailModal()!.card)?.priceEur ||
-                    getDetails(showDetailModal()!.card)?.priceEurFoil) {
                     <div class="flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-dash-text-dim uppercase tracking-wider">Preise</span>
+                            <button (click)="refreshPrices()" [disabled]="isRefreshingPrices()"
+                                class="flex items-center gap-1 px-2 py-1 text-xs bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Preise aktualisieren">
+                                @if (isRefreshingPrices()) {
+                                <span class="material-symbols-sharp text-sm animate-spin">progress_activity</span>
+                                } @else {
+                                <span class="material-symbols-sharp text-sm">refresh</span>
+                                }
+                                <span>Aktualisieren</span>
+                            </button>
+                        </div>
                         @if (getDetails(showDetailModal()!.card)?.priceEur) {
                         <div class="bg-dash-bg p-3 rounded-sm flex items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -514,9 +530,12 @@
                             <span class="font-bold text-xl text-yellow-400">€{{
                                 getDetails(showDetailModal()!.card)!.priceEurFoil }}</span>
                         </div>
+                        } @else if (!getDetails(showDetailModal()!.card)?.priceEur) {
+                        <div class="bg-dash-bg p-3 rounded-sm text-center text-dash-text-dim text-sm">
+                            Keine Preisdaten verfügbar
+                        </div>
                         }
                     </div>
-                    }
 
                     <!-- Cardmarket Link -->
                     @if (getDetails(showDetailModal()!.card)?.cardmarketUrl) {
