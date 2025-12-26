@@ -1,12 +1,18 @@
 import { Routes } from '@angular/router';
-import { Dashboard } from './features/dashboard/dashboard';
-import { JournalPage } from './features/journal/journal-page';
-import { BudgetPage } from './features/budget/budget-page';
 
 export const routes: Routes = [
-    { path: '', component: Dashboard },
-    { path: 'journal', component: JournalPage },
-    { path: 'budget', component: BudgetPage },
+    {
+        path: '',
+        loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard)
+    },
+    {
+        path: 'journal',
+        loadComponent: () => import('./features/journal/journal-page').then(m => m.JournalPage)
+    },
+    {
+        path: 'budget',
+        loadComponent: () => import('./features/budget/budget-page').then(m => m.BudgetPage)
+    },
     {
         path: 'manga-builder',
         loadComponent: () => import('./features/manga-builder/manga-builder-page').then(m => m.MangaBuilderPage)
