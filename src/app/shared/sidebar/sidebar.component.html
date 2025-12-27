@@ -149,7 +149,7 @@
                             class="absolute inset-0 bg-gradient-to-br from-dash-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                         </div>
 
-                        <img [src]="bookmarkService.getFaviconUrl(bookmark.url)"
+                        <img [src]="bookmark.customIconUrl || bookmarkService.getFaviconUrl(bookmark.url)"
                             (error)="$event.target.style.display='none'" class="w-6 h-6 rounded-sm mb-1" alt="Icon">
                         <span class="text-[10px] font-medium truncate w-full text-center px-1">{{ bookmark.name
                             }}</span>

@@ -88,7 +88,7 @@ export class Dashboard {
     }
 
     isEditMode = signal(false);
-    editingBookmark: { id: string, name: string, url: string } | null = null;
+    editingBookmark: { id: string, name: string, url: string, customIconUrl?: string } | null = null;
 
     toggleEditMode() {
         this.isEditMode.update(v => !v);
@@ -103,7 +103,8 @@ export class Dashboard {
         if (this.editingBookmark && this.editingBookmark.name && this.editingBookmark.url) {
             this.bookmarkService.updateBookmark(this.editingBookmark.id, {
                 name: this.editingBookmark.name,
-                url: this.editingBookmark.url
+                url: this.editingBookmark.url,
+                customIconUrl: this.editingBookmark.customIconUrl
             });
             this.editingBookmark = null;
         }

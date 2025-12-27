@@ -4,6 +4,7 @@ export interface Bookmark {
     id: string;
     url: string;
     name: string;
+    customIconUrl?: string;
     isFavorite: boolean;
     createdAt: number;
 }
@@ -118,7 +119,7 @@ export class BookmarkService {
         localStorage.setItem('dev0gig_bookmarks', JSON.stringify(this.bookmarks()));
     }
 
-    addBookmark(url: string, name: string) {
+    addBookmark(url: string, name: string, customIconUrl?: string) {
         // Ensure URL has protocol
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             url = 'https://' + url;
@@ -128,6 +129,7 @@ export class BookmarkService {
             id: crypto.randomUUID(),
             url,
             name,
+            customIconUrl,
             isFavorite: false,
             createdAt: Date.now()
         };
@@ -161,7 +163,7 @@ export class BookmarkService {
         }
     }
 
-    importBookmarks(newBookmarks: { url: string; name: string; createdAt?: number; isFavorite?: boolean; id?: string }[], replace: boolean = false) {
+    importBookmarks(newBookmarks: { url: string; name: string; customIconUrl?: string; createdAt?: number; isFavorite?: boolean; id?: string }[], replace: boolean = false) {
         const bookmarksToAdd: Bookmark[] = newBookmarks.map(b => {
             let url = b.url;
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -171,6 +173,7 @@ export class BookmarkService {
                 id: b.id || crypto.randomUUID(),
                 url,
                 name: b.name,
+                customIconUrl: b.customIconUrl,
                 isFavorite: b.isFavorite || false,
                 createdAt: b.createdAt || Date.now()
             };
