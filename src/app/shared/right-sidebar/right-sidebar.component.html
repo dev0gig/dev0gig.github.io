@@ -1,120 +1,162 @@
 <!-- Right Sidebar (Permanent, toggleable) -->
-<div class="sidebar-container fixed top-0 right-0 h-full w-72 z-[60] flex flex-col gap-4 p-4 overflow-y-auto transform transition-transform duration-300 ease-in-out"
+<div class="sidebar-container fixed top-0 right-0 h-full w-72 z-[60] flex flex-col transform transition-transform duration-300 ease-in-out"
     [class.translate-x-0]="sidebarService.isRightOpen()" [class.translate-x-full]="!sidebarService.isRightOpen()">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between pb-2 border-b border-dash-border">
-        <button (click)="toggleSidebar()" class="text-dash-text-dim hover:text-white transition-colors">
-            <span class="material-symbols-sharp">chevron_right</span>
-        </button>
-        <h2 class="text-lg font-bold text-dash-text">Widgets</h2>
-    </div>
-
-    <!-- Clock Widget -->
-    <div class="gradient-card p-4">
-        <div class="flex items-center gap-2 mb-2">
-            <span class="material-symbols-sharp text-dash-accent">schedule</span>
-            <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Uhrzeit</span>
-        </div>
-
-        <!-- Time Display -->
-        <div class="text-center">
-            <div class="text-4xl font-bold text-white tracking-wider font-mono">
-                {{ currentTime() }}
-            </div>
-            <div class="text-base text-dash-accent font-medium capitalize mt-1">
-                {{ currentDay() }}
-            </div>
-            <div class="flex justify-center items-center gap-2 text-sm text-dash-text-dim mt-1">
-                <span>{{ currentDate() }}</span>
-                <span class="opacity-50">•</span>
-                <span>KW {{ currentWeek() }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Weather Widget -->
-    <div class="gradient-card p-4">
-        <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-sharp text-dash-accent">cloud</span>
-                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Wetter</span>
-            </div>
-            <button (click)="loadWeather()" class="text-dash-text-dim hover:text-dash-accent transition-colors"
-                [class.animate-spin]="weatherLoading()">
-                <span class="material-symbols-sharp text-lg">refresh</span>
+    <!-- Scrollable Content Area -->
+    <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 no-scrollbar">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-2 border-b border-dash-border">
+            <button (click)="toggleSidebar()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">chevron_right</span>
             </button>
+            <h2 class="text-lg font-bold text-dash-text">Widgets</h2>
         </div>
 
-        <!-- Loading State -->
-        @if (weatherLoading()) {
-        <div class="flex items-center justify-center py-6">
-            <div class="animate-pulse flex flex-col items-center gap-2">
-                <span class="material-symbols-sharp text-4xl text-dash-text-dim">cloud</span>
-                <span class="text-sm text-dash-text-dim">Wird geladen...</span>
+        <!-- Clock Widget -->
+        <div class="gradient-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-sharp text-dash-accent">schedule</span>
+                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Uhrzeit</span>
+            </div>
+
+            <!-- Time Display -->
+            <div class="text-center">
+                <div class="text-4xl font-bold text-white tracking-wider font-mono">
+                    {{ currentTime() }}
+                </div>
+                <div class="text-sm text-dash-text-dim mt-1">
+                    {{ currentDate() }}
+                </div>
             </div>
         </div>
-        }
 
-        <!-- Error State -->
-        @if (weatherError() && !weatherLoading()) {
-        <div class="flex items-center justify-center py-4 text-center">
-            <div class="flex flex-col items-center gap-2">
-                <span class="material-symbols-sharp text-3xl text-red-400">error</span>
-                <span class="text-sm text-dash-text-dim">{{ weatherError() }}</span>
+        <!-- Calendar Widget -->
+        <div class="gradient-card p-4">
+            <!-- Month Header -->
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-sharp text-dash-accent">calendar_month</span>
+                <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">{{ currentMonthName()
+                    }}</span>
             </div>
-        </div>
-        }
 
-        <!-- Weather Content -->
-        @if (currentWeather() && !weatherLoading() && !weatherError()) {
-        <!-- Current Weather -->
-        <div class="text-center mb-4">
-            <div class="flex items-center justify-center gap-2 text-dash-text-dim text-xs mb-2">
-                <span class="material-symbols-sharp text-sm">location_on</span>
-                <span>{{ currentWeather()!.location }}</span>
-            </div>
-            <div class="flex items-center justify-center gap-1">
-                <img [src]="getWeatherIcon(currentWeather()!.weatherCode)" alt="Weather icon" class="w-20 h-20 -ml-3">
-                <div class="text-left">
-                    <div class="text-4xl font-bold text-white">{{ currentWeather()!.temperature }}°</div>
-                    <div class="text-sm text-dash-text-dim">{{ getWeatherDescription(currentWeather()!.weatherCode) }}
+            <!-- Calendar Grid -->
+            <div class="calendar-grid">
+                <!-- Weekdays Header (Japanese) -->
+                <div
+                    class="grid grid-cols-[auto_repeat(7,1fr)] gap-1 mb-2 text-center text-xs text-dash-text-dim font-medium">
+                    <div class="w-6">KW</div> <!-- Empty corner or KW label -->
+                    @for (day of japaneseWeekdays; track day) {
+                    <div>{{ day }}</div>
+                    }
+                </div>
+
+                <!-- Weeks -->
+                <div class="flex flex-col gap-1">
+                    @for (week of calendarWeeks(); track week.kw) {
+                    <div class="grid grid-cols-[auto_repeat(7,1fr)] gap-1 text-center text-sm items-center">
+                        <!-- KW -->
+                        <div class="w-6 text-xs text-dash-text-dim font-mono">{{ week.kw }}</div>
+
+                        <!-- Days -->
+                        @for (day of week.days; track $index) {
+                        <div class="aspect-square flex items-center justify-center rounded-md transition-colors"
+                            [class.bg-dash-accent]="isToday(day)" [class.text-dash-bg-dark]="isToday(day)"
+                            [class.font-bold]="isToday(day)" [class.text-white]="day && !isToday(day)"
+                            [class.opacity-0]="!day">
+                            {{ day?.getDate() }}
+                        </div>
+                        }
                     </div>
-                </div>
-            </div>
-            <div class="flex justify-center gap-4 mt-3 text-xs text-dash-text-dim">
-                <div class="flex items-center gap-1">
-                    <span class="material-symbols-sharp text-sm">air</span>
-                    <span>{{ currentWeather()!.windSpeed }} km/h</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <span class="material-symbols-sharp text-sm">humidity_percentage</span>
-                    <span>{{ currentWeather()!.humidity }}%</span>
+                    }
                 </div>
             </div>
         </div>
 
-        <!-- Forecast Divider -->
-        <div class="border-t border-dash-border my-3"></div>
+        <!-- Weather Widget -->
+        <div class="gradient-card p-4">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-sharp text-dash-accent">cloud</span>
+                    <span class="text-sm font-medium text-dash-text-dim uppercase tracking-wider">Wetter</span>
+                </div>
+                <button (click)="loadWeather()" class="text-dash-text-dim hover:text-dash-accent transition-colors"
+                    [class.animate-spin]="weatherLoading()">
+                    <span class="material-symbols-sharp text-lg">refresh</span>
+                </button>
+            </div>
 
-        <!-- 3-Day Forecast -->
-        <div class="flex justify-between">
-            @for (day of forecast(); track day.date; let i = $index) {
-            <div class="flex flex-col items-center gap-1 flex-1">
-                <span class="text-xs text-dash-text-dim font-medium">{{ getDayName(day.date, i) }}</span>
-                <img [src]="getWeatherIcon(day.weatherCode)" alt="Weather forecast" class="w-12 h-12 -my-2">
-                <div class="text-xs">
-                    <span class="text-white font-semibold">{{ day.tempMax }}°</span>
-                    <span class="text-dash-text-dim">/{{ day.tempMin }}°</span>
+            <!-- Loading State -->
+            @if (weatherLoading()) {
+            <div class="flex items-center justify-center py-6">
+                <div class="animate-pulse flex flex-col items-center gap-2">
+                    <span class="material-symbols-sharp text-4xl text-dash-text-dim">cloud</span>
+                    <span class="text-sm text-dash-text-dim">Wird geladen...</span>
                 </div>
             </div>
             }
+
+            <!-- Error State -->
+            @if (weatherError() && !weatherLoading()) {
+            <div class="flex items-center justify-center py-4 text-center">
+                <div class="flex flex-col items-center gap-2">
+                    <span class="material-symbols-sharp text-3xl text-red-400">error</span>
+                    <span class="text-sm text-dash-text-dim">{{ weatherError() }}</span>
+                </div>
+            </div>
+            }
+
+            <!-- Weather Content -->
+            @if (currentWeather() && !weatherLoading() && !weatherError()) {
+            <!-- Current Weather -->
+            <div class="text-center mb-4">
+                <div class="flex items-center justify-center gap-2 text-dash-text-dim text-xs mb-2">
+                    <span class="material-symbols-sharp text-sm">location_on</span>
+                    <span>{{ currentWeather()!.location }}</span>
+                </div>
+                <div class="flex items-center justify-center gap-1">
+                    <img [src]="getWeatherIcon(currentWeather()!.weatherCode)" alt="Weather icon"
+                        class="w-20 h-20 -ml-3">
+                    <div class="text-left">
+                        <div class="text-4xl font-bold text-white">{{ currentWeather()!.temperature }}°</div>
+                        <div class="text-sm text-dash-text-dim">{{ getWeatherDescription(currentWeather()!.weatherCode)
+                            }}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4 mt-3 text-xs text-dash-text-dim">
+                    <div class="flex items-center gap-1">
+                        <span class="material-symbols-sharp text-sm">air</span>
+                        <span>{{ currentWeather()!.windSpeed }} km/h</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="material-symbols-sharp text-sm">humidity_percentage</span>
+                        <span>{{ currentWeather()!.humidity }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forecast Divider -->
+            <div class="border-t border-dash-border my-3"></div>
+
+            <!-- 3-Day Forecast -->
+            <div class="flex justify-between">
+                @for (day of forecast(); track day.date; let i = $index) {
+                <div class="flex flex-col items-center gap-1 flex-1">
+                    <span class="text-xs text-dash-text-dim font-medium">{{ getDayName(day.date, i) }}</span>
+                    <img [src]="getWeatherIcon(day.weatherCode)" alt="Weather forecast" class="w-12 h-12 -my-2">
+                    <div class="text-xs">
+                        <span class="text-white font-semibold">{{ day.tempMax }}°</span>
+                        <span class="text-dash-text-dim">/{{ day.tempMin }}°</span>
+                    </div>
+                </div>
+                }
+            </div>
+            }
         </div>
-        }
     </div>
 
-    <!-- Music Player -->
-    <div class="music-player-wrapper mt-auto pt-2">
+    <!-- Music Player (Sticky at bottom) -->
+    <div class="music-player-wrapper p-4 pt-2 border-t border-dash-border/30 backdrop-blur-sm">
         <app-music-player></app-music-player>
     </div>
 </div>

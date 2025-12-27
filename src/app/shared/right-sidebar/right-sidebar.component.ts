@@ -32,14 +32,18 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     // Clock signals
     currentTime = signal('');
     currentDate = signal('');
-    currentDay = signal('');
-    currentWeek = signal(0);
 
     // Weather signals
     currentWeather = signal<WeatherData | null>(null);
     forecast = signal<ForecastDay[]>([]);
     weatherLoading = signal(true);
     weatherError = signal<string | null>(null);
+
+    // Calendar signals
+    readonly japaneseWeekdays = ['月', '火', '水', '木', '金', '土', '日'];
+    calendarWeeks = signal<{ kw: number, days: (Date | null)[] }[]>([]);
+    currentMonthName = signal('');
+
 
     private clockInterval: ReturnType<typeof setInterval> | null = null;
     private weatherInterval: ReturnType<typeof setInterval> | null = null;
@@ -52,6 +56,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         this.loadWeather();
         // Refresh weather every 30 minutes
         this.weatherInterval = setInterval(() => this.loadWeather(), 30 * 60 * 1000);
+
+        this.generateCalendar();
     }
 
     ngOnDestroy() {
@@ -72,20 +78,19 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
             minute: '2-digit'
         }));
 
-        // Date format: DD. MMMM YYYY
-        this.currentDate.set(now.toLocaleDateString('de-DE', {
+        const newDate = now.toLocaleDateString('de-DE', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-        }));
+        });
 
-        // Day of week
-        this.currentDay.set(now.toLocaleDateString('de-DE', {
-            weekday: 'long'
-        }));
+        // Update calendar if day changed
+        if (this.currentDate() && this.currentDate() !== newDate) {
+            this.generateCalendar();
+        }
 
-        // Calendar week (ISO 8601)
-        this.currentWeek.set(this.getWeekNumber(now));
+        // Date format: DD. MMMM YYYY
+        this.currentDate.set(newDate);
     }
 
     private getWeekNumber(date: Date): number {
@@ -259,5 +264,59 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         if (index === 0) return 'Heute';
         if (index === 1) return 'Morgen';
         return date.toLocaleDateString('de-DE', { weekday: 'short' });
+    }
+
+    private generateCalendar() {
+        const now = new Date();
+        this.currentMonthName.set(now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }));
+
+        const year = now.getFullYear();
+        const month = now.getMonth();
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+
+        // Get day of week for first day (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        // Convert to Monday-based (0 = Monday, ..., 6 = Sunday)
+        let firstDayWeekday = firstDayOfMonth.getDay();
+        firstDayWeekday = firstDayWeekday === 0 ? 6 : firstDayWeekday - 1;
+
+        const weeks: { kw: number, days: (Date | null)[] }[] = [];
+        let currentWeek: (Date | null)[] = new Array(7).fill(null);
+        let currentDayPointer = firstDayWeekday;
+
+        // Fill initial empty days
+        for (let i = 0; i < currentDayPointer; i++) {
+            currentWeek[i] = null;
+        }
+
+        // Fill days of the month
+        for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+            const date = new Date(year, month, day);
+            currentWeek[currentDayPointer] = date;
+
+            if (currentDayPointer === 6 || day === lastDayOfMonth.getDate()) {
+                // End of week or end of month
+                // If end of month and not Sunday, the rest is already null
+                weeks.push({
+                    kw: this.getWeekNumber(date),
+                    days: [...currentWeek]
+                });
+                currentWeek = new Array(7).fill(null);
+                currentDayPointer = 0;
+            } else {
+                currentDayPointer++;
+            }
+        }
+
+        this.calendarWeeks.set(weeks);
+    }
+
+    isToday(date: Date | null): boolean {
+        if (!date) return false;
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
     }
 }
