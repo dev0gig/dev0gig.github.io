@@ -25,7 +25,18 @@
                 [class.hover:border-dash-accent/50]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)">
                 <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy':'Europe/Vienna' }}</span>
+                        @if (editingDateId === entry.id) {
+                        <input type="date" [value]="getIsoDate(entry.date)"
+                            class="bg-dash-bg border border-dash-border rounded px-1 py-0.5 text-xs text-dash-text text-[10px] w-32 focus:outline-none focus:border-dash-accent"
+                            (change)="saveDateEdit(entry, $event)" (blur)="cancelDateEdit()" autofocus>
+                        } @else {
+                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd,
+                            yyyy':'Europe/Vienna' }}</span>
+                        <button class="text-dash-text-dim hover:text-dash-accent transition-colors"
+                            (click)="startEditingDate(entry)" title="Edit Date">
+                            <span class="material-symbols-sharp text-[10px]">edit</span>
+                        </button>
+                        }
                         @if (journal.hasDuplicateDate(entry)) {
                         <span class="text-[10px] text-red-400 font-medium">duplicate date</span>
                         }

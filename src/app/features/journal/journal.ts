@@ -363,6 +363,12 @@ export class JournalService {
     );
   }
 
+  updateEntryDate(id: string, date: Date) {
+    this.entriesSignal.update(entries =>
+      entries.map(e => e.id === id ? { ...e, date } : e)
+    );
+  }
+
   getEntriesByDate(date: Date): JournalEntry[] {
     return this.entriesSignal().filter(e =>
       this.isSameDay(e.date, date)

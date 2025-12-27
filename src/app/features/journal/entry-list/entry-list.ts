@@ -37,6 +37,34 @@ export class EntryList {
   editEntryText = '';
   editingHeight: number = 0;
 
+  // Date editing state
+  editingDateId: string | null = null;
+
+  getIsoDate(date: Date): string {
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split('T')[0];
+  }
+
+  startEditingDate(entry: any) {
+    this.editingDateId = entry.id;
+  }
+
+  cancelDateEdit() {
+    this.editingDateId = null;
+  }
+
+  saveDateEdit(entry: any, event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.value) {
+      const newDate = new Date(input.value);
+      if (!isNaN(newDate.getTime())) {
+        this.journal.updateEntryDate(entry.id, newDate);
+      }
+    }
+    this.editingDateId = null;
+  }
+
   addEntry() {
     if (this.newEntryText.trim()) {
       this.journal.addEntry(this.newEntryText);
