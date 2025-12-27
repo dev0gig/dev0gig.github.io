@@ -47,6 +47,10 @@ export class MangaBuilderPage {
         this.sidebarService.toggle();
     }
 
+    toggleRightSidebar() {
+        this.sidebarService.toggleRight();
+    }
+
     async onFilesDropped(files: File[]) {
         this.isProcessing = true;
 

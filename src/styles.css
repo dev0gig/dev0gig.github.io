@@ -8,6 +8,20 @@
     --color-accent-rgb: 168, 85, 247;
 }
 
+/* Global Scrollbar Hiding for Main Page */
+html,
+body {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+}
+
 body {
     background: linear-gradient(135deg, #121214 0%, #161618 50%, #121214 100%);
     background-attachment: fixed;
@@ -15,7 +29,7 @@ body {
     /* dash-text */
     font-family: 'Ubuntu', sans-serif;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 /* Gradient Card Styles */

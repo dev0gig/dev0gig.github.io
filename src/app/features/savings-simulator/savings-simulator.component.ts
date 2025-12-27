@@ -1,10 +1,11 @@
-import { Component, computed, signal, effect } from '@angular/core';
+import { Component, computed, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { ImmoCheckComponent } from './immo-check.component';
+import { SidebarService } from '../../shared/sidebar.service';
 
 @Component({
     selector: 'app-savings-simulator',
@@ -13,6 +14,9 @@ import { ImmoCheckComponent } from './immo-check.component';
     templateUrl: './savings-simulator.component.html',
 })
 export class SavingsSimulatorComponent {
+    // --- Services ---
+    sidebarService = inject(SidebarService); // Injected SidebarService
+
     // --- Tab Navigation ---
     activeTab = signal<'savings' | 'immocheck'>('savings');
     // --- Persistence Helper ---
@@ -230,5 +234,9 @@ export class SavingsSimulatorComponent {
             }
         }
     };
+
+    toggleRightSidebar() {
+        this.sidebarService.toggleRight();
+    }
 }
 

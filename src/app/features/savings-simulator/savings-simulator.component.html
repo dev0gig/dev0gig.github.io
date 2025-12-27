@@ -21,10 +21,15 @@
             </div>
             } @else {
             <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
-                <span class="material-symbols-sharp text-dash-accent">real_estate_agent</span>
                 <span>Dein Finanzierungsrechner</span>
             </div>
             }
+            <!-- Right Sidebar Toggle -->
+            <button (click)="toggleRightSidebar()"
+                class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all ml-4"
+                title="Rechte Sidebar">
+                <span class="material-symbols-sharp text-xl">menu_open</span>
+            </button>
         </header>
 
         <!-- Tab Navigation -->
