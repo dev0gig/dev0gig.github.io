@@ -1,11 +1,9 @@
-<!-- Overlay for narrow screens -->
+<!-- Overlay when sidebar is open and not in permanent mode -->
 <div class="fixed inset-0 bg-black/50 z-[55] transition-opacity duration-300 cursor-pointer"
-    style="touch-action: manipulation;"
-    [class.pointer-events-none]="!(sidebarService.isNarrowScreen() && sidebarService.isOpen())"
-    [class.opacity-0]="!(sidebarService.isNarrowScreen() && sidebarService.isOpen())"
-    (pointerdown)="sidebarService.closeAllOnNarrow()"></div>
+    style="touch-action: manipulation;" [class.pointer-events-none]="!sidebarService.shouldShowOverlay()"
+    [class.opacity-0]="!sidebarService.shouldShowOverlay()" (pointerdown)="sidebarService.closeAll()"></div>
 
-<!-- Left Sidebar (Permanent, toggleable) -->
+<!-- Left Sidebar -->
 <div class="sidebar-container fixed top-0 left-0 h-full w-72 z-[60] flex flex-col transform transition-transform duration-300 ease-in-out"
     [class.translate-x-0]="sidebarService.isOpen()" [class.-translate-x-full]="!sidebarService.isOpen()">
 
@@ -23,7 +21,7 @@
         <div class="flex flex-col gap-2">
             <!-- Row 1: Export/Import -->
             <div class="flex justify-center gap-3 text-dash-text-dim">
-                <button (click)="exportAllData()"
+                <button (click)="exportAllData(); sidebarService.closeAfterAction()"
                     class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
                     title="Alle Daten exportieren (Ctrl+E)">
                     <span class="material-symbols-sharp text-sm">download</span>
@@ -31,7 +29,7 @@
                     <span class="text-[10px] opacity-60">Ctrl+E</span>
                 </button>
                 <span class="text-dash-border">|</span>
-                <button (click)="triggerImportAll()"
+                <button (click)="triggerImportAll(); sidebarService.closeAfterAction()"
                     class="flex items-center gap-1.5 text-xs hover:text-dash-accent transition-colors"
                     title="Alle Daten importieren (Ctrl+I)">
                     <span class="material-symbols-sharp text-sm">upload</span>
@@ -41,7 +39,7 @@
             </div>
             <!-- Row 2: Quick Note & Quick Calc -->
             <div class="flex justify-center gap-3 text-dash-text-dim">
-                <button (click)="openQuickNote()"
+                <button (click)="openQuickNote(); sidebarService.closeAfterAction()"
                     class="flex items-center gap-1.5 text-xs hover:text-amber-400 transition-colors"
                     title="Schnellnotiz (Alt+N)">
                     <span class="material-symbols-sharp text-sm">edit_note</span>
@@ -49,7 +47,7 @@
                     <span class="text-[10px] opacity-60">Alt+N</span>
                 </button>
                 <span class="text-dash-border">|</span>
-                <button (click)="openQuickCalc()"
+                <button (click)="openQuickCalc(); sidebarService.closeAfterAction()"
                     class="flex items-center gap-1.5 text-xs hover:text-emerald-400 transition-colors"
                     title="Schnellrechner (Alt+R)">
                     <span class="material-symbols-sharp text-sm">calculate</span>
@@ -62,7 +60,7 @@
         <div class="border-t border-dash-border"></div>
 
         <!-- Settings Button - Full Width -->
-        <button (click)="onSettingsClick()"
+        <button (click)="onSettingsClick(); sidebarService.closeAfterAction()"
             class="w-full bg-dash-bg rounded-md flex items-center gap-3 px-3 py-2.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
             title="Settings">
             <span class="material-symbols-sharp text-xl">settings</span>
@@ -74,56 +72,56 @@
             <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2 px-1">Projekte</h3>
             <div class="grid grid-cols-3 gap-2">
                 <!-- Dashboard -->
-                <a routerLink="/" (click)="closeSidebarOnMobile()"
+                <a routerLink="/" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="Dashboard">
                     <span class="material-symbols-sharp text-2xl">dashboard</span>
                     <span class="text-[10px] font-medium">Dashboard</span>
                 </a>
                 <!-- Journal App -->
-                <a routerLink="/journal" (click)="closeSidebarOnMobile()"
+                <a routerLink="/journal" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="Journal">
                     <span class="material-symbols-sharp text-2xl">book</span>
                     <span class="text-[10px] font-medium">Journal</span>
                 </a>
                 <!-- My Budget -->
-                <a routerLink="/budget" (click)="closeSidebarOnMobile()"
+                <a routerLink="/budget" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="Budget">
                     <span class="material-symbols-sharp text-2xl">account_balance_wallet</span>
                     <span class="text-[10px] font-medium">Budget</span>
                 </a>
                 <!-- Manga Builder -->
-                <a routerLink="/manga-builder" (click)="closeSidebarOnMobile()"
+                <a routerLink="/manga-builder" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="Manga Builder">
                     <span class="material-symbols-sharp text-2xl">auto_stories</span>
                     <span class="text-[10px] font-medium text-center leading-tight">Manga<br>Builder</span>
                 </a>
                 <!-- Savings Simulator -->
-                <a routerLink="/savings-simulator" (click)="closeSidebarOnMobile()"
+                <a routerLink="/savings-simulator" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="Savings Sim">
                     <span class="material-symbols-sharp text-2xl">savings</span>
                     <span class="text-[10px] font-medium text-center leading-tight">Savings<br>Sim</span>
                 </a>
                 <!-- AudioNotes -->
-                <a routerLink="/audio-notes" (click)="closeSidebarOnMobile()"
+                <a routerLink="/audio-notes" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="AudioNotes">
                     <span class="material-symbols-sharp text-2xl">mic</span>
                     <span class="text-[10px] font-medium text-center leading-tight">Audio<br>Notes</span>
                 </a>
                 <!-- MTG Inventory -->
-                <a routerLink="/mtg-inventory" (click)="closeSidebarOnMobile()"
+                <a routerLink="/mtg-inventory" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="MTG Inventory">
                     <span class="material-symbols-sharp text-2xl">playing_cards</span>
                     <span class="text-[10px] font-medium text-center leading-tight">MTG<br>Inventory</span>
                 </a>
                 <!-- Flashcards -->
-                <a routerLink="/flashcards" (click)="closeSidebarOnMobile()"
+                <a routerLink="/flashcards" (click)="sidebarService.closeAfterAction()"
                     class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
                     title="Flashcards">
                     <span class="material-symbols-sharp text-2xl">style</span>
@@ -148,7 +146,7 @@
             <div class="grid grid-cols-3 gap-2">
                 <ng-container *ngFor="let bookmark of bookmarkService.bookmarks()">
                     <a *ngIf="bookmark.isFavorite" [href]="bookmark.url" target="_blank"
-                        (click)="closeSidebarOnMobile()"
+                        (click)="sidebarService.closeAfterAction()"
                         class="aspect-square gradient-card hover:border-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text hover:text-dash-accent transition-all group relative overflow-hidden hover:shadow-md"
                         [title]="bookmark.name">
                         <!-- Background hover effect -->

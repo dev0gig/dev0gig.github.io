@@ -4,43 +4,27 @@ import { Injectable, signal } from '@angular/core';
     providedIn: 'root'
 })
 export class SidebarService {
-    // Breakpoint for auto-hiding sidebars (in pixels)
-    // When viewport width is below this, sidebars auto-hide
-    // Use higher breakpoint for Android devices (tablets with high DPI)
-    private readonly BREAKPOINT_DEFAULT = 1200;
-    private readonly BREAKPOINT_ANDROID = 2000;
-
-    private get BREAKPOINT(): number {
-        if (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)) {
-            return this.BREAKPOINT_ANDROID;
-        }
-        return this.BREAKPOINT_DEFAULT;
-    }
-
     // LocalStorage keys
-    private readonly STORAGE_KEY_LEFT = 'sidebar_left_open';
-    private readonly STORAGE_KEY_RIGHT = 'sidebar_right_open';
+    private readonly STORAGE_KEY_PERMANENT = 'sidebar_permanent_visible';
 
-    // Track if screen is narrow (below breakpoint)
-    isNarrowScreen = signal(false);
+    // Setting: Are sidebars permanently visible? (default: false = show overlay mode)
+    permanentSidebars = signal(false);
 
-    // Track user's manual preference for each sidebar (persisted to localStorage)
-    private userWantsLeftOpen: boolean;
-    private userWantsRightOpen: boolean;
+    // Left Sidebar state
+    isOpen = signal(false);
 
-    // Left Sidebar
-    isOpen = signal(true);
-
-    // Right Sidebar
-    isRightOpen = signal(true);
+    // Right Sidebar state
+    isRightOpen = signal(false);
 
     constructor() {
-        // Load saved preferences from localStorage
-        this.userWantsLeftOpen = this.loadPreference(this.STORAGE_KEY_LEFT, true);
-        this.userWantsRightOpen = this.loadPreference(this.STORAGE_KEY_RIGHT, true);
+        // Load permanent visibility setting from localStorage
+        this.permanentSidebars.set(this.loadPreference(this.STORAGE_KEY_PERMANENT, false));
 
-        // Initialize responsive behavior
-        this.initResponsiveListener();
+        // If permanent mode is enabled, open both sidebars on init
+        if (this.permanentSidebars()) {
+            this.isOpen.set(true);
+            this.isRightOpen.set(true);
+        }
     }
 
     private loadPreference(key: string, defaultValue: boolean): boolean {
@@ -55,121 +39,74 @@ export class SidebarService {
         localStorage.setItem(key, String(value));
     }
 
-    private initResponsiveListener() {
-        // Check initial screen size
-        this.checkScreenSize(true);
+    // Toggle permanent sidebar visibility setting
+    setPermanentSidebars(value: boolean) {
+        this.permanentSidebars.set(value);
+        this.savePreference(this.STORAGE_KEY_PERMANENT, value);
 
-        // Listen for window resize
-        if (typeof window !== 'undefined') {
-            window.addEventListener('resize', () => this.checkScreenSize(false));
-        }
-    }
-
-    private checkScreenSize(isInitial: boolean) {
-        if (typeof window === 'undefined') return;
-
-        const wasNarrow = this.isNarrowScreen();
-        const isNarrow = window.innerWidth < this.BREAKPOINT;
-        this.isNarrowScreen.set(isNarrow);
-
-        // On initial load
-        if (isInitial) {
-            if (isNarrow) {
-                // Start with sidebars closed on narrow screens
-                this.isOpen.set(false);
-                this.isRightOpen.set(false);
-            } else {
-                // Restore user preferences on wide screens
-                this.isOpen.set(this.userWantsLeftOpen);
-                this.isRightOpen.set(this.userWantsRightOpen);
-            }
-            return;
-        }
-
-        // Screen became narrow - auto-close sidebars
-        if (isNarrow && !wasNarrow) {
+        if (value) {
+            // When enabling permanent mode, open both sidebars
+            this.isOpen.set(true);
+            this.isRightOpen.set(true);
+        } else {
+            // When disabling permanent mode, close both sidebars
             this.isOpen.set(false);
             this.isRightOpen.set(false);
         }
+    }
 
-        // Screen became wide - restore user preferences
-        if (!isNarrow && wasNarrow) {
-            this.isOpen.set(this.userWantsLeftOpen);
-            this.isRightOpen.set(this.userWantsRightOpen);
-        }
+    // Check if overlay should be shown (sidebars not permanent and any sidebar is open)
+    shouldShowOverlay(): boolean {
+        return !this.permanentSidebars() && (this.isOpen() || this.isRightOpen());
     }
 
     // Left Sidebar methods
     toggle() {
-        const newState = !this.isOpen();
-        this.isOpen.set(newState);
-        // Remember user preference when on wide screen
-        if (!this.isNarrowScreen()) {
-            this.userWantsLeftOpen = newState;
-            this.savePreference(this.STORAGE_KEY_LEFT, newState);
-        }
+        this.isOpen.set(!this.isOpen());
     }
 
     open() {
         this.isOpen.set(true);
-        if (!this.isNarrowScreen()) {
-            this.userWantsLeftOpen = true;
-            this.savePreference(this.STORAGE_KEY_LEFT, true);
-        }
     }
 
     close() {
         this.isOpen.set(false);
-        if (!this.isNarrowScreen()) {
-            this.userWantsLeftOpen = false;
-            this.savePreference(this.STORAGE_KEY_LEFT, false);
-        }
     }
 
     // Right Sidebar methods
     toggleRight() {
-        const newState = !this.isRightOpen();
-        this.isRightOpen.set(newState);
-        // Remember user preference when on wide screen
-        if (!this.isNarrowScreen()) {
-            this.userWantsRightOpen = newState;
-            this.savePreference(this.STORAGE_KEY_RIGHT, newState);
-        }
+        this.isRightOpen.set(!this.isRightOpen());
     }
 
     openRight() {
         this.isRightOpen.set(true);
-        if (!this.isNarrowScreen()) {
-            this.userWantsRightOpen = true;
-            this.savePreference(this.STORAGE_KEY_RIGHT, true);
-        }
     }
 
     closeRight() {
         this.isRightOpen.set(false);
-        if (!this.isNarrowScreen()) {
-            this.userWantsRightOpen = false;
-            this.savePreference(this.STORAGE_KEY_RIGHT, false);
-        }
     }
 
     // Toggle both sidebars
     toggleBoth() {
-        // If either is open, close both
         if (this.isOpen() || this.isRightOpen()) {
             this.close();
             this.closeRight();
         } else {
-            // If both are closed, open both
             this.open();
             this.openRight();
         }
     }
 
-    // Close all sidebars on narrow screen (e.g., when clicking overlay)
-    // Does not save preferences since it's a temporary close
-    closeAllOnNarrow() {
+    // Close all sidebars (for overlay click or button click in non-permanent mode)
+    closeAll() {
         this.isOpen.set(false);
         this.isRightOpen.set(false);
+    }
+
+    // Close sidebar after action (for button clicks inside sidebar when not permanent)
+    closeAfterAction() {
+        if (!this.permanentSidebars()) {
+            this.closeAll();
+        }
     }
 }

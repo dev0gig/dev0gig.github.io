@@ -7,6 +7,7 @@ import { ThemeService, ACCENT_COLORS } from '../theme.service';
 import { BookmarkService } from '../bookmark.service';
 import { JournalService } from '../../features/journal/journal';
 import { FlashcardsService } from '../../features/flashcards/flashcards.service';
+import { SidebarService } from '../sidebar.service';
 
 export interface ProjectSelection {
     bookmarks: boolean;
@@ -31,6 +32,7 @@ export class GlobalSettingsModal {
     bookmarkService = inject(BookmarkService);
     journalService = inject(JournalService);
     flashcardsService = inject(FlashcardsService);
+    sidebarService = inject(SidebarService);
 
     accentColors = ACCENT_COLORS;
 

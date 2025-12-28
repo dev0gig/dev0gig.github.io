@@ -40,28 +40,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     onSettingsClick() {
         this.settingsService.openSettings();
-        this.closeSidebarOnMobile();
-    }
-
-    closeSidebarOnMobile() {
-        if (window.innerWidth < 768) {
-            this.sidebarService.close();
-        }
     }
 
     installPwa() {
         this.pwa.installPwa();
-        this.sidebarService.close();
+        this.sidebarService.closeAfterAction();
     }
 
     openQuickNote() {
         window.dispatchEvent(new CustomEvent('app:quicknote'));
-        this.closeSidebarOnMobile();
     }
 
     openQuickCalc() {
         window.dispatchEvent(new CustomEvent('app:quickcalc'));
-        this.closeSidebarOnMobile();
     }
 
     downloadAudioNotes() {

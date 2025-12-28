@@ -1,9 +1,7 @@
-<!-- Overlay for narrow screens -->
+<!-- Overlay when sidebar is open and not in permanent mode -->
 <div class="fixed inset-0 bg-black/50 z-[55] transition-opacity duration-300 cursor-pointer"
-    style="touch-action: manipulation;"
-    [class.pointer-events-none]="!(sidebarService.isNarrowScreen() && sidebarService.isRightOpen())"
-    [class.opacity-0]="!(sidebarService.isNarrowScreen() && sidebarService.isRightOpen())"
-    (pointerdown)="sidebarService.closeAllOnNarrow()"></div>
+    style="touch-action: manipulation;" [class.pointer-events-none]="!sidebarService.shouldShowOverlay()"
+    [class.opacity-0]="!sidebarService.shouldShowOverlay()" (pointerdown)="sidebarService.closeAll()"></div>
 
 <!-- Right Sidebar (Permanent, toggleable) -->
 <div class="sidebar-container fixed top-0 right-0 h-full w-72 z-[60] flex flex-col transform transition-transform duration-300 ease-in-out"

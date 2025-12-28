@@ -31,6 +31,26 @@
 
         <div class="border-t border-dash-border"></div>
 
+        <!-- Sidebar Settings -->
+        <div class="flex flex-col gap-3">
+            <h3 class="text-sm font-bold text-dash-text">Seitenleisten</h3>
+            <div class="flex items-center justify-between p-3 bg-dash-bg rounded-sm border border-dash-border">
+                <div class="flex flex-col gap-1">
+                    <span class="text-sm text-dash-text">Dauerhaft anzeigen</span>
+                    <span class="text-xs text-dash-text-dim">Sidebars bleiben immer geöffnet (für große
+                        Bildschirme)</span>
+                </div>
+                <button (click)="sidebarService.setPermanentSidebars(!sidebarService.permanentSidebars())"
+                    [class]="sidebarService.permanentSidebars() ? 'w-12 h-6 bg-dash-accent rounded-full relative transition-colors' : 'w-12 h-6 bg-dash-border rounded-full relative transition-colors'">
+                    <div
+                        [class]="sidebarService.permanentSidebars() ? 'absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-all' : 'absolute left-1 top-1 w-4 h-4 bg-dash-text-dim rounded-full transition-all'">
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t border-dash-border"></div>
+
         <!-- Project Selection -->
         <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between">
