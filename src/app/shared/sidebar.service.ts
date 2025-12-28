@@ -156,4 +156,11 @@ export class SidebarService {
             this.openRight();
         }
     }
+
+    // Close all sidebars on narrow screen (e.g., when clicking overlay)
+    // Does not save preferences since it's a temporary close
+    closeAllOnNarrow() {
+        this.isOpen.set(false);
+        this.isRightOpen.set(false);
+    }
 }
