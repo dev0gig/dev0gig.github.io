@@ -106,7 +106,7 @@
                         [class]="flashcardsService.isRandomMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
-                        class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center justify-center md:justify-start gap-2">
+                        class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all border flex items-center justify-center gap-2">
                         <span class="material-symbols-sharp text-lg">shuffle</span>
                         <span [class]="focusMode() ? 'hidden' : 'hidden md:inline'">Zufällig</span>
                     </button>
@@ -114,7 +114,7 @@
                         [class]="flashcardsService.isReversedMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
-                        class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center justify-center md:justify-start gap-2">
+                        class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all border flex items-center justify-center gap-2">
                         <span class="material-symbols-sharp text-lg">swap_horiz</span>
                         <span [class]="focusMode() ? 'hidden' : 'hidden md:inline'">Switch</span>
                     </button>
