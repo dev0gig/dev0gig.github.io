@@ -6,7 +6,16 @@ import { Injectable, signal } from '@angular/core';
 export class SidebarService {
     // Breakpoint for auto-hiding sidebars (in pixels)
     // When viewport width is below this, sidebars auto-hide
-    private readonly BREAKPOINT = 1400;
+    // Use higher breakpoint for Android devices (tablets with high DPI)
+    private readonly BREAKPOINT_DEFAULT = 1200;
+    private readonly BREAKPOINT_ANDROID = 2000;
+
+    private get BREAKPOINT(): number {
+        if (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)) {
+            return this.BREAKPOINT_ANDROID;
+        }
+        return this.BREAKPOINT_DEFAULT;
+    }
 
     // LocalStorage keys
     private readonly STORAGE_KEY_LEFT = 'sidebar_left_open';
