@@ -67,41 +67,41 @@
                     </button>
                 </div>
             </div>
-            <div class="grid grid-cols-7 gap-2">
+            <div class="grid grid-cols-4 gap-2">
                 <button (click)="toggleProjectSelection('bookmarks')"
                     [class]="projectSelection().bookmarks ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">bookmarks</span>
-                    <span class="text-xs font-medium">Lesezeichen</span>
+                    <span class="text-xs font-medium truncate w-full text-center">Lesezeichen</span>
                 </button>
                 <button (click)="toggleProjectSelection('journal')"
                     [class]="projectSelection().journal ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">description</span>
-                    <span class="text-xs font-medium">Journal</span>
+                    <span class="text-xs font-medium truncate w-full text-center">Journal</span>
                 </button>
                 <button (click)="toggleProjectSelection('budget')"
                     [class]="projectSelection().budget ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">payments</span>
-                    <span class="text-xs font-medium">Budget</span>
+                    <span class="text-xs font-medium truncate w-full text-center">Budget</span>
                 </button>
                 <button (click)="toggleProjectSelection('audioNotes')"
                     [class]="projectSelection().audioNotes ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">mic</span>
-                    <span class="text-xs font-medium">AudioNotes</span>
+                    <span class="text-xs font-medium truncate w-full text-center">AudioNotes</span>
                 </button>
                 <button (click)="toggleProjectSelection('recentlyPlayed')"
                     [class]="projectSelection().recentlyPlayed ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">history</span>
-                    <span class="text-xs font-medium">Zuletzt</span>
+                    <span class="text-xs font-medium truncate w-full text-center">Zuletzt</span>
                 </button>
                 <button (click)="toggleProjectSelection('flashcards')"
                     [class]="projectSelection().flashcards ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">style</span>
-                    <span class="text-xs font-medium">Flashcards</span>
+                    <span class="text-xs font-medium truncate w-full text-center">Flashcards</span>
                 </button>
                 <button (click)="toggleProjectSelection('mtgInventory')"
                     [class]="projectSelection().mtgInventory ? 'flex flex-col items-center gap-2 p-3 bg-dash-accent/20 border border-dash-accent text-dash-accent rounded-sm transition-colors' : 'flex flex-col items-center gap-2 p-3 bg-dash-bg border border-dash-border text-dash-text-dim hover:border-dash-text-dim rounded-sm transition-colors'">
                     <span class="material-symbols-sharp text-xl">playing_cards</span>
-                    <span class="text-xs font-medium">MTG</span>
+                    <span class="text-xs font-medium truncate w-full text-center">MTG</span>
                 </button>
             </div>
         </div>
