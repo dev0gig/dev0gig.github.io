@@ -6,7 +6,7 @@ import { Injectable, signal } from '@angular/core';
 export class SidebarService {
     // Breakpoint for auto-hiding sidebars (in pixels)
     // When viewport width is below this, sidebars auto-hide
-    private readonly BREAKPOINT = 1200;
+    private readonly BREAKPOINT = 1400;
 
     // LocalStorage keys
     private readonly STORAGE_KEY_LEFT = 'sidebar_left_open';
