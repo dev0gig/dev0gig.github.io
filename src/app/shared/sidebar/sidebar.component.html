@@ -1,10 +1,11 @@
 <!-- Overlay when sidebar is open and not in permanent mode -->
-<div class="fixed inset-0 bg-black/50 z-[55] transition-opacity duration-300 cursor-pointer"
-    style="touch-action: manipulation;" [class.pointer-events-none]="!sidebarService.shouldShowOverlay()"
+<div class="fixed inset-0 bg-black/50 z-[100] transition-opacity duration-300 cursor-pointer"
+    style="touch-action: manipulation;" [class.pointer-events-auto]="sidebarService.shouldShowOverlay()"
+    [class.pointer-events-none]="!sidebarService.shouldShowOverlay()"
     [class.opacity-0]="!sidebarService.shouldShowOverlay()" (pointerdown)="sidebarService.closeAll()"></div>
 
 <!-- Left Sidebar -->
-<div class="sidebar-container fixed top-0 left-0 h-full w-72 z-[60] flex flex-col transform transition-transform duration-300 ease-in-out"
+<div class="sidebar-container fixed top-0 left-0 h-full w-72 z-[110] flex flex-col transform transition-transform duration-300 ease-in-out"
     [class.translate-x-0]="sidebarService.isOpen()" [class.-translate-x-full]="!sidebarService.isOpen()">
 
     <!-- Scrollable Content Area -->
