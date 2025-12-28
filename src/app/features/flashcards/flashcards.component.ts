@@ -38,6 +38,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     showImportModal = signal<boolean>(false);
     showSaveDeckModal = signal<boolean>(false);
     showEditModal = signal<boolean>(false);
+    focusMode = signal<boolean>(false); // Focus mode hides sidebars on desktop
     importText = signal<string>('');
     deckNameInput = signal<string>('');
     saveDeckName = signal<string>('');
@@ -252,6 +253,10 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
 
     toggleRightSidebar(): void {
         this.sidebarService.toggleRight();
+    }
+
+    toggleFocusMode(): void {
+        this.focusMode.update(v => !v);
     }
 
     openImportModal(): void {

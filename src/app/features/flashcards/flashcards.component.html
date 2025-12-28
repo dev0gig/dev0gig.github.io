@@ -12,6 +12,13 @@
                 <div class="hidden sm:flex gap-3 mr-2">
                     <span>KARTEN <span class="text-white">{{ flashcardsService.totalCards() }}</span></span>
                 </div>
+                <!-- Focus Mode Toggle (hidden on mobile, only for desktop) -->
+                <button (click)="toggleFocusMode()"
+                    [class]="focusMode() ? 'bg-dash-accent text-white' : 'bg-dash-bg text-dash-text-dim hover:bg-dash-accent hover:text-white'"
+                    class="hidden md:flex w-10 h-10 rounded-sm items-center justify-center cursor-pointer transition-all"
+                    title="Fokus-Modus (versteckt Sidebars)">
+                    <span class="material-symbols-sharp text-xl">center_focus_strong</span>
+                </button>
                 <button (click)="toggleSettingsModal()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
                     title="Einstellungen">
@@ -86,21 +93,22 @@
         }
 
         <!-- Left Sidebar -->
-        <aside class="md:col-span-3 lg:col-span-2 flex flex-col gap-4 order-2 md:order-1">
+        <aside [class]="focusMode() ? 'md:col-span-12 md:order-2' : 'md:col-span-3 lg:col-span-2 md:order-1'"
+            class="flex flex-col gap-4 order-2">
             <!-- Study Mode Toggle -->
             <div class="gradient-card p-4 rounded-sm sticky top-20 z-30">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="material-symbols-sharp text-dash-accent text-sm">school</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Lernmodus</h3>
                 </div>
-                <div class="flex flex-row md:flex-col gap-2">
+                <div [class]="focusMode() ? 'flex-row' : 'flex-row md:flex-col'" class="flex gap-2">
                     <button (click)="toggleRandomMode()"
                         [class]="flashcardsService.isRandomMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                         class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center justify-center md:justify-start gap-2">
                         <span class="material-symbols-sharp text-lg">shuffle</span>
-                        <span class="hidden md:inline">Zufällig</span>
+                        <span [class]="focusMode() ? 'hidden' : 'hidden md:inline'">Zufällig</span>
                     </button>
                     <button (click)="toggleReversedMode()"
                         [class]="flashcardsService.isReversedMode()
@@ -108,7 +116,7 @@
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                         class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all text-left border flex items-center justify-center md:justify-start gap-2">
                         <span class="material-symbols-sharp text-lg">swap_horiz</span>
-                        <span class="hidden md:inline">Switch</span>
+                        <span [class]="focusMode() ? 'hidden' : 'hidden md:inline'">Switch</span>
                     </button>
                 </div>
             </div>
@@ -152,7 +160,8 @@
 
 
         <!-- Main Content Area -->
-        <main class="md:col-span-6 lg:col-span-7 flex flex-col gap-4 order-1 md:order-2">
+        <main [class]="focusMode() ? 'md:col-span-12' : 'md:col-span-6 lg:col-span-7 md:order-2'"
+            class="flex flex-col gap-4 order-1">
             @if (flashcardsService.currentCard()) {
             <div class="gradient-card p-6 rounded-sm flex flex-col gap-4">
                 <!-- Progress -->
@@ -244,8 +253,8 @@
         </main>
 
         <!-- Right Sidebar: Card List -->
-        <aside
-            class="hidden md:flex md:col-span-3 lg:col-span-3 flex-col gap-4 order-3 h-[calc(100vh-8rem)] sticky top-20">
+        <aside [class]="focusMode() ? 'hidden' : 'md:flex md:col-span-3 lg:col-span-3'"
+            class="hidden flex-col gap-4 order-3 h-[calc(100vh-8rem)] sticky top-20">
             <div class="gradient-card p-4 rounded-sm flex flex-col h-full">
                 <div class="flex items-center gap-2 mb-3 flex-shrink-0">
                     <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
