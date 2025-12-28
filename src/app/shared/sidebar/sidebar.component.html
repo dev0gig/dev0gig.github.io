@@ -2,7 +2,8 @@
 <div class="fixed inset-0 bg-black/50 z-[100] transition-opacity duration-300 cursor-pointer"
     style="touch-action: manipulation;" [class.pointer-events-auto]="sidebarService.shouldShowOverlay()"
     [class.pointer-events-none]="!sidebarService.shouldShowOverlay()"
-    [class.opacity-0]="!sidebarService.shouldShowOverlay()" (pointerdown)="sidebarService.closeAll()"></div>
+    [class.opacity-0]="!sidebarService.shouldShowOverlay()" (click)="onOverlayClick($event)"
+    (pointerdown)="onOverlayClick($event)" (touchstart)="onOverlayClick($event)"></div>
 
 <!-- Left Sidebar -->
 <div class="sidebar-container fixed top-0 left-0 h-full w-72 z-[110] flex flex-col transform transition-transform duration-300 ease-in-out"

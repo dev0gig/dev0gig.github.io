@@ -38,6 +38,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.sidebarService.toggle();
     }
 
+    // Handle overlay click - stop propagation to prevent clicks going through
+    onOverlayClick(event: Event) {
+        event.stopPropagation();
+        event.preventDefault();
+        this.sidebarService.closeAll();
+    }
+
     onSettingsClick() {
         this.settingsService.openSettings();
     }
