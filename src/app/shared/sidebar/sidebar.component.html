@@ -1,7 +1,8 @@
 <!-- Overlay for narrow screens -->
 <div class="fixed inset-0 bg-black/50 z-[55] transition-opacity duration-300"
     [class.hidden]="!(sidebarService.isNarrowScreen() && sidebarService.isOpen())"
-    (click)="sidebarService.closeAllOnNarrow()"></div>
+    (click)="sidebarService.closeAllOnNarrow()"
+    (touchstart)="sidebarService.closeAllOnNarrow()"></div>
 
 <!-- Left Sidebar (Permanent, toggleable) -->
 <div class="sidebar-container fixed top-0 left-0 h-full w-72 z-[60] flex flex-col transform transition-transform duration-300 ease-in-out"
