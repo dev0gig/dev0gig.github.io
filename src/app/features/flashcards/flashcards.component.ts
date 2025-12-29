@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewChild, HostListener, effect } from '@angular/core';
+import { Component, inject, signal, computed, ViewChild, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
@@ -46,6 +46,35 @@ export class FlashcardsComponent {
     // UI State
     isFlipped = signal<boolean>(false);
     focusMode = signal<boolean>(false);
+
+    // Search
+    searchQuery = signal<string>('');
+
+    // Filtered cards based on search query
+    filteredCards = computed(() => {
+        const query = this.searchQuery().toLowerCase().trim();
+        const cards = this.flashcardsService.cards();
+        if (!query) return cards;
+        return cards.filter(card =>
+            card.front.toLowerCase().includes(query) ||
+            card.back.toLowerCase().includes(query)
+        );
+    });
+
+    // Track duplicate card names (returns a Set of fronts that are duplicated)
+    duplicateCardFronts = computed(() => {
+        const cards = this.flashcardsService.cards();
+        const frontCounts = new Map<string, number>();
+        cards.forEach(card => {
+            const front = card.front.toLowerCase().trim();
+            frontCounts.set(front, (frontCounts.get(front) || 0) + 1);
+        });
+        const duplicates = new Set<string>();
+        frontCounts.forEach((count, front) => {
+            if (count > 1) duplicates.add(front);
+        });
+        return duplicates;
+    });
     showDecksDropdown = signal<boolean>(false);
 
     // Modal visibility
@@ -111,6 +140,12 @@ export class FlashcardsComponent {
 
     prevCard(): void {
         this.flashcardsService.goToPrevious();
+        this.isFlipped.set(false);
+        this.drawingCanvas?.clear();
+    }
+
+    goToCard(cardId: string): void {
+        this.flashcardsService.goToCard(cardId);
         this.isFlipped.set(false);
         this.drawingCanvas?.clear();
     }

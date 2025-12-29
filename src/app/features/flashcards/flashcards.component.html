@@ -255,7 +255,7 @@
                     <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Karten Liste</h3>
                     <span class="text-xs text-dash-text-dim bg-dash-bg px-2 py-0.5 rounded-sm">
-                        {{ flashcardsService.totalCards() }}
+                        {{ filteredCards().length }}/{{ flashcardsService.totalCards() }}
                     </span>
                     <button (click)="openNewCardModal()"
                         class="ml-auto w-6 h-6 flex items-center justify-center bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-all"
@@ -264,21 +264,47 @@
                     </button>
                 </div>
 
-                @if (flashcardsService.cards().length > 0) {
+                <!-- Search Input -->
+                <div class="mb-3 flex-shrink-0">
+                    <div class="relative">
+                        <span
+                            class="material-symbols-sharp absolute left-2.5 top-1/2 -translate-y-1/2 text-dash-text-dim text-sm">search</span>
+                        <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)"
+                            placeholder="Karten suchen..."
+                            class="w-full pl-8 pr-8 py-2 bg-dash-bg border border-dash-border rounded-sm text-xs text-dash-text placeholder-dash-text-dim focus:border-dash-accent focus:outline-none transition-colors">
+                        @if (searchQuery()) {
+                        <button (click)="searchQuery.set('')"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-white transition-colors">
+                            <span class="material-symbols-sharp text-sm">close</span>
+                        </button>
+                        }
+                    </div>
+                </div>
+
+                @if (filteredCards().length > 0) {
                 <div class="flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar pr-1">
-                    @for (card of flashcardsService.cards(); track card.id) {
-                    <div id="card-list-{{ card.id }}"
-                        [class]="flashcardsService.currentCard()!.id === card.id ? 'border-dash-accent bg-dash-accent/5' : 'bg-dash-bg border-dash-border'"
-                        class="group border hover:border-dash-accent rounded-sm h-14 p-2 transition-all flex items-center justify-between gap-2">
+                    @for (card of filteredCards(); track card.id) {
+                    <div id="card-list-{{ card.id }}" [class]="flashcardsService.currentCard()?.id === card.id
+                            ? 'border-dash-accent bg-dash-accent/5'
+                            : duplicateCardFronts().has(card.front.toLowerCase().trim())
+                                ? 'bg-dash-bg border-red-500/70'
+                                : 'bg-dash-bg border-dash-border'"
+                        class="group border hover:border-dash-accent rounded-sm h-14 p-2 transition-all flex items-center justify-between gap-2 cursor-pointer"
+                        (click)="goToCard(card.id)">
                         <div class="flex flex-col min-w-0 flex-1">
-                            <div class="text-xs font-bold text-dash-text truncate" title="{{ card.front }}">
-                                {{ card.front }}
+                            <div class="text-xs font-bold text-dash-text truncate flex items-center gap-1"
+                                title="{{ card.front }}">
+                                @if (duplicateCardFronts().has(card.front.toLowerCase().trim())) {
+                                <span class="material-symbols-sharp text-red-500 text-xs flex-shrink-0"
+                                    title="Doppelte Karte">content_copy</span>
+                                }
+                                <span class="truncate">{{ card.front }}</span>
                             </div>
                             <div class="text-[10px] text-dash-text-dim truncate opacity-70" title="{{ card.back }}">
                                 {{ card.back }}
                             </div>
                         </div>
-                        <div class="flex items-center gap-1 flex-shrink-0">
+                        <div class="flex items-center gap-1 flex-shrink-0" (click)="$event.stopPropagation()">
                             <button (click)="openEditCardModal(card)"
                                 class="w-6 h-6 flex items-center justify-center hover:bg-dash-accent/10 rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors"
                                 title="Bearbeiten">
@@ -292,6 +318,11 @@
                         </div>
                     </div>
                     }
+                </div>
+                } @else if (searchQuery() && flashcardsService.cards().length > 0) {
+                <div class="flex-1 flex flex-col items-center justify-center text-dash-text-dim text-xs gap-2">
+                    <span class="material-symbols-sharp text-2xl opacity-50">search_off</span>
+                    <span>Keine Karten gefunden</span>
                 </div>
                 } @else {
                 <div class="flex-1 flex items-center justify-center text-dash-text-dim opacity-50 text-xs">

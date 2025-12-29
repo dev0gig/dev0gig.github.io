@@ -252,6 +252,14 @@ export class FlashcardsService {
         this._currentIndex.set(0);
     }
 
+    goToCard(cardId: string): void {
+        const queue = this.studyQueue();
+        const index = queue.findIndex(c => c.id === cardId);
+        if (index !== -1) {
+            this._currentIndex.set(index);
+        }
+    }
+
     // --- Persistence ---
 
     private loadCards(): Flashcard[] {
