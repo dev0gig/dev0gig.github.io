@@ -350,6 +350,10 @@ export class FlashcardsComponent {
 
     // --- Helpers ---
     private scrollToCard(cardId: string): void {
+        // Only scroll on desktop (md breakpoint = 768px and above)
+        // On mobile, just highlight the card without scrolling
+        if (window.innerWidth < 768) return;
+
         const element = document.getElementById(`card-list-${cardId}`);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
