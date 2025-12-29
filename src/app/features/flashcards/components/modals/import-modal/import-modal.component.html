@@ -1,0 +1,55 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-dash-text">Deck importieren</h2>
+            <button (click)="close()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+
+        <div class="text-xs text-dash-text-dim space-y-1">
+            <p>Importiere eine .txt Datei mit Karten im Format:</p>
+            <code class="text-dash-accent block bg-dash-bg p-2 rounded-sm">Vorderseite;Rückseite</code>
+            <p class="mt-2">Der Dateiname wird als Deck-Name verwendet.</p>
+        </div>
+
+        <!-- File Input -->
+        <label
+            class="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-dash-border rounded-sm hover:border-dash-accent cursor-pointer transition-colors bg-dash-bg/50">
+            <span class="material-symbols-sharp text-4xl text-dash-text-dim">upload_file</span>
+            <span class="text-sm text-dash-text-dim">Klicke zum Auswählen einer .txt Datei</span>
+            <input #fileInput type="file" accept=".txt" (change)="onFileSelected($event)" class="hidden">
+        </label>
+
+        @if (selectedFileName()) {
+        <div class="flex items-center gap-2 bg-dash-bg p-3 rounded-sm">
+            <span class="material-symbols-sharp text-dash-accent">description</span>
+            <span class="text-sm text-dash-text flex-1 truncate">{{ selectedFileName() }}</span>
+            <button (click)="clearSelectedFile()" class="text-dash-text-dim hover:text-red-500 transition-colors">
+                <span class="material-symbols-sharp text-sm">close</span>
+            </button>
+        </div>
+        }
+
+        @if (lastImportResult()) {
+        <div class="text-sm">
+            <span class="text-green-400">{{ lastImportResult()!.success }} Karten hinzugefügt</span>
+            @if (lastImportResult()!.failed > 0) {
+            <span class="text-red-400 ml-2">{{ lastImportResult()!.failed }} Zeilen nicht erkannt</span>
+            }
+        </div>
+        }
+
+        <div class="flex justify-end gap-2">
+            <button (click)="close()"
+                class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                Schließen
+            </button>
+            <button (click)="executeImport()" [disabled]="!selectedFileContent()"
+                class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                Importieren
+            </button>
+        </div>
+    </div>
+</div>

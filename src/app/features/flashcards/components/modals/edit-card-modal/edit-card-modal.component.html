@@ -1,0 +1,35 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-dash-text">Karte bearbeiten</h2>
+            <button (click)="close()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <div class="space-y-1">
+                <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Vorderseite</label>
+                <textarea [ngModel]="frontInput()" (ngModelChange)="frontInput.set($event)"
+                    class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Rückseite</label>
+                <textarea [ngModel]="backInput()" (ngModelChange)="backInput.set($event)"
+                    class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-2">
+            <button (click)="close()"
+                class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                Abbrechen
+            </button>
+            <button (click)="save()" [disabled]="!frontInput() || !backInput()"
+                class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                Speichern
+            </button>
+        </div>
+    </div>
+</div>

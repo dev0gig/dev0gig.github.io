@@ -1,84 +1,84 @@
-import { Component, inject, signal, ViewChild, ElementRef, AfterViewInit, OnDestroy, HostListener, effect } from '@angular/core';
+import { Component, inject, signal, ViewChild, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { SidebarService } from '../../shared/sidebar.service';
 import { FlashcardsService } from './flashcards.service';
+import { Flashcard, Deck } from './flashcard.model';
+
+// Components
+import { DrawingCanvasComponent } from './components/drawing-canvas/drawing-canvas.component';
+import { EditCardModalComponent } from './components/modals/edit-card-modal/edit-card-modal.component';
+import { EditDeckModalComponent } from './components/modals/edit-deck-modal/edit-deck-modal.component';
+import { NewCardModalComponent } from './components/modals/new-card-modal/new-card-modal.component';
+import { NewDeckModalComponent } from './components/modals/new-deck-modal/new-deck-modal.component';
+import { ImportModalComponent } from './components/modals/import-modal/import-modal.component';
+import { SaveDeckModalComponent } from './components/modals/save-deck-modal/save-deck-modal.component';
+import { SettingsModalComponent } from './components/modals/settings-modal/settings-modal.component';
+import { ToastComponent } from './components/toast/toast.component';
 
 @Component({
     selector: 'app-flashcards',
     standalone: true,
-    imports: [CommonModule, FormsModule, AppsLauncher],
+    imports: [
+        CommonModule,
+        FormsModule,
+        AppsLauncher,
+        DrawingCanvasComponent,
+        EditCardModalComponent,
+        EditDeckModalComponent,
+        NewCardModalComponent,
+        NewDeckModalComponent,
+        ImportModalComponent,
+        SaveDeckModalComponent,
+        SettingsModalComponent,
+        ToastComponent
+    ],
     templateUrl: './flashcards.component.html'
 })
-export class FlashcardsComponent implements AfterViewInit, OnDestroy {
+export class FlashcardsComponent {
     protected flashcardsService = inject(FlashcardsService);
+    private sidebarService = inject(SidebarService);
+
+    @ViewChild(DrawingCanvasComponent) drawingCanvas!: DrawingCanvasComponent;
+    @ViewChild(ImportModalComponent) importModal!: ImportModalComponent;
+
+    // UI State
+    isFlipped = signal<boolean>(false);
+    focusMode = signal<boolean>(false);
+
+    // Modal visibility
+    showSettingsModal = signal<boolean>(false);
+    showImportModal = signal<boolean>(false);
+    showSaveDeckModal = signal<boolean>(false);
+    showEditCardModal = signal<boolean>(false);
+    showNewDeckModal = signal<boolean>(false);
+    showNewCardModal = signal<boolean>(false);
+    showEditDeckModal = signal<boolean>(false);
+
+    // Editing state
+    editingCard = signal<Flashcard | null>(null);
+    editingDeck = signal<Deck | null>(null);
+
+    // Toast
+    toastMessage = signal<string>('');
+    toastType = signal<'success' | 'error'>('success');
 
     constructor() {
         effect(() => {
             const currentCard = this.flashcardsService.currentCard();
             if (currentCard) {
-                // Wait for DOM update
                 setTimeout(() => this.scrollToCard(currentCard.id), 100);
             }
         });
     }
 
-    private sidebarService = inject(SidebarService);
-
-    @ViewChild('drawingCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
-    @ViewChild('newDeckInput') newDeckInputRef!: ElementRef<HTMLInputElement>;
-    @ViewChild('newCardInput') newCardInputRef!: ElementRef<HTMLTextAreaElement>;
-    private ctx: CanvasRenderingContext2D | null = null;
-    private isDrawing = false;
-    private lastX = 0;
-    private lastY = 0;
-
-    // UI State
-    isFlipped = signal<boolean>(false);
-    showSettingsModal = signal<boolean>(false);
-    showImportModal = signal<boolean>(false);
-    showSaveDeckModal = signal<boolean>(false);
-    showEditModal = signal<boolean>(false);
-    showNewDeckModal = signal<boolean>(false);
-    showNewCardModal = signal<boolean>(false);
-    showEditDeckModal = signal<boolean>(false);
-    focusMode = signal<boolean>(false); // Focus mode hides sidebars on desktop
-    importText = signal<string>('');
-    deckNameInput = signal<string>('');
-    saveDeckName = signal<string>('');
-    exportDeckId = signal<string>('');
-    selectedFileName = signal<string>('');
-    selectedFileContent = signal<string>('');
-    editFrontInput = signal<string>('');
-    editBackInput = signal<string>('');
-    editingCardId = signal<string | null>(null);
-    newDeckName = signal<string>('');
-    newCardFront = signal<string>('');
-    newCardBack = signal<string>('');
-    editingDeckId = signal<string | null>(null);
-    editDeckName = signal<string>('');
-    lastImportResult = signal<{ success: number; failed: number } | null>(null);
-    toastMessage = signal<string>('');
-    toastType = signal<'success' | 'error'>('success');
-
-
-    // Touch event handlers bound to instance
-    private boundTouchStart = this.handleTouchStart.bind(this);
-    private boundTouchMove = this.handleTouchMove.bind(this);
-    private boundTouchEnd = this.handleTouchEnd.bind(this);
-
     // --- Keyboard Shortcuts ---
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent): void {
-        // Don't trigger shortcuts when typing in input fields
         const target = event.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
-        // Don't trigger if modals are open
         if (this.showSettingsModal() || this.showImportModal()) return;
-
-        // No card to interact with
         if (!this.flashcardsService.currentCard()) return;
 
         switch (event.code) {
@@ -97,134 +97,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    ngAfterViewInit(): void {
-
-        this.initCanvas();
-    }
-
-    ngOnDestroy(): void {
-        this.removeCanvasListeners();
-    }
-
-
-    // --- Canvas Setup ---
-
-    private initCanvas(): void {
-        if (!this.canvasRef?.nativeElement) return;
-        const canvas = this.canvasRef.nativeElement;
-        this.ctx = canvas.getContext('2d');
-
-        if (this.ctx) {
-            this.ctx.strokeStyle = '#e4e4e7';
-            this.ctx.lineWidth = 5;
-            this.ctx.lineCap = 'round';
-            this.ctx.lineJoin = 'round';
-        }
-
-        // Add touch event listeners with passive: false for preventDefault
-        canvas.addEventListener('touchstart', this.boundTouchStart, { passive: false });
-        canvas.addEventListener('touchmove', this.boundTouchMove, { passive: false });
-        canvas.addEventListener('touchend', this.boundTouchEnd, { passive: false });
-    }
-
-    private removeCanvasListeners(): void {
-        if (!this.canvasRef?.nativeElement) return;
-        const canvas = this.canvasRef.nativeElement;
-        canvas.removeEventListener('touchstart', this.boundTouchStart);
-        canvas.removeEventListener('touchmove', this.boundTouchMove);
-        canvas.removeEventListener('touchend', this.boundTouchEnd);
-    }
-
-    // --- Mouse Events ---
-
-    onMouseDown(event: MouseEvent): void {
-        this.isDrawing = true;
-        const canvas = this.canvasRef.nativeElement;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        this.lastX = (event.clientX - rect.left) * scaleX;
-        this.lastY = (event.clientY - rect.top) * scaleY;
-    }
-
-    onMouseMove(event: MouseEvent): void {
-        if (!this.isDrawing || !this.ctx) return;
-        const canvas = this.canvasRef.nativeElement;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const x = (event.clientX - rect.left) * scaleX;
-        const y = (event.clientY - rect.top) * scaleY;
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.lastX, this.lastY);
-        this.ctx.lineTo(x, y);
-        this.ctx.stroke();
-
-        this.lastX = x;
-        this.lastY = y;
-    }
-
-    onMouseUp(): void {
-        this.isDrawing = false;
-    }
-
-    onMouseLeave(): void {
-        this.isDrawing = false;
-    }
-
-    // --- Touch Events ---
-
-    private handleTouchStart(event: TouchEvent): void {
-        event.preventDefault();
-        if (event.touches.length !== 1) return;
-
-        this.isDrawing = true;
-        const touch = event.touches[0];
-        const canvas = this.canvasRef.nativeElement;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        this.lastX = (touch.clientX - rect.left) * scaleX;
-        this.lastY = (touch.clientY - rect.top) * scaleY;
-    }
-
-    private handleTouchMove(event: TouchEvent): void {
-        event.preventDefault();
-        if (!this.isDrawing || !this.ctx || event.touches.length !== 1) return;
-
-        const touch = event.touches[0];
-        const canvas = this.canvasRef.nativeElement;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const x = (touch.clientX - rect.left) * scaleX;
-        const y = (touch.clientY - rect.top) * scaleY;
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.lastX, this.lastY);
-        this.ctx.lineTo(x, y);
-        this.ctx.stroke();
-
-        this.lastX = x;
-        this.lastY = y;
-    }
-
-    private handleTouchEnd(event: TouchEvent): void {
-        event.preventDefault();
-        this.isDrawing = false;
-    }
-
-    // --- Canvas Actions ---
-
-    clearCanvas(): void {
-        if (!this.ctx || !this.canvasRef?.nativeElement) return;
-        const canvas = this.canvasRef.nativeElement;
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
     // --- Card Actions ---
-
     flipCard(): void {
         this.isFlipped.update(v => !v);
     }
@@ -232,21 +105,20 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     nextCard(): void {
         this.flashcardsService.goToNext();
         this.isFlipped.set(false);
-        this.clearCanvas();
+        this.drawingCanvas?.clear();
     }
 
     prevCard(): void {
         this.flashcardsService.goToPrevious();
         this.isFlipped.set(false);
-        this.clearCanvas();
+        this.drawingCanvas?.clear();
     }
 
     // --- Study Mode ---
-
     toggleRandomMode(): void {
         this.flashcardsService.toggleRandomMode();
         this.isFlipped.set(false);
-        this.clearCanvas();
+        this.drawingCanvas?.clear();
     }
 
     toggleReversedMode(): void {
@@ -254,9 +126,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         this.isFlipped.set(false);
     }
 
-    // --- Modals ---
-
-
+    // --- UI Toggles ---
     toggleSettingsModal(): void {
         this.showSettingsModal.update(v => !v);
     }
@@ -269,49 +139,21 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         this.focusMode.update(v => !v);
     }
 
-    openImportModal(): void {
-        this.importText.set('');
-        this.deckNameInput.set('');
-        this.lastImportResult.set(null);
-        this.showImportModal.set(true);
-        this.showSettingsModal.set(false);
+    // --- Edit Card Modal ---
+    openEditCardModal(card: Flashcard): void {
+        this.editingCard.set(card);
+        this.showEditCardModal.set(true);
     }
 
-    closeImportModal(): void {
-        this.showImportModal.set(false);
+    closeEditCardModal(): void {
+        this.showEditCardModal.set(false);
+        this.editingCard.set(null);
     }
 
-    openSaveDeckModal(): void {
-        this.saveDeckName.set('');
-        this.showSaveDeckModal.set(true);
-    }
-
-    closeSaveDeckModal(): void {
-        this.showSaveDeckModal.set(false);
-    }
-
-    openEditCardModal(card: any): void {
-        this.editingCardId.set(card.id);
-        this.editFrontInput.set(card.front);
-        this.editBackInput.set(card.back);
-        this.showEditModal.set(true);
-    }
-
-    closeEditModal(): void {
-        this.showEditModal.set(false);
-        this.editingCardId.set(null);
-    }
-
-    saveCardEdit(): void {
-        const id = this.editingCardId();
-        const front = this.editFrontInput().trim();
-        const back = this.editBackInput().trim();
-
-        if (id && front && back) {
-            this.flashcardsService.updateCard(id, front, back);
-            this.showToast('Karte aktualisiert', 'success');
-            this.closeEditModal();
-        }
+    saveCardEdit(data: { id: string; front: string; back: string }): void {
+        this.flashcardsService.updateCard(data.id, data.front, data.back);
+        this.showToast('Karte aktualisiert', 'success');
+        this.closeEditCardModal();
     }
 
     deleteCard(id: string): void {
@@ -321,12 +163,93 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    // --- Deck Management ---
+    // --- Edit Deck Modal ---
+    openEditDeckModal(deck: Deck): void {
+        this.editingDeck.set(deck);
+        this.showEditDeckModal.set(true);
+    }
 
+    closeEditDeckModal(): void {
+        this.showEditDeckModal.set(false);
+        this.editingDeck.set(null);
+    }
+
+    saveEditDeck(data: { id: string; name: string }): void {
+        this.flashcardsService.renameDeck(data.id, data.name);
+        this.showToast('Deck umbenannt', 'success');
+        this.closeEditDeckModal();
+    }
+
+    // --- New Deck Modal ---
+    openNewDeckModal(): void {
+        this.showNewDeckModal.set(true);
+    }
+
+    closeNewDeckModal(): void {
+        this.showNewDeckModal.set(false);
+    }
+
+    createDeck(name: string): void {
+        const deck = this.flashcardsService.createEmptyDeck(name);
+        if (deck) {
+            this.showToast(`Deck "${name}" erstellt!`, 'success');
+            this.closeNewDeckModal();
+        }
+    }
+
+    // --- New Card Modal ---
+    openNewCardModal(): void {
+        this.showNewCardModal.set(true);
+    }
+
+    closeNewCardModal(): void {
+        this.showNewCardModal.set(false);
+    }
+
+    createCard(data: { front: string; back: string }): void {
+        this.flashcardsService.addCard(data.front, data.back);
+        this.showToast('Karte erstellt!', 'success');
+        this.closeNewCardModal();
+    }
+
+    // --- Import Modal ---
+    openImportModal(): void {
+        this.showImportModal.set(true);
+        this.showSettingsModal.set(false);
+    }
+
+    closeImportModal(): void {
+        this.showImportModal.set(false);
+    }
+
+    executeImport(data: { content: string; deckName: string }): void {
+        const result = this.flashcardsService.importFromText(data.content, data.deckName || undefined);
+        this.importModal?.setImportResult(result);
+        this.showToast(`Deck "${data.deckName}" mit ${result.success} Karten importiert!`, 'success');
+    }
+
+    // --- Save Deck Modal ---
+    openSaveDeckModal(): void {
+        this.showSaveDeckModal.set(true);
+    }
+
+    closeSaveDeckModal(): void {
+        this.showSaveDeckModal.set(false);
+    }
+
+    saveDeck(name: string): void {
+        const deck = this.flashcardsService.saveDeck(name);
+        if (deck) {
+            this.showToast(`Deck "${name}" gespeichert!`, 'success');
+            this.closeSaveDeckModal();
+        }
+    }
+
+    // --- Deck Management ---
     loadDeck(deckId: string): void {
         this.flashcardsService.loadDeck(deckId);
         this.isFlipped.set(false);
-        this.clearCanvas();
+        this.drawingCanvas?.clear();
         this.showToast('Deck geladen!', 'success');
     }
 
@@ -337,144 +260,18 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    executeSaveDeck(): void {
-        const name = this.saveDeckName().trim();
-        if (!name) return;
-
-        const deck = this.flashcardsService.saveDeck(name);
-        if (deck) {
-            this.showToast(`Deck "${name}" gespeichert!`, 'success');
-            this.closeSaveDeckModal();
-        }
-    }
-
-    // --- New Deck Modal ---
-    openNewDeckModal(): void {
-        this.newDeckName.set('');
-        this.showNewDeckModal.set(true);
-        setTimeout(() => this.newDeckInputRef?.nativeElement?.focus(), 50);
-    }
-
-    closeNewDeckModal(): void {
-        this.showNewDeckModal.set(false);
-    }
-
-    executeCreateDeck(): void {
-        const name = this.newDeckName().trim();
-        if (!name) return;
-
-        const deck = this.flashcardsService.createEmptyDeck(name);
-        if (deck) {
-            this.showToast(`Deck "${name}" erstellt!`, 'success');
-            this.closeNewDeckModal();
-        }
-    }
-
-    // --- Edit Deck Modal ---
-    openEditDeckModal(deck: any): void {
-        this.editingDeckId.set(deck.id);
-        this.editDeckName.set(deck.name);
-        this.showEditDeckModal.set(true);
-    }
-
-    closeEditDeckModal(): void {
-        this.showEditDeckModal.set(false);
-        this.editingDeckId.set(null);
-    }
-
-    saveEditDeck(): void {
-        const id = this.editingDeckId();
-        const name = this.editDeckName().trim();
-
-        if (id && name) {
-            this.flashcardsService.renameDeck(id, name);
-            this.showToast('Deck umbenannt', 'success');
-            this.closeEditDeckModal();
-        }
-    }
-
-    // --- New Card Modal ---
-    openNewCardModal(): void {
-        this.newCardFront.set('');
-        this.newCardBack.set('');
-        this.showNewCardModal.set(true);
-        setTimeout(() => this.newCardInputRef?.nativeElement?.focus(), 50);
-    }
-
-    closeNewCardModal(): void {
-        this.showNewCardModal.set(false);
-    }
-
-    executeCreateCard(): void {
-        const front = this.newCardFront().trim();
-        const back = this.newCardBack().trim();
-
-        if (front && back) {
-            this.flashcardsService.addCard(front, back);
-            this.showToast('Karte erstellt!', 'success');
-            this.closeNewCardModal();
-        }
-    }
-
-    // --- Import/Export ---
-
-    onFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        if (!input.files?.length) return;
-
-        const file = input.files[0];
-        // Extract filename without extension as deck name
-        const fileName = file.name.replace(/\.txt$/i, '');
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            this.selectedFileName.set(fileName);
-            this.selectedFileContent.set(reader.result as string);
-        };
-        reader.readAsText(file);
-    }
-
-    clearSelectedFile(): void {
-        this.selectedFileName.set('');
-        this.selectedFileContent.set('');
-    }
-
-    executeFileImport(): void {
-        const content = this.selectedFileContent().trim();
-        const deckName = this.selectedFileName().trim();
-        if (!content) return;
-
-        const result = this.flashcardsService.importFromText(content, deckName || undefined);
-        this.lastImportResult.set(result);
-        this.showToast(`Deck "${deckName}" mit ${result.success} Karten importiert!`, 'success');
-    }
-
-    executeImport(): void {
-        const text = this.importText().trim();
-        if (!text) return;
-
-        const deckName = this.deckNameInput().trim() || undefined;
-        const result = this.flashcardsService.importFromText(text, deckName);
-        this.lastImportResult.set(result);
-        this.showToast(`Import: ${result.success} Karten hinzugefügt`, 'success');
-    }
-
-
-    exportCards(): void {
-        const deckId = this.exportDeckId() || undefined;
-        const text = this.flashcardsService.exportToText(deckId);
+    // --- Export ---
+    exportCards(deckId: string): void {
+        const text = this.flashcardsService.exportToText(deckId || undefined);
         if (!text) {
             this.showToast('Keine Karten zum Exportieren.', 'error');
             return;
         }
 
-        // Determine filename: use deck name if exporting a specific deck, otherwise 'flashcards'
         let filename = 'flashcards';
         if (deckId) {
             const deck = this.flashcardsService.decks().find(d => d.id === deckId);
-            if (deck) {
-                filename = deck.name;
-            }
+            if (deck) filename = deck.name;
         }
 
         const blob = new Blob([text], { type: 'text/plain' });
@@ -487,28 +284,7 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         this.showToast('Export gestartet!', 'success');
     }
 
-    private scrollToCard(cardId: string): void {
-        const element = document.getElementById(`card-list-${cardId}`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    }
-
-
-    async copyExport(): Promise<void> {
-        try {
-            const deckId = this.exportDeckId() || undefined;
-            const text = this.flashcardsService.exportToText(deckId);
-            await navigator.clipboard.writeText(text);
-            this.showToast('In Zwischenablage kopiert!', 'success');
-        } catch {
-            this.showToast('Kopieren fehlgeschlagen.', 'error');
-        }
-
-    }
-
     // --- Clear ---
-
     clearAllCards(): void {
         if (confirm('Alle Karten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
             this.flashcardsService.clearAllCards();
@@ -517,7 +293,6 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     }
 
     // --- Toast ---
-
     private showToast(message: string, type: 'success' | 'error'): void {
         this.toastMessage.set(message);
         this.toastType.set(type);
@@ -526,5 +301,13 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
 
     hideToast(): void {
         this.toastMessage.set('');
+    }
+
+    // --- Helpers ---
+    private scrollToCard(cardId: string): void {
+        const element = document.getElementById(`card-list-${cardId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     }
 }

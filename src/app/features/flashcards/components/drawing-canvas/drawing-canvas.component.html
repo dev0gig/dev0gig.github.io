@@ -1,0 +1,19 @@
+<div class="flex flex-col gap-2">
+    <div class="flex items-center justify-between">
+        <span class="text-xs text-dash-text-dim uppercase tracking-wider flex items-center gap-1">
+            <span class="material-symbols-sharp text-sm">draw</span>
+            Zeichenbereich
+        </span>
+        <button (click)="clear()"
+            class="px-3 py-1 bg-dash-bg hover:bg-dash-accent rounded-sm text-xs text-dash-text-dim hover:text-white transition-all flex items-center gap-1">
+            <span class="material-symbols-sharp text-sm">delete</span>
+            Löschen
+        </button>
+    </div>
+    <div class="border border-dash-border rounded-sm overflow-hidden">
+        <canvas #canvas width="900" height="500" class="w-full cursor-crosshair touch-none canvas-dotted"
+            (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp()"
+            (mouseleave)="onMouseLeave()">
+        </canvas>
+    </div>
+</div>

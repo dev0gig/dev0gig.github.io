@@ -1,0 +1,53 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-dash-text">Flashcard Einstellungen</h2>
+            <button (click)="close()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <div class="space-y-1">
+                <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Export Quelle</label>
+                <select [ngModel]="exportDeckId()" (ngModelChange)="exportDeckId.set($event)"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
+                    <option value="">Alle geladenen Karten</option>
+                    @for (deck of decks(); track deck.id) {
+                    <option [value]="deck.id">{{ deck.name }}</option>
+                    }
+                </select>
+            </div>
+
+            <button (click)="onExport()"
+                class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                <span class="material-symbols-sharp">download</span>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">Export Karten</span>
+                    <span class="text-xs opacity-70">Download als .txt (Front;Back)</span>
+                </div>
+            </button>
+
+            <button (click)="onOpenImport()"
+                class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                <span class="material-symbols-sharp">upload</span>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">Import Karten</span>
+                    <span class="text-xs opacity-70">Text-Format importieren</span>
+                </div>
+            </button>
+
+            <div class="border-t border-dash-border my-2"></div>
+
+            <button (click)="onClearAll()"
+                class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-red-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
+                <span class="material-symbols-sharp">delete_forever</span>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">Alle Karten löschen</span>
+                    <span class="text-xs opacity-70">Permanent entfernen</span>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>

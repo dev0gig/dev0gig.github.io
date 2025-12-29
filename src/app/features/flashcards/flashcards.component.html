@@ -12,7 +12,7 @@
                 <div class="hidden sm:flex gap-3 mr-2">
                     <span>KARTEN <span class="text-white">{{ flashcardsService.totalCards() }}</span></span>
                 </div>
-                <!-- Focus Mode Toggle (hidden on mobile, only for desktop) -->
+                <!-- Focus Mode Toggle -->
                 <button (click)="toggleFocusMode()"
                     [class]="focusMode() ? 'bg-dash-accent text-white' : 'bg-dash-bg text-dash-text-dim hover:bg-dash-accent hover:text-white'"
                     class="hidden md:flex w-10 h-10 rounded-sm items-center justify-center cursor-pointer transition-all"
@@ -32,69 +32,9 @@
             </div>
         </header>
 
-        <!-- Settings Modal -->
-        @if (showSettingsModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleSettingsModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Flashcard Einstellungen</h2>
-                    <button (click)="toggleSettingsModal()"
-                        class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <div class="space-y-1">
-                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Export
-                            Quelle</label>
-                        <select [(ngModel)]="exportDeckId"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text p-2 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors">
-                            <option value="">Alle geladenen Karten</option>
-                            @for (deck of flashcardsService.decks(); track deck.id) {
-                            <option [value]="deck.id">{{ deck.name }}</option>
-                            }
-                        </select>
-                    </div>
-
-                    <button (click)="exportCards()"
-                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
-                        <span class="material-symbols-sharp">download</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Export Karten</span>
-                            <span class="text-xs opacity-70">Download als .txt (Front;Back)</span>
-                        </div>
-                    </button>
-
-                    <button (click)="openImportModal()"
-                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
-                        <span class="material-symbols-sharp">upload</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Import Karten</span>
-                            <span class="text-xs opacity-70">Text-Format importieren</span>
-                        </div>
-                    </button>
-
-                    <div class="border-t border-dash-border my-2"></div>
-
-                    <button (click)="clearAllCards()"
-                        class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-red-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
-                        <span class="material-symbols-sharp">delete_forever</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Alle Karten löschen</span>
-                            <span class="text-xs opacity-70">Permanent entfernen</span>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-        }
-
         <!-- Left Sidebar -->
         <aside [class]="focusMode() ? 'md:col-span-12 md:order-2' : 'md:col-span-3 lg:col-span-2 md:order-1'"
-            class="flex flex-col gap-4 order-2 h-[calc(100vh-8rem)] sticky top-20">
+            class="flex flex-col gap-4 order-2 md:order-1 h-[calc(100vh-8rem)] sticky top-20">
             <!-- Study Mode Toggle -->
             <div class="gradient-card p-4 rounded-sm flex-shrink-0">
                 <div class="flex items-center gap-2 mb-3">
@@ -169,7 +109,7 @@
 
         <!-- Main Content Area -->
         <main [class]="focusMode() ? 'md:col-span-12' : 'md:col-span-6 lg:col-span-7 md:order-2'"
-            class="flex flex-col gap-4 order-1">
+            class="flex flex-col gap-4 order-1 md:order-2">
             @if (flashcardsService.currentCard()) {
             <div class="gradient-card p-6 rounded-sm flex flex-col gap-4">
                 <!-- Progress -->
@@ -196,26 +136,7 @@
                 </div>
 
                 <!-- Drawing Canvas -->
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-dash-text-dim uppercase tracking-wider flex items-center gap-1">
-                            <span class="material-symbols-sharp text-sm">draw</span>
-                            Zeichenbereich
-                        </span>
-                        <button (click)="clearCanvas()"
-                            class="px-3 py-1 bg-dash-bg hover:bg-dash-accent rounded-sm text-xs text-dash-text-dim hover:text-white transition-all flex items-center gap-1">
-                            <span class="material-symbols-sharp text-sm">delete</span>
-                            Löschen
-                        </button>
-                    </div>
-                    <div class="border border-dash-border rounded-sm overflow-hidden">
-                        <canvas #drawingCanvas width="900" height="500"
-                            class="w-full cursor-crosshair touch-none canvas-dotted" (mousedown)="onMouseDown($event)"
-                            (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp()" (mouseleave)="onMouseLeave()">
-                        </canvas>
-                    </div>
-                </div>
-
+                <app-drawing-canvas></app-drawing-canvas>
 
                 <!-- Controls -->
                 <div class="flex items-center justify-between gap-4">
@@ -261,8 +182,8 @@
         </main>
 
         <!-- Right Sidebar: Card List -->
-        <aside [class]="focusMode() ? 'hidden' : 'md:flex md:col-span-3 lg:col-span-3'"
-            class="hidden flex-col gap-4 order-3 h-[calc(100vh-8rem)] sticky top-20">
+        <aside [class]="focusMode() ? 'hidden' : 'flex md:col-span-3 lg:col-span-3 md:order-3'"
+            class="flex flex-col gap-4 order-3 md:order-3 h-[calc(100vh-8rem)] sticky top-20">
             <div class="gradient-card p-4 rounded-sm flex flex-col h-full">
                 <div class="flex items-center gap-2 mb-3 flex-shrink-0">
                     <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
@@ -281,7 +202,7 @@
                 <div class="flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar pr-1">
                     @for (card of flashcardsService.cards(); track card.id) {
                     <div id="card-list-{{ card.id }}"
-                        [class]="flashcardsService.currentCard()?.id === card.id ? 'border-dash-accent bg-dash-accent/5' : 'bg-dash-bg border-dash-border'"
+                        [class]="flashcardsService.currentCard()!.id === card.id ? 'border-dash-accent bg-dash-accent/5' : 'bg-dash-bg border-dash-border'"
                         class="group border hover:border-dash-accent rounded-sm h-14 p-2 transition-all flex items-center justify-between gap-2">
                         <div class="flex flex-col min-w-0 flex-1">
                             <div class="text-xs font-bold text-dash-text truncate" title="{{ card.front }}">
@@ -305,8 +226,6 @@
                         </div>
                     </div>
                     }
-
-
                 </div>
                 } @else {
                 <div class="flex-1 flex items-center justify-center text-dash-text-dim opacity-50 text-xs">
@@ -316,274 +235,49 @@
             </div>
         </aside>
 
-        <!-- Edit Card Modal -->
-        @if (showEditModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeEditModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Karte bearbeiten</h2>
-                    <button (click)="closeEditModal()" class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Vorderseite</label>
-                        <textarea [(ngModel)]="editFrontInput"
-                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Rückseite</label>
-                        <textarea [(ngModel)]="editBackInput"
-                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 mt-2">
-                    <button (click)="closeEditModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Abbrechen
-                    </button>
-                    <button (click)="saveCardEdit()" [disabled]="!editFrontInput() || !editBackInput()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Speichern
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- Modals -->
+        @if (showSettingsModal()) {
+        <app-settings-modal [decks]="flashcardsService.decks()" (closed)="toggleSettingsModal()"
+            (openImport)="openImportModal()" (exportCards)="exportCards($event)" (clearAll)="clearAllCards()">
+        </app-settings-modal>
         }
 
-
-
-        <!-- Import Modal -->
-        @if (showImportModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeImportModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Deck importieren</h2>
-                    <button (click)="closeImportModal()" class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <div class="text-xs text-dash-text-dim space-y-1">
-                    <p>Importiere eine .txt Datei mit Karten im Format:</p>
-                    <code class="text-dash-accent block bg-dash-bg p-2 rounded-sm">Vorderseite;Rückseite</code>
-                    <p class="mt-2">Der Dateiname wird als Deck-Name verwendet.</p>
-                </div>
-
-                <!-- File Input -->
-                <label
-                    class="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-dash-border rounded-sm hover:border-dash-accent cursor-pointer transition-colors bg-dash-bg/50">
-                    <span class="material-symbols-sharp text-4xl text-dash-text-dim">upload_file</span>
-                    <span class="text-sm text-dash-text-dim">Klicke zum Auswählen einer .txt Datei</span>
-                    <input #fileInput type="file" accept=".txt" (change)="onFileSelected($event)" class="hidden">
-                </label>
-
-                @if (selectedFileName()) {
-                <div class="flex items-center gap-2 bg-dash-bg p-3 rounded-sm">
-                    <span class="material-symbols-sharp text-dash-accent">description</span>
-                    <span class="text-sm text-dash-text flex-1 truncate">{{ selectedFileName() }}</span>
-                    <button (click)="clearSelectedFile()"
-                        class="text-dash-text-dim hover:text-red-500 transition-colors">
-                        <span class="material-symbols-sharp text-sm">close</span>
-                    </button>
-                </div>
-                }
-
-                @if (lastImportResult()) {
-                <div class="text-sm">
-                    <span class="text-green-400">{{ lastImportResult()!.success }} Karten hinzugefügt</span>
-                    @if (lastImportResult()!.failed > 0) {
-                    <span class="text-red-400 ml-2">{{ lastImportResult()!.failed }} Zeilen nicht erkannt</span>
-                    }
-                </div>
-                }
-
-                <div class="flex justify-end gap-2">
-                    <button (click)="closeImportModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Schließen
-                    </button>
-                    <button (click)="executeFileImport()" [disabled]="!selectedFileContent()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Importieren
-                    </button>
-                </div>
-            </div>
-        </div>
+        @if (showEditCardModal() && editingCard()) {
+        <app-edit-card-modal [card]="editingCard()!" (closed)="closeEditCardModal()" (saved)="saveCardEdit($event)">
+        </app-edit-card-modal>
         }
 
-
-        <!-- Save Deck Modal -->
-        @if (showSaveDeckModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeSaveDeckModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Deck speichern</h2>
-                    <button (click)="closeSaveDeckModal()"
-                        class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <p class="text-sm text-dash-text-dim">Speichere die aktuellen {{ flashcardsService.totalCards() }}
-                    Karten als Deck.</p>
-
-                <input [(ngModel)]="saveDeckName" type="text" placeholder="Deck-Name eingeben..."
-                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors"
-                    (keydown.enter)="executeSaveDeck()">
-
-                <div class="flex justify-end gap-2">
-                    <button (click)="closeSaveDeckModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Abbrechen
-                    </button>
-                    <button (click)="executeSaveDeck()" [disabled]="!saveDeckName()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Speichern
-                    </button>
-                </div>
-            </div>
-        </div>
+        @if (showEditDeckModal() && editingDeck()) {
+        <app-edit-deck-modal [deck]="editingDeck()!" (closed)="closeEditDeckModal()" (saved)="saveEditDeck($event)">
+        </app-edit-deck-modal>
         }
 
-        <!-- New Deck Modal -->
-        @if (showNewDeckModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeNewDeckModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Neues Deck erstellen</h2>
-                    <button (click)="closeNewDeckModal()" class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <input #newDeckInput [(ngModel)]="newDeckName" type="text" placeholder="Deck-Name eingeben..."
-                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors"
-                    (keydown.enter)="executeCreateDeck()">
-
-                <div class="flex justify-end gap-2">
-                    <button (click)="closeNewDeckModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Abbrechen
-                    </button>
-                    <button (click)="executeCreateDeck()" [disabled]="!newDeckName()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Erstellen
-                    </button>
-                </div>
-            </div>
-        </div>
-        }
-
-        <!-- Edit Deck Modal -->
-        @if (showEditDeckModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeEditDeckModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Deck bearbeiten</h2>
-                    <button (click)="closeEditDeckModal()"
-                        class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Deck-Name</label>
-                    <input [(ngModel)]="editDeckName" type="text"
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors"
-                        (keydown.enter)="saveEditDeck()">
-                </div>
-
-                <div class="flex justify-end gap-2">
-                    <button (click)="closeEditDeckModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Abbrechen
-                    </button>
-                    <button (click)="saveEditDeck()" [disabled]="!editDeckName()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Speichern
-                    </button>
-                </div>
-            </div>
-        </div>
-        }
-
-        <!-- New Card Modal -->
         @if (showNewCardModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeNewCardModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">Neue Karte erstellen</h2>
-                    <button (click)="closeNewCardModal()" class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Vorderseite</label>
-                        <textarea #newCardInput [(ngModel)]="newCardFront"
-                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Rückseite</label>
-                        <textarea [(ngModel)]="newCardBack"
-                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 mt-2">
-                    <button (click)="closeNewCardModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Abbrechen
-                    </button>
-                    <button (click)="executeCreateCard()" [disabled]="!newCardFront() || !newCardBack()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Erstellen
-                    </button>
-                </div>
-            </div>
-        </div>
+        <app-new-card-modal (closed)="closeNewCardModal()" (created)="createCard($event)">
+        </app-new-card-modal>
         }
 
-        <!-- Toast Notification -->
-        @if (toastMessage()) {
-        <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">
-            <div [class]="toastType() === 'success'
-                ? 'bg-gradient-to-r from-green-600 to-emerald-500 border-2 border-green-400/50'
-                : 'bg-gradient-to-r from-red-600 to-rose-500 border-2 border-red-400/50'"
-                class="p-5 rounded-lg shadow-2xl flex items-center gap-4 max-w-lg" [style.box-shadow]="toastType() === 'success'
-                ? '0 0 30px rgba(34, 197, 94, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'
-                : '0 0 30px rgba(239, 68, 68, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'">
-                <div
-                    class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
-                    <span class="material-symbols-sharp text-white text-3xl">
-                        {{ toastType() === 'success' ? 'check_circle' : 'error' }}
-                    </span>
-                </div>
-                <div class="flex-1 text-base font-semibold text-white">{{ toastMessage() }}</div>
-                <button (click)="hideToast()"
-                    class="text-white/70 hover:text-white transition-colors flex-shrink-0 hover:scale-110">
-                    <span class="material-symbols-sharp text-xl">close</span>
-                </button>
-            </div>
-        </div>
+        @if (showNewDeckModal()) {
+        <app-new-deck-modal (closed)="closeNewDeckModal()" (created)="createDeck($event)">
+        </app-new-deck-modal>
+        }
+
+        @if (showImportModal()) {
+        <app-import-modal (closed)="closeImportModal()" (imported)="executeImport($event)">
+        </app-import-modal>
+        }
+
+        @if (showSaveDeckModal()) {
+        <app-save-deck-modal [totalCards]="flashcardsService.totalCards()" (closed)="closeSaveDeckModal()"
+            (saved)="saveDeck($event)">
+        </app-save-deck-modal>
         }
 
     </div>
+
+    <!-- Toast Notification (outside grid to prevent layout shift) -->
+    @if (toastMessage()) {
+    <app-toast [message]="toastMessage()" [type]="toastType()" (closed)="hideToast()">
+    </app-toast>
+    }
 </div>
