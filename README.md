@@ -17,11 +17,6 @@ Behalte deine Finanzen voll im Griff.
 - **Trends**: Visuelle Grafiken zeigen dir, wie sich dein Vermögen entwickelt.
 - **Sparziele**: Setze dir Budgets für verschiedene Kategorien.
 
-### 🎙️ AudioNotes
-Diktieren statt tippen – besonders praktisch für unterwegs.
-- **Spracherkennung**: Sprich einfach los, die App wandelt deine Stimme automatisch in Text um.
-- **Android-Optimiert**: Auf dem Smartphone startet die App direkt in diesem Modus, damit du sofort aufnehmen kannst.
-
 ### 🎨 Manga Studio
 Für die kreative Pause.
 - **Reader**: Lies deine Manga-Sammlung direkt in der App.

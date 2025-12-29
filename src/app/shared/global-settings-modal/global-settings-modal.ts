@@ -13,7 +13,6 @@ export interface ProjectSelection {
     bookmarks: boolean;
     journal: boolean;
     budget: boolean;
-    audioNotes: boolean;
     recentlyPlayed: boolean;
     flashcards: boolean;
     mtgInventory: boolean;
@@ -40,7 +39,6 @@ export class GlobalSettingsModal {
         bookmarks: true,
         journal: true,
         budget: true,
-        audioNotes: true,
         recentlyPlayed: true,
         flashcards: true,
         mtgInventory: true
@@ -62,7 +60,6 @@ export class GlobalSettingsModal {
             bookmarks: true,
             journal: true,
             budget: true,
-            audioNotes: true,
             recentlyPlayed: true,
             flashcards: true,
             mtgInventory: true
@@ -74,7 +71,6 @@ export class GlobalSettingsModal {
             bookmarks: false,
             journal: false,
             budget: false,
-            audioNotes: false,
             recentlyPlayed: false,
             flashcards: false,
             mtgInventory: false
@@ -83,7 +79,7 @@ export class GlobalSettingsModal {
 
     hasAnyProjectSelected(): boolean {
         const sel = this.projectSelection();
-        return sel.bookmarks || sel.journal || sel.budget || sel.audioNotes || sel.recentlyPlayed || sel.flashcards || sel.mtgInventory;
+        return sel.bookmarks || sel.journal || sel.budget || sel.recentlyPlayed || sel.flashcards || sel.mtgInventory;
     }
 
     async exportAllData() {
@@ -142,17 +138,6 @@ export class GlobalSettingsModal {
             zip.file('budget.json', JSON.stringify(budgetData, null, 2));
         }
 
-        if (selection.audioNotes) {
-            const audioNotes = localStorage.getItem('audio_notes_entries');
-            const audioNotesData = {
-                exportDate,
-                version: '1.0',
-                project: 'audioNotes',
-                data: audioNotes ? JSON.parse(audioNotes) : []
-            };
-            zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
-        }
-
         if (selection.recentlyPlayed) {
             const urlHistory = localStorage.getItem('youtube_url_history');
             const recentlyPlayedData = {
@@ -202,7 +187,6 @@ export class GlobalSettingsModal {
         if (selection.bookmarks) selectedProjects.push('Lesezeichen');
         if (selection.journal) selectedProjects.push('Journal');
         if (selection.budget) selectedProjects.push('Budget');
-        if (selection.audioNotes) selectedProjects.push('AudioNotes');
         if (selection.recentlyPlayed) selectedProjects.push('Zuletzt gespielt');
         if (selection.flashcards) selectedProjects.push('Flashcards');
         if (selection.mtgInventory) selectedProjects.push('MTG Inventory');
@@ -235,7 +219,6 @@ export class GlobalSettingsModal {
             const bookmarksFile = zip.file('bookmarks.json');
             const journalFile = zip.file('journal.json');
             const budgetFile = zip.file('budget.json');
-            const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
             const flashcardsFile = zip.file('flashcards.json');
             const mtgInventoryFile = zip.file('mtginventory.json');
@@ -244,7 +227,6 @@ export class GlobalSettingsModal {
             if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
             if (selection.journal && journalFile) projectsToImport.push('Journal');
             if (selection.budget && budgetFile) projectsToImport.push('Budget');
-            if (selection.audioNotes && audioNotesFile) projectsToImport.push('AudioNotes');
             if (selection.recentlyPlayed && recentlyPlayedFile) projectsToImport.push('Zuletzt gespielt');
             if (selection.flashcards && flashcardsFile) projectsToImport.push('Flashcards');
             if (selection.mtgInventory && mtgInventoryFile) projectsToImport.push('MTG Inventory');
@@ -305,17 +287,6 @@ export class GlobalSettingsModal {
                     localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
                 }
                 importedProjects.push('Budget');
-            }
-
-            if (selection.audioNotes && audioNotesFile) {
-                const content = await audioNotesFile.async('string');
-                const audioNotesData = JSON.parse(content);
-                const notes = (audioNotesData.data || []).map((n: any) => ({
-                    ...n,
-                    timestamp: new Date(n.timestamp)
-                }));
-                localStorage.setItem('audio_notes_entries', JSON.stringify(notes));
-                importedProjects.push('AudioNotes');
             }
 
             if (selection.recentlyPlayed && recentlyPlayedFile) {
@@ -534,7 +505,6 @@ export class GlobalSettingsModal {
         if (selection.bookmarks) projectsToDelete.push('Lesezeichen');
         if (selection.journal) projectsToDelete.push('Journal');
         if (selection.budget) projectsToDelete.push('Budget');
-        if (selection.audioNotes) projectsToDelete.push('AudioNotes');
         if (selection.recentlyPlayed) projectsToDelete.push('Zuletzt gespielt');
         if (selection.flashcards) projectsToDelete.push('Flashcards');
         if (selection.mtgInventory) projectsToDelete.push('MTG Inventory');
@@ -561,10 +531,6 @@ export class GlobalSettingsModal {
             localStorage.removeItem('mybudget_categories');
             localStorage.removeItem('mybudget_fixedcosts');
             localStorage.removeItem('mybudget_fixedcostgroups');
-        }
-
-        if (selection.audioNotes) {
-            localStorage.removeItem('audio_notes_entries');
         }
 
         if (selection.recentlyPlayed) {
