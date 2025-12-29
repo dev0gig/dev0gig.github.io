@@ -33,7 +33,7 @@
         </header>
 
         <!-- Left Sidebar -->
-        <aside [class]="focusMode() ? 'md:col-span-12 md:order-2' : 'md:col-span-3 lg:col-span-2 md:order-1'"
+        <aside [class]="focusMode() ? 'hidden' : 'md:col-span-3 lg:col-span-2 md:order-1 hidden md:flex'"
             class="flex flex-col gap-4 order-2 md:order-1 h-[calc(100vh-8rem)] sticky top-20">
             <!-- Study Mode Toggle -->
             <div class="gradient-card p-4 rounded-sm flex-shrink-0">
@@ -41,14 +41,14 @@
                     <span class="material-symbols-sharp text-dash-accent text-sm">school</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Lernmodus</h3>
                 </div>
-                <div [class]="focusMode() ? 'flex-row' : 'flex-row md:flex-col'" class="flex gap-2">
+                <div class="flex flex-col gap-2">
                     <button (click)="toggleRandomMode()"
                         [class]="flashcardsService.isRandomMode()
                             ? 'bg-dash-accent text-white border-dash-accent'
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                         class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all border flex items-center justify-center gap-2">
                         <span class="material-symbols-sharp text-lg">shuffle</span>
-                        <span [class]="focusMode() ? 'hidden' : 'hidden md:inline'">Zufällig</span>
+                        <span class="hidden md:inline">Zufällig</span>
                     </button>
                     <button (click)="toggleReversedMode()"
                         [class]="flashcardsService.isReversedMode()
@@ -56,7 +56,7 @@
                             : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
                         class="flex-1 w-full px-3 py-2.5 rounded-sm text-sm font-medium transition-all border flex items-center justify-center gap-2">
                         <span class="material-symbols-sharp text-lg">swap_horiz</span>
-                        <span [class]="focusMode() ? 'hidden' : 'hidden md:inline'">Switch</span>
+                        <span class="hidden md:inline">Switch</span>
                     </button>
                 </div>
             </div>
@@ -112,10 +112,76 @@
             class="flex flex-col gap-4 order-1 md:order-2">
             @if (flashcardsService.currentCard()) {
             <div class="gradient-card p-6 rounded-sm flex flex-col gap-4">
-                <!-- Progress -->
-                <div class="flex items-center justify-between text-xs text-dash-text-dim">
-                    <span>Karte {{ flashcardsService.currentIndex() + 1 }} von {{ flashcardsService.studyQueue().length
-                        }}</span>
+                <!-- Progress & Study Mode Controls (for Focus Mode and Mobile) -->
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs text-dash-text-dim">Karte {{ flashcardsService.currentIndex() + 1 }} von {{
+                        flashcardsService.studyQueue().length }}</span>
+
+                    <!-- Study Mode Buttons (visible in focus mode or on mobile) -->
+                    <div [class]="focusMode() ? 'flex' : 'flex md:hidden'" class="items-center gap-2">
+                        <button (click)="toggleRandomMode()"
+                            [class]="flashcardsService.isRandomMode()
+                                ? 'bg-dash-accent text-white border-dash-accent'
+                                : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                            class="w-10 h-10 rounded-sm font-medium transition-all border flex items-center justify-center"
+                            title="Zufällig">
+                            <span class="material-symbols-sharp text-lg">shuffle</span>
+                        </button>
+                        <button (click)="toggleReversedMode()"
+                            [class]="flashcardsService.isReversedMode()
+                                ? 'bg-dash-accent text-white border-dash-accent'
+                                : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                            class="w-10 h-10 rounded-sm font-medium transition-all border flex items-center justify-center"
+                            title="Switch (Front/Back vertauschen)">
+                            <span class="material-symbols-sharp text-lg">swap_horiz</span>
+                        </button>
+
+                        <!-- Decks Dropdown Button -->
+                        <div class="relative">
+                            <button (click)="toggleDecksDropdown()"
+                                [class]="showDecksDropdown() ? 'bg-dash-accent text-white border-dash-accent' : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+                                class="w-10 h-10 rounded-sm font-medium transition-all border flex items-center justify-center"
+                                title="Decks">
+                                <span class="material-symbols-sharp text-lg">folder</span>
+                            </button>
+
+                            <!-- Decks Dropdown -->
+                            @if (showDecksDropdown()) {
+                            <div
+                                class="absolute right-0 top-12 w-64 gradient-card p-3 rounded-sm shadow-xl z-50 border border-dash-border">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span
+                                        class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Decks</span>
+                                    <button (click)="openNewDeckModal(); closeDecksDropdown()"
+                                        class="w-6 h-6 flex items-center justify-center bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-all"
+                                        title="Neues Deck erstellen">
+                                        <span class="material-symbols-sharp text-sm">add</span>
+                                    </button>
+                                </div>
+                                @if (flashcardsService.decks().length > 0) {
+                                <div class="max-h-60 overflow-y-auto flex flex-col gap-1 custom-scrollbar">
+                                    @for (deck of flashcardsService.decks(); track deck.id) {
+                                    <button (click)="loadDeck(deck.id); closeDecksDropdown()"
+                                        [class]="flashcardsService.activeDeckId() === deck.id ? 'border-dash-accent bg-dash-accent/10' : 'bg-dash-bg border-dash-border hover:border-dash-accent'"
+                                        class="w-full text-left p-2 rounded-sm border transition-all flex items-center justify-between gap-2">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="text-xs font-bold text-dash-text truncate">{{ deck.name }}</div>
+                                            <div class="text-[10px] text-dash-text-dim opacity-70">{{ deck.cards.length
+                                                }} Karten</div>
+                                        </div>
+                                        @if (flashcardsService.activeDeckId() === deck.id) {
+                                        <span class="material-symbols-sharp text-dash-accent text-sm">check</span>
+                                        }
+                                    </button>
+                                    }
+                                </div>
+                                } @else {
+                                <p class="text-xs text-dash-text-dim opacity-70 py-2">Keine Decks vorhanden</p>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Card Text (Front / Back) -->

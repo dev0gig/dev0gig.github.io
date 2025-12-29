@@ -46,6 +46,7 @@ export class FlashcardsComponent {
     // UI State
     isFlipped = signal<boolean>(false);
     focusMode = signal<boolean>(false);
+    showDecksDropdown = signal<boolean>(false);
 
     // Modal visibility
     showSettingsModal = signal<boolean>(false);
@@ -137,6 +138,15 @@ export class FlashcardsComponent {
 
     toggleFocusMode(): void {
         this.focusMode.update(v => !v);
+        this.showDecksDropdown.set(false);
+    }
+
+    toggleDecksDropdown(): void {
+        this.showDecksDropdown.update(v => !v);
+    }
+
+    closeDecksDropdown(): void {
+        this.showDecksDropdown.set(false);
     }
 
     // --- Edit Card Modal ---
