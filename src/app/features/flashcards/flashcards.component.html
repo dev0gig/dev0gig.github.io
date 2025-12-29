@@ -94,9 +94,9 @@
 
         <!-- Left Sidebar -->
         <aside [class]="focusMode() ? 'md:col-span-12 md:order-2' : 'md:col-span-3 lg:col-span-2 md:order-1'"
-            class="flex flex-col gap-4 order-2">
+            class="flex flex-col gap-4 order-2 h-[calc(100vh-8rem)] sticky top-20">
             <!-- Study Mode Toggle -->
-            <div class="gradient-card p-4 rounded-sm sticky top-20 z-30">
+            <div class="gradient-card p-4 rounded-sm flex-shrink-0">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="material-symbols-sharp text-dash-accent text-sm">school</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Lernmodus</h3>
@@ -121,34 +121,42 @@
                 </div>
             </div>
 
-
             <!-- Saved Decks -->
-            <div class="gradient-card p-4 rounded-sm">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
-                        <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Decks</h3>
-                    </div>
-
+            <div class="gradient-card p-4 rounded-sm flex flex-col flex-1 min-h-0">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
+                    <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Decks</h3>
+                    <button (click)="openNewDeckModal()"
+                        class="ml-auto w-6 h-6 flex items-center justify-center bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-all"
+                        title="Neues Deck erstellen">
+                        <span class="material-symbols-sharp text-sm">add</span>
+                    </button>
                 </div>
                 @if (flashcardsService.decks().length > 0) {
-                <div class="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                <div class="flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar pr-1">
                     @for (deck of flashcardsService.decks(); track deck.id) {
-                    <div class="group flex items-center gap-2">
-                        <button (click)="loadDeck(deck.id)"
-                            [class]="flashcardsService.activeDeckId() === deck.id
-                                ? 'bg-dash-accent/20 border-dash-accent text-dash-accent'
-                                : 'bg-dash-bg border-dash-border text-dash-text-dim hover:border-dash-accent hover:text-white'"
-                            class="flex-1 px-3 py-2 rounded-sm text-sm text-left border transition-all truncate">
-                            <span class="font-medium">{{ deck.name }}</span>
-                            <span class="text-xs opacity-60 ml-1">({{ deck.cards.length }})</span>
+                    <div [class]="flashcardsService.activeDeckId() === deck.id ? 'border-dash-accent bg-dash-accent/5' : 'bg-dash-bg border-dash-border'"
+                        class="group border hover:border-dash-accent rounded-sm h-14 p-2 transition-all flex items-center justify-between gap-2">
+                        <button (click)="loadDeck(deck.id)" class="flex flex-col min-w-0 flex-1 text-left">
+                            <div class="text-xs font-bold text-dash-text truncate" title="{{ deck.name }}">
+                                {{ deck.name }}
+                            </div>
+                            <div class="text-[10px] text-dash-text-dim truncate opacity-70">
+                                {{ deck.cards.length }} Karten
+                            </div>
                         </button>
-                        <button (click)="deleteDeck(deck.id)"
-                            class="w-8 h-8 flex items-center justify-center border border-dash-border rounded-sm text-dash-text-dim hover:text-red-500 hover:border-red-500 transition-all"
-                            title="Deck löschen">
-                            <span class="material-symbols-sharp text-sm">delete</span>
-                        </button>
-
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button (click)="openEditDeckModal(deck)"
+                                class="w-6 h-6 flex items-center justify-center hover:bg-dash-accent/10 rounded-sm text-dash-text-dim hover:text-dash-accent transition-colors"
+                                title="Bearbeiten">
+                                <span class="material-symbols-sharp text-xs">edit</span>
+                            </button>
+                            <button (click)="deleteDeck(deck.id)"
+                                class="w-6 h-6 flex items-center justify-center hover:bg-red-500/10 rounded-sm text-dash-text-dim hover:text-red-500 transition-colors"
+                                title="Löschen">
+                                <span class="material-symbols-sharp text-xs">delete</span>
+                            </button>
+                        </div>
                     </div>
                     }
                 </div>
@@ -259,9 +267,14 @@
                 <div class="flex items-center gap-2 mb-3 flex-shrink-0">
                     <span class="material-symbols-sharp text-dash-accent text-sm">list</span>
                     <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Karten Liste</h3>
-                    <span class="ml-auto text-xs text-dash-text-dim bg-dash-bg px-2 py-0.5 rounded-sm">
+                    <span class="text-xs text-dash-text-dim bg-dash-bg px-2 py-0.5 rounded-sm">
                         {{ flashcardsService.totalCards() }}
                     </span>
+                    <button (click)="openNewCardModal()"
+                        class="ml-auto w-6 h-6 flex items-center justify-center bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-all"
+                        title="Neue Karte erstellen">
+                        <span class="material-symbols-sharp text-sm">add</span>
+                    </button>
                 </div>
 
                 @if (flashcardsService.cards().length > 0) {
@@ -436,6 +449,112 @@
                     <button (click)="executeSaveDeck()" [disabled]="!saveDeckName()"
                         class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
                         Speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- New Deck Modal -->
+        @if (showNewDeckModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeNewDeckModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Neues Deck erstellen</h2>
+                    <button (click)="closeNewDeckModal()" class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <input #newDeckInput [(ngModel)]="newDeckName" type="text" placeholder="Deck-Name eingeben..."
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors"
+                    (keydown.enter)="executeCreateDeck()">
+
+                <div class="flex justify-end gap-2">
+                    <button (click)="closeNewDeckModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Abbrechen
+                    </button>
+                    <button (click)="executeCreateDeck()" [disabled]="!newDeckName()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Erstellen
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Edit Deck Modal -->
+        @if (showEditDeckModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeEditDeckModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-md flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Deck bearbeiten</h2>
+                    <button (click)="closeEditDeckModal()"
+                        class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Deck-Name</label>
+                    <input [(ngModel)]="editDeckName" type="text"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors"
+                        (keydown.enter)="saveEditDeck()">
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button (click)="closeEditDeckModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Abbrechen
+                    </button>
+                    <button (click)="saveEditDeck()" [disabled]="!editDeckName()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- New Card Modal -->
+        @if (showNewCardModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeNewCardModal()"></div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-dash-text">Neue Karte erstellen</h2>
+                    <button (click)="closeNewCardModal()" class="text-dash-text-dim hover:text-white transition-colors">
+                        <span class="material-symbols-sharp">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Vorderseite</label>
+                        <textarea #newCardInput [(ngModel)]="newCardFront"
+                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-dash-text-dim uppercase font-bold tracking-wider">Rückseite</label>
+                        <textarea [(ngModel)]="newCardBack"
+                            class="w-full h-24 bg-dash-bg border border-dash-border text-dash-text p-3 rounded-sm text-sm resize-none focus:outline-none focus:border-dash-accent transition-colors"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                    <button (click)="closeNewCardModal()"
+                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                        Abbrechen
+                    </button>
+                    <button (click)="executeCreateCard()" [disabled]="!newCardFront() || !newCardBack()"
+                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                        Erstellen
                     </button>
                 </div>
             </div>

@@ -43,6 +43,18 @@ export class FlashcardsService {
         const card = createFlashcard(front, back);
         this._cards.update(cards => [...cards, card]);
         this.saveCards();
+
+        // Also add to active deck if one is selected
+        const activeDeckId = this._activeDeckId();
+        if (activeDeckId) {
+            this._decks.update(decks =>
+                decks.map(d => d.id === activeDeckId
+                    ? { ...d, cards: [...d.cards, card] }
+                    : d
+                )
+            );
+            this.saveDecks();
+        }
     }
 
     removeCard(id: string): void {
@@ -77,6 +89,19 @@ export class FlashcardsService {
         const deck = createDeck(name, cards);
         this._decks.update(decks => [...decks, deck]);
         this._activeDeckId.set(deck.id);
+        this.saveDecks();
+        return deck;
+    }
+
+    createEmptyDeck(name: string): Deck | null {
+        if (!name.trim()) return null;
+
+        const deck = createDeck(name, []);
+        this._decks.update(decks => [...decks, deck]);
+        this._activeDeckId.set(deck.id);
+        this._cards.set([]);
+        this._currentIndex.set(0);
+        this.saveCards();
         this.saveDecks();
         return deck;
     }

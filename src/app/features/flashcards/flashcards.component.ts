@@ -27,6 +27,8 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     private sidebarService = inject(SidebarService);
 
     @ViewChild('drawingCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+    @ViewChild('newDeckInput') newDeckInputRef!: ElementRef<HTMLInputElement>;
+    @ViewChild('newCardInput') newCardInputRef!: ElementRef<HTMLTextAreaElement>;
     private ctx: CanvasRenderingContext2D | null = null;
     private isDrawing = false;
     private lastX = 0;
@@ -38,6 +40,9 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     showImportModal = signal<boolean>(false);
     showSaveDeckModal = signal<boolean>(false);
     showEditModal = signal<boolean>(false);
+    showNewDeckModal = signal<boolean>(false);
+    showNewCardModal = signal<boolean>(false);
+    showEditDeckModal = signal<boolean>(false);
     focusMode = signal<boolean>(false); // Focus mode hides sidebars on desktop
     importText = signal<string>('');
     deckNameInput = signal<string>('');
@@ -48,6 +53,11 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
     editFrontInput = signal<string>('');
     editBackInput = signal<string>('');
     editingCardId = signal<string | null>(null);
+    newDeckName = signal<string>('');
+    newCardFront = signal<string>('');
+    newCardBack = signal<string>('');
+    editingDeckId = signal<string | null>(null);
+    editDeckName = signal<string>('');
     lastImportResult = signal<{ success: number; failed: number } | null>(null);
     toastMessage = signal<string>('');
     toastType = signal<'success' | 'error'>('success');
@@ -335,6 +345,74 @@ export class FlashcardsComponent implements AfterViewInit, OnDestroy {
         if (deck) {
             this.showToast(`Deck "${name}" gespeichert!`, 'success');
             this.closeSaveDeckModal();
+        }
+    }
+
+    // --- New Deck Modal ---
+    openNewDeckModal(): void {
+        this.newDeckName.set('');
+        this.showNewDeckModal.set(true);
+        setTimeout(() => this.newDeckInputRef?.nativeElement?.focus(), 50);
+    }
+
+    closeNewDeckModal(): void {
+        this.showNewDeckModal.set(false);
+    }
+
+    executeCreateDeck(): void {
+        const name = this.newDeckName().trim();
+        if (!name) return;
+
+        const deck = this.flashcardsService.createEmptyDeck(name);
+        if (deck) {
+            this.showToast(`Deck "${name}" erstellt!`, 'success');
+            this.closeNewDeckModal();
+        }
+    }
+
+    // --- Edit Deck Modal ---
+    openEditDeckModal(deck: any): void {
+        this.editingDeckId.set(deck.id);
+        this.editDeckName.set(deck.name);
+        this.showEditDeckModal.set(true);
+    }
+
+    closeEditDeckModal(): void {
+        this.showEditDeckModal.set(false);
+        this.editingDeckId.set(null);
+    }
+
+    saveEditDeck(): void {
+        const id = this.editingDeckId();
+        const name = this.editDeckName().trim();
+
+        if (id && name) {
+            this.flashcardsService.renameDeck(id, name);
+            this.showToast('Deck umbenannt', 'success');
+            this.closeEditDeckModal();
+        }
+    }
+
+    // --- New Card Modal ---
+    openNewCardModal(): void {
+        this.newCardFront.set('');
+        this.newCardBack.set('');
+        this.showNewCardModal.set(true);
+        setTimeout(() => this.newCardInputRef?.nativeElement?.focus(), 50);
+    }
+
+    closeNewCardModal(): void {
+        this.showNewCardModal.set(false);
+    }
+
+    executeCreateCard(): void {
+        const front = this.newCardFront().trim();
+        const back = this.newCardBack().trim();
+
+        if (front && back) {
+            this.flashcardsService.addCard(front, back);
+            this.showToast('Karte erstellt!', 'success');
+            this.closeNewCardModal();
         }
     }
 
