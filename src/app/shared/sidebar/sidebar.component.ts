@@ -54,16 +54,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.sidebarService.closeAfterAction();
     }
 
-    downloadAudioNotes() {
-        if (confirm('Möchten Sie die AudioNotes App herunterladen?')) {
-            const link = document.createElement('a');
-            link.href = 'audionotes.apk';
-            link.download = 'audionotes.apk';
-            link.click();
-            this.sidebarService.close();
-        }
-    }
-
     async exportAllData() {
         const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
@@ -109,16 +99,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
             }
         };
         zip.file('budget.json', JSON.stringify(budgetData, null, 2));
-
-        // Export AudioNotes
-        const audioNotes = localStorage.getItem('audio_notes_entries');
-        const audioNotesData = {
-            exportDate,
-            version: '1.0',
-            project: 'audioNotes',
-            data: audioNotes ? JSON.parse(audioNotes) : []
-        };
-        zip.file('audionotes.json', JSON.stringify(audioNotesData, null, 2));
 
         // Export RecentlyPlayed (YouTube URL History)
         const urlHistory = localStorage.getItem('youtube_url_history');
@@ -188,12 +168,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
             const bookmarksFile = zip.file('bookmarks.json');
             const journalFile = zip.file('journal.json');
             const budgetFile = zip.file('budget.json');
-            const audioNotesFile = zip.file('audionotes.json');
             const recentlyPlayedFile = zip.file('recentlyplayed.json');
             const flashcardsFile = zip.file('flashcards.json');
             const mtgInventoryFile = zip.file('mtginventory.json');
 
-            if (!bookmarksFile && !journalFile && !budgetFile && !audioNotesFile && !recentlyPlayedFile && !flashcardsFile && !mtgInventoryFile) {
+            if (!bookmarksFile && !journalFile && !budgetFile && !recentlyPlayedFile && !flashcardsFile && !mtgInventoryFile) {
                 alert('Keine passenden Daten in der Backup-Datei gefunden.');
                 return;
             }
@@ -247,18 +226,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
                 }
                 importedProjects.push('Budget');
-            }
-
-            // Import AudioNotes
-            if (audioNotesFile) {
-                const content = await audioNotesFile.async('string');
-                const audioNotesData = JSON.parse(content);
-                const notes = (audioNotesData.data || []).map((n: any) => ({
-                    ...n,
-                    timestamp: new Date(n.timestamp)
-                }));
-                localStorage.setItem('audio_notes_entries', JSON.stringify(notes));
-                importedProjects.push('AudioNotes');
             }
 
             // Import RecentlyPlayed (YouTube URL History)
