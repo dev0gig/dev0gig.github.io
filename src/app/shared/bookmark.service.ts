@@ -9,6 +9,42 @@ export interface Bookmark {
     createdAt: number;
 }
 
+// Benutzerdefinierte Icons für bestimmte Lesezeichen
+const DEFAULT_CUSTOM_ICONS: Record<string, string> = {
+    "Gmail": "https://play-lh.googleusercontent.com/KSuaRLiI_FlDP8cM4MzJ23ml3og5Hxb9AapaGTMZ2GgR103mvJ3AAnoOFz1yheeQBBI=w240-h480-rw",
+    "Google Cloud Console": "https://play-lh.googleusercontent.com/4_RW0mQ5mJhGGJVydTlQsQ0pnqAYq9UoTVm2_gElrgRM13Q02w43HPgYVaMFy4b4smmF=w240-h480-rw",
+    "Google Docs": "https://play-lh.googleusercontent.com/emmbClh_hm0WpWZqJ0X59B8Pz1mKoB9HVLkYMktxhGE6_-30SdGoa-BmYW73RJ8MGZQ=w240-h480-rw",
+    "Google Drive": "https://play-lh.googleusercontent.com/t-juVwXA8lDAk8uQ2L6d6K83jpgQoqmK1icB_l9yvhIAQ2QT_1XbRwg5IpY08906qEw=w240-h480-rw",
+    "Google Kontakte": "https://play-lh.googleusercontent.com/fvhPW8dpGXM42Y-6aQU8Yl25L1l_mVgeoM-n08FxAkM7umAHkNs8wcs4MA49E67a7WVt=w240-h480-rw",
+    "Google Maps": "https://www.google.com/maps/@48.1419654,16.2101379,14z?entry=ttu&g_ep=EgoyMDI1MDkxMC4wIKXMDSoASAFQAw%3D%3D",
+    "Google Messages": "https://play-lh.googleusercontent.com/9AZOTXU_CpreTFAXUPAmJNkm8VGCb1C90fjJ9pHGcVmpGMDSTq3cUbaQJdBT9Tdp9A=w240-h480-rw",
+    "Google Sheets": "https://play-lh.googleusercontent.com/keE2gN0Hqh8-Tsf_RYZ_-yS2uo6ToqYVyRBv_UZaLXsgeeHBd2YPcEUWEF4DEtfGyb1h=w240-h480-rw",
+    "Google Wallet": "https://play-lh.googleusercontent.com/DHBlQKvUNbopIS-VjQb3fUKQ_QH0Em-Q66AwG6LwD1Sach3lUvEWDb6hh8xNvKGmctU=w240-h480-rw",
+    "Kalender": "https://play-lh.googleusercontent.com/_bh6XK3B7TAk7kBXC1GHC0j9eS9cw9wQo2K7fiP7FDGAQlcOqgUPT2lx3WgZ0JlOJh8=w240-h480-rw",
+    "N26": "https://play-lh.googleusercontent.com/pCFXCIyrT0zxLral7LuFhBj6K2Bwl4Xj_zH_BXNKOJ7IJ2Gl8fE6cQ4IbQzX4uDSSw=w240-h480-rw",
+    "NotebookLM": "https://play-lh.googleusercontent.com/qWDLmYCI4Lqzq8J-LhtvWvp1HIPkJb2lqkHjduXM7tnCo7N1tmKxnYdaX7CS2_5pkDuW=w240-h480-rw",
+    "Notizen": "https://play-lh.googleusercontent.com/9bJoeaPbGTB8Tz_h4N-p-6ReRd8vSS-frZb2tmJulaGIoTKElKj3zpmcFJvnS96ANZP5=w240-h480-rw",
+    "OneDrive": "https://play-lh.googleusercontent.com/pkzkr91OWFffdDGZ9706Ev2lxjM1pMizefY__r8JkCAtNVO-hmaMG2Qfx9ngpu7V7K4Yx_E7csAMl6fP7dGNS28=s48-rw",
+    "opcyc": "https://res.cloudinary.com/dfcfhdy9c/image/upload/t_cards-logo-pad/f_auto/q_auto/v1736341461/opcyc_k8rfr5.png",
+    "Post": "https://play-lh.googleusercontent.com/LCn0zMVjJXauMDNclMVMv8Ht-TNHHLqbCA61Xa7OR3X489dtOgpdFpzXT7H8KM_yTppO=s48-rw",
+    "Prime Gaming": "https://yt3.googleusercontent.com/uRKrpN7-levqpjptf6nrIC406OVhVf4felZ3_WBWbGdrMa30J4-b_kFzAQj8ZymHjMdyFQcHGw=s900-c-k-c0x00ffffff-no-rj",
+    "SmartMeter": "https://assets.kununu.com/media/prod/profiles/logos/ef562319-46f1-4b23-85e6-bf23be68c388_1_669fb75ad5ad7.gif",
+    "Tasks": "https://tasks.google.com/tasks/",
+    "WhatsApp": "https://play-lh.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN=w240-h480-rw",
+    "WienEnergie": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnPowqsn3fDxVC2TsvbrvIel8wHprfsqgS7A&s"
+};
+
+// Standard-Favoriten
+const DEFAULT_FAVORITES: string[] = [
+    "Gmail",
+    "Google Gemini",
+    "Kalender",
+    "Notizen",
+    "Outlook",
+    "Reddit",
+    "YouTube"
+];
+
 @Injectable({
     providedIn: 'root'
 })
@@ -103,7 +139,9 @@ export class BookmarkService {
             try {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    this.bookmarks.set(this.sortBookmarks(parsed));
+                    // Wende Defaults an für bestehende Lesezeichen
+                    const updatedBookmarks = parsed.map((b: Bookmark) => this.applyDefaults(b));
+                    this.bookmarks.set(this.sortBookmarks(updatedBookmarks));
                     return;
                 }
             } catch (e) {
@@ -113,6 +151,27 @@ export class BookmarkService {
 
         // Load defaults if no saved bookmarks or parsing failed/empty
         this.importBookmarks(this.DEFAULT_BOOKMARKS);
+    }
+
+    /**
+     * Wendet DEFAULT_CUSTOM_ICONS und DEFAULT_FAVORITES auf ein Lesezeichen an,
+     * sofern keine benutzerdefinierten Werte vorhanden sind.
+     */
+    private applyDefaults(bookmark: Bookmark): Bookmark {
+        const result = { ...bookmark };
+
+        // Benutzerdefiniertes Icon anwenden, wenn kein customIconUrl gesetzt ist
+        if (!result.customIconUrl && DEFAULT_CUSTOM_ICONS[result.name]) {
+            result.customIconUrl = DEFAULT_CUSTOM_ICONS[result.name];
+        }
+
+        // isFavorite auf true setzen, wenn Name in DEFAULT_FAVORITES und noch nicht explizit gesetzt
+        // Prüfe ob isFavorite undefined oder false ist (bei false prüfen wir ob der Name in den Defaults ist)
+        if (DEFAULT_FAVORITES.includes(result.name) && !result.isFavorite) {
+            result.isFavorite = true;
+        }
+
+        return result;
     }
 
     private saveBookmarks() {
@@ -169,7 +228,7 @@ export class BookmarkService {
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 url = 'https://' + url;
             }
-            return {
+            const bookmark: Bookmark = {
                 id: b.id || crypto.randomUUID(),
                 url,
                 name: b.name,
@@ -177,6 +236,8 @@ export class BookmarkService {
                 isFavorite: b.isFavorite || false,
                 createdAt: b.createdAt || Date.now()
             };
+            // Wende Defaults an
+            return this.applyDefaults(bookmark);
         });
 
         if (replace) {

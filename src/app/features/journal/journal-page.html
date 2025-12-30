@@ -10,7 +10,6 @@
                 <h1 class="text-sm font-bold tracking-widest text-dash-text-dim uppercase">Journal</h1>
             </div>
             <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
-                <div class="mr-2">ENTRIES <span class="text-white">{{ journal.entries().length }}</span></div>
                 <!-- Add New Entry Button -->
                 <button (click)="toggleNewEntryModal()"
                     class="w-10 h-10 bg-dash-accent rounded-sm flex items-center justify-center hover:bg-dash-accent/80 cursor-pointer text-white transition-all"
@@ -108,7 +107,7 @@
                 </div>
 
                 <!-- Structured Fields Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-4">
                     <!-- System-Win -->
                     <div class="flex flex-col gap-2">
                         <label
@@ -118,7 +117,7 @@
                         </label>
                         <input type="text" [ngModel]="newEntrySysWin()" (ngModelChange)="newEntrySysWin.set($event)"
                             class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
-                            placeholder="Vaterschaft / Finanzen">
+                            placeholder="Was habe ich heute für meine Familie oder meine 40k-Sparziele getan?">
                     </div>
 
                     <!-- Lern-Moment -->
@@ -130,7 +129,7 @@
                         </label>
                         <input type="text" [ngModel]="newEntryLearn()" (ngModelChange)="newEntryLearn.set($event)"
                             class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
-                            placeholder="Neugier geweckt">
+                            placeholder="Welches technische Detail oder neue Wissen hat mich heute fasziniert?">
                     </div>
 
                     <!-- Impuls-Check -->
@@ -142,7 +141,7 @@
                         </label>
                         <input type="text" [ngModel]="newEntryImpulse()" (ngModelChange)="newEntryImpulse.set($event)"
                             class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
-                            placeholder="Besonnenheit gezeigt">
+                            placeholder="Wo habe ich heute innegehalten, statt einem ADHS-Impuls zu folgen?">
                     </div>
 
                     <!-- Exzellenz-Anker -->
@@ -154,7 +153,7 @@
                         </label>
                         <input type="text" [ngModel]="newEntryBeauty()" (ngModelChange)="newEntryBeauty.set($event)"
                             class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
-                            placeholder="Schönheit entdeckt">
+                            placeholder="Welchen Moment von Schönheit oder Qualität habe ich heute wahrgenommen?">
                     </div>
                 </div>
 

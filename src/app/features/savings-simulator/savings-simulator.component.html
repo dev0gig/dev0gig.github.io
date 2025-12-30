@@ -10,20 +10,6 @@
                     {{ activeTab() === 'savings' ? 'Spar-Simulator' : 'ImmoCheck' }}
                 </h1>
             </div>
-            @if (activeTab() === 'savings') {
-            <div class="flex gap-4 text-xs font-mono text-dash-text-dim items-center">
-                <div>MODUS
-                    <span class="text-dash-accent uppercase">
-                        {{ calculationMode() === 'duration' ? 'LAUFZEIT' : 'SPARZIEL' }}
-                    </span>
-                </div>
-                <div>ZIEL <span class="text-white">{{ targetAmount() | currency:'EUR':'symbol':'1.0-0' }}</span></div>
-            </div>
-            } @else {
-            <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
-                <span>Dein Finanzierungsrechner</span>
-            </div>
-            }
             <!-- Right Sidebar Toggle -->
             <button (click)="toggleRightSidebar()"
                 class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all ml-4"
