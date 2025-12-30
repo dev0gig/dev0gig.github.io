@@ -11,6 +11,12 @@
             </div>
             <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
                 <div class="mr-2">ENTRIES <span class="text-white">{{ journal.entries().length }}</span></div>
+                <!-- Add New Entry Button -->
+                <button (click)="toggleNewEntryModal()"
+                    class="w-10 h-10 bg-dash-accent rounded-sm flex items-center justify-center hover:bg-dash-accent/80 cursor-pointer text-white transition-all"
+                    title="Neuer Eintrag">
+                    <span class="material-symbols-sharp text-xl">add</span>
+                </button>
                 <!-- Local Settings Button -->
                 <button (click)="toggleSettingsModal()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
@@ -69,6 +75,95 @@
                             <span class="font-bold text-sm">Delete All Entries</span>
                             <span class="text-xs opacity-70">Permanently remove all journal entries</span>
                         </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Entry Modal -->
+        <div *ngIf="showNewEntryModal()" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="toggleNewEntryModal()">
+            </div>
+            <div
+                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-2xl flex flex-col gap-4 accent-glow max-h-[90vh] overflow-y-auto">
+                <!-- Header with title and date picker -->
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <h2 class="text-lg font-bold text-dash-text">Neuer Eintrag</h2>
+                    <div class="flex items-center gap-3">
+                        <input type="date" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event)"
+                            class="bg-dash-bg border border-dash-border rounded-sm px-3 py-2 text-sm text-dash-text focus:border-dash-accent focus:outline-none transition-colors">
+                        <button (click)="toggleNewEntryModal()"
+                            class="text-dash-text-dim hover:text-white transition-colors">
+                            <span class="material-symbols-sharp">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Brain-Dump Textarea -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Brain-Dump</label>
+                    <textarea [ngModel]="newEntryMainText()" (ngModelChange)="newEntryMainText.set($event)"
+                        class="w-full bg-dash-bg border border-dash-border rounded-sm p-4 text-dash-text placeholder-dash-text-dim/50 h-32 resize-none focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none"
+                        placeholder="Was beschäftigt dich heute?"></textarea>
+                </div>
+
+                <!-- Structured Fields Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- System-Win -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                            <span>🏆</span>
+                            <span>System-Win</span>
+                        </label>
+                        <input type="text" [ngModel]="newEntrySysWin()" (ngModelChange)="newEntrySysWin.set($event)"
+                            class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
+                            placeholder="Vaterschaft / Finanzen">
+                    </div>
+
+                    <!-- Lern-Moment -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                            <span>💡</span>
+                            <span>Lern-Moment</span>
+                        </label>
+                        <input type="text" [ngModel]="newEntryLearn()" (ngModelChange)="newEntryLearn.set($event)"
+                            class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
+                            placeholder="Neugier geweckt">
+                    </div>
+
+                    <!-- Impuls-Check -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                            <span>⚖️</span>
+                            <span>Impuls-Check</span>
+                        </label>
+                        <input type="text" [ngModel]="newEntryImpulse()" (ngModelChange)="newEntryImpulse.set($event)"
+                            class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
+                            placeholder="Besonnenheit gezeigt">
+                    </div>
+
+                    <!-- Exzellenz-Anker -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-xs font-bold text-dash-text-dim uppercase tracking-wider flex items-center gap-2">
+                            <span>✨</span>
+                            <span>Exzellenz-Anker</span>
+                        </label>
+                        <input type="text" [ngModel]="newEntryBeauty()" (ngModelChange)="newEntryBeauty.set($event)"
+                            class="w-full bg-dash-bg border border-dash-border rounded-sm p-3 text-dash-text placeholder-dash-text-dim/50 focus:border-dash-accent focus:ring-1 focus:ring-dash-accent transition-all outline-none text-sm"
+                            placeholder="Schönheit entdeckt">
+                    </div>
+                </div>
+
+                <!-- Footer with Save Button -->
+                <div class="flex justify-end pt-2">
+                    <button (click)="saveStructuredEntry()"
+                        class="px-6 py-3 bg-dash-accent hover:bg-dash-accent/80 rounded-sm text-white font-bold transition-all flex items-center gap-2">
+                        <span class="material-symbols-sharp">save</span>
+                        <span>Speichern</span>
                     </button>
                 </div>
             </div>
@@ -168,14 +263,7 @@
             </div>
 
             <!-- Entry List -->
-            <div class="gradient-card p-0 rounded-sm flex flex-col relative">
-                <div class="absolute top-0 right-0 p-4 z-10">
-                    <div class="flex gap-2">
-                        <span class="w-2 h-2 rounded-full bg-red-500/20"></span>
-                        <span class="w-2 h-2 rounded-full bg-yellow-500/20"></span>
-                        <span class="w-2 h-2 rounded-full bg-green-500/20"></span>
-                    </div>
-                </div>
+            <div class="gradient-card p-0 rounded-sm flex flex-col">
                 <app-entry-list></app-entry-list>
             </div>
         </main>

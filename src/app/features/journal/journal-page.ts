@@ -3,6 +3,7 @@ import { EntryList } from './entry-list/entry-list';
 import { Calendar } from './calendar/calendar';
 import { Search } from './search/search';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { JournalService } from './journal';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
@@ -12,7 +13,7 @@ import { SettingsService } from '../../shared/settings.service';
 @Component({
     selector: 'app-journal-page',
     standalone: true,
-    imports: [CommonModule, RouterModule, EntryList, Calendar, Search, AppsLauncher],
+    imports: [CommonModule, FormsModule, RouterModule, EntryList, Calendar, Search, AppsLauncher],
     templateUrl: './journal-page.html',
     styleUrl: './journal-page.css'
 })
@@ -27,6 +28,66 @@ export class JournalPage {
     // OCR Import state
     isDragging = signal(false);
     ocrImportStatus = signal<{ success: boolean; message: string } | null>(null);
+
+    // New Entry Modal state
+    showNewEntryModal = signal(false);
+    selectedDate = signal(this.getTodayIso());
+
+    // Form fields for modal
+    newEntryMainText = signal('');
+    newEntrySysWin = signal('');
+    newEntryLearn = signal('');
+    newEntryImpulse = signal('');
+    newEntryBeauty = signal('');
+
+    private getTodayIso(): string {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    toggleNewEntryModal() {
+        this.showNewEntryModal.update(v => !v);
+        // Reset fields when opening
+        if (this.showNewEntryModal()) {
+            this.selectedDate.set(this.getTodayIso());
+            this.newEntryMainText.set('');
+            this.newEntrySysWin.set('');
+            this.newEntryLearn.set('');
+            this.newEntryImpulse.set('');
+            this.newEntryBeauty.set('');
+        }
+    }
+
+    saveStructuredEntry() {
+        const parts: string[] = [];
+
+        // Brain-Dump (main text)
+        if (this.newEntryMainText().trim()) {
+            parts.push(this.newEntryMainText().trim());
+        }
+
+        // Structured fields with labels
+        const fields = [
+            { label: '🏆 System-Win', value: this.newEntrySysWin() },
+            { label: '💡 Lern-Moment', value: this.newEntryLearn() },
+            { label: '⚖️ Impuls-Check', value: this.newEntryImpulse() },
+            { label: '✨ Exzellenz-Anker', value: this.newEntryBeauty() }
+        ];
+
+        const filledFields = fields.filter(f => f.value.trim()).map(f => `${f.label}: ${f.value.trim()}`);
+
+        if (filledFields.length > 0) {
+            if (parts.length > 0) parts.push('---');
+            parts.push(...filledFields);
+        }
+
+        const combinedText = parts.join('\n');
+
+        if (combinedText) {
+            this.journal.addEntryWithDate(combinedText, new Date(this.selectedDate()));
+            this.showNewEntryModal.set(false);
+        }
+    }
 
     toggleSettingsModal() {
         this.showSettingsModal.update(v => !v);

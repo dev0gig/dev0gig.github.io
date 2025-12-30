@@ -1,1 +1,11 @@
 /* Journal page styles - inherits from global styles */
+
+/* Make date input calendar icon white */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 0.8;
+}
