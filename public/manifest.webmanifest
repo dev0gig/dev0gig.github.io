@@ -1,17 +1,75 @@
 {
-  "name": "Tools",
+  "name": "Tools - Produktivitäts-Suite",
   "short_name": "Tools",
-  "theme_color": "#1a1a1d",
+  "description": "Persönliche Produktivitäts-Tools: Journal, Budget-Tracker, Flashcards und mehr. Funktioniert vollständig offline.",
+  "theme_color": "#a855f7",
   "background_color": "#121214",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./",
+  "orientation": "any",
+  "scope": "/",
+  "start_url": "/",
+  "id": "/",
+  "categories": [
+    "productivity",
+    "utilities",
+    "education"
+  ],
   "icons": [
     {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Journal",
+      "short_name": "Journal",
+      "description": "Tagebuch-Einträge erstellen",
+      "url": "/journal",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Budget",
+      "short_name": "Budget",
+      "description": "Finanzen verwalten",
+      "url": "/budget",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Flashcards",
+      "short_name": "Flashcards",
+      "description": "Lernkarten durchgehen",
+      "url": "/flashcards",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
