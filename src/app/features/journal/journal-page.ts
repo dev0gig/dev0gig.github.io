@@ -1,4 +1,4 @@
-import { Component, signal, inject, effect } from '@angular/core';
+import { Component, signal, inject, effect, computed } from '@angular/core';
 import { EntryList } from './entry-list/entry-list';
 import { Calendar } from './calendar/calendar';
 import { Search } from './search/search';
@@ -23,6 +23,7 @@ export class JournalPage {
     settingsService = inject(SettingsService);
     router = inject(Router);
     showSettingsModal = signal(false);
+    showAllSearchTags = signal(false);
     currentYear = new Date().getFullYear();
 
     // OCR Import state
@@ -75,6 +76,20 @@ export class JournalPage {
     onTagClick(tag: string) {
         this.journal.searchByTag(tag);
     }
+
+    toggleShowAllSearchTags() {
+        this.showAllSearchTags.update(v => !v);
+    }
+
+    // Return limited tags (for 3 rows, approximately 12 tags) or all tags
+    visibleSearchTags = computed(() => {
+        const allTags = this.journal.searchResultTags();
+        const maxTags = 12; // Approximately 3 rows
+        if (this.showAllSearchTags() || allTags.length <= maxTags) {
+            return allTags;
+        }
+        return allTags.slice(0, maxTags);
+    });
 
     private getTodayIso(): string {
         const d = new Date();

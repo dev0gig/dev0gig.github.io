@@ -112,26 +112,54 @@ export class EntryList {
     }
   }
 
-  // Parse text into segments with highlighted tags
-  parseTextWithTags(text: string): { type: 'text' | 'tag', content: string }[] {
-    const segments: { type: 'text' | 'tag', content: string }[] = [];
-    const regex = /#(\w+)/g;
+  // Parse text into segments with highlighted tags and search matches
+  parseTextWithTags(text: string): { type: 'text' | 'tag' | 'highlight', content: string }[] {
+    const segments: { type: 'text' | 'tag' | 'highlight', content: string }[] = [];
+    const searchQuery = this.journal.searchQuery().trim().toLowerCase();
+
+    // First pass: split by tags
+    const tagRegex = /#(\w+)/g;
     let lastIndex = 0;
     let match;
+    const tagSegments: { type: 'text' | 'tag', content: string }[] = [];
 
-    while ((match = regex.exec(text)) !== null) {
+    while ((match = tagRegex.exec(text)) !== null) {
       // Add text before the tag
       if (match.index > lastIndex) {
-        segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+        tagSegments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
       }
       // Add the tag
-      segments.push({ type: 'tag', content: match[1] });
-      lastIndex = regex.lastIndex;
+      tagSegments.push({ type: 'tag', content: match[1] });
+      lastIndex = tagRegex.lastIndex;
     }
 
     // Add remaining text
     if (lastIndex < text.length) {
-      segments.push({ type: 'text', content: text.slice(lastIndex) });
+      tagSegments.push({ type: 'text', content: text.slice(lastIndex) });
+    }
+
+    // Second pass: highlight search query in text segments
+    if (searchQuery && !searchQuery.startsWith('#')) {
+      for (const segment of tagSegments) {
+        if (segment.type === 'text') {
+          // Split text by search query (case-insensitive)
+          const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const highlightRegex = new RegExp(`(${escapedQuery})`, 'gi');
+          const parts = segment.content.split(highlightRegex);
+
+          for (const part of parts) {
+            if (part.toLowerCase() === searchQuery) {
+              segments.push({ type: 'highlight', content: part });
+            } else if (part) {
+              segments.push({ type: 'text', content: part });
+            }
+          }
+        } else {
+          segments.push(segment);
+        }
+      }
+    } else {
+      segments.push(...tagSegments);
     }
 
     return segments;

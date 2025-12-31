@@ -286,11 +286,21 @@
             <!-- Search Result Tags (shown at TOP when searching) -->
             @if (journal.searchResultTags().length > 0) {
             <div class="gradient-card p-4 rounded-sm">
-                <h3 class="text-xs font-bold text-dash-text-dim uppercase mb-3 tracking-wider">
-                    Tags in results
-                </h3>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">
+                        Tags in results
+                    </h3>
+                    @if (journal.searchResultTags().length > 12) {
+                    <button (click)="toggleShowAllSearchTags()"
+                        class="text-xs text-dash-accent hover:text-white transition-colors flex items-center gap-1">
+                        <span>{{ showAllSearchTags() ? 'Weniger' : 'Mehr' }}</span>
+                        <span class="material-symbols-sharp text-sm">{{ showAllSearchTags() ? 'expand_less' :
+                            'expand_more' }}</span>
+                    </button>
+                    }
+                </div>
                 <div class="flex flex-wrap gap-2">
-                    @for (tagItem of journal.searchResultTags(); track tagItem.tag) {
+                    @for (tagItem of visibleSearchTags(); track tagItem.tag) {
                     <button (click)="onTagClick(tagItem.tag)" class="tag-pill cursor-pointer"
                         [style.background-color]="getTagColor(tagItem.tag)">
                         #{{ tagItem.tag }}

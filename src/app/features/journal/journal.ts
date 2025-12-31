@@ -25,6 +25,7 @@ export class JournalService {
 
   // Public readonly signals
   readonly entries = this.entriesSignal.asReadonly();
+  readonly searchQuery = this.searchQuerySignal.asReadonly();
   readonly storageUsage = signal<string>('0 KB');
 
   // Month filter state (null = no filter, show all)

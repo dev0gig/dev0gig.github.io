@@ -27,3 +27,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
+/* Search highlight styling */
+.search-highlight {
+    background-color: hsl(50, 100%, 50%);
+    color: #1f2937;
+    padding: 0.05rem 0.15rem;
+    border-radius: 2px;
+    font-weight: 500;
+}

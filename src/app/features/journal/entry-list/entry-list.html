@@ -46,6 +46,8 @@
                         @for (segment of parseTextWithTags(entry.text); track $index) {
                         @if (segment.type === 'text') {
                         <span>{{ segment.content }}</span>
+                        } @else if (segment.type === 'highlight') {
+                        <mark class="search-highlight">{{ segment.content }}</mark>
                         } @else {
                         <button (click)="onTagClick(segment.content, $event)" class="inline-tag-pill"
                             [style.background-color]="getTagColor(segment.content)"
