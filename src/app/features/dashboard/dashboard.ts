@@ -9,13 +9,7 @@ import { JournalService } from '../journal/journal';
 import { ThemeService, ACCENT_COLORS } from '../../shared/theme.service';
 import { SidebarService } from '../../shared/sidebar.service';
 import { SettingsService } from '../../shared/settings.service';
-
-interface ProjectSelection {
-    bookmarks: boolean;
-    journal: boolean;
-    budget: boolean;
-    recentlyPlayed: boolean;
-}
+import { BackupService, ProjectSelection } from '../../shared/backup.service';
 
 @Component({
     selector: 'app-dashboard',
@@ -31,6 +25,7 @@ export class Dashboard {
     themeService = inject(ThemeService);
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
+    backupService = inject(BackupService);
     router = inject(Router);
     showSettingsModal = signal(false);
 
@@ -42,7 +37,9 @@ export class Dashboard {
         bookmarks: true,
         journal: true,
         budget: true,
-        recentlyPlayed: true
+        recentlyPlayed: true,
+        flashcards: true,
+        mtgInventory: true
     });
 
     newBookmarkUrl = '';
@@ -158,8 +155,9 @@ export class Dashboard {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.html';
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
+        input.onchange = (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const file = target.files?.[0];
             if (file) {
                 this.processImportFile(file);
             }
@@ -169,9 +167,11 @@ export class Dashboard {
 
     private processImportFile(file: File) {
         const reader = new FileReader();
-        reader.onload = (e: any) => {
-            const content = e.target.result;
-            this.parseAndImportBookmarks(content);
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+            const content = e.target?.result;
+            if (typeof content === 'string') {
+                this.parseAndImportBookmarks(content);
+            }
         };
         reader.readAsText(file);
     }
@@ -225,7 +225,9 @@ export class Dashboard {
             bookmarks: true,
             journal: true,
             budget: true,
-            recentlyPlayed: true
+            recentlyPlayed: true,
+            flashcards: true,
+            mtgInventory: true
         });
     }
 
@@ -234,13 +236,15 @@ export class Dashboard {
             bookmarks: false,
             journal: false,
             budget: false,
-            recentlyPlayed: false
+            recentlyPlayed: false,
+            flashcards: false,
+            mtgInventory: false
         });
     }
 
     hasAnyProjectSelected(): boolean {
         const sel = this.projectSelection();
-        return sel.bookmarks || sel.journal || sel.budget || sel.recentlyPlayed;
+        return sel.bookmarks || sel.journal || sel.budget || sel.recentlyPlayed || sel.flashcards || sel.mtgInventory;
     }
 
     async exportAllData() {
@@ -251,275 +255,60 @@ export class Dashboard {
             return;
         }
 
-        const JSZip = (await import('jszip')).default;
-        const zip = new JSZip();
-        const exportDate = new Date().toISOString();
-
-        // Export Bookmarks as separate JSON file
-        if (selection.bookmarks) {
-            const bookmarks = this.bookmarkService.bookmarks();
-            const bookmarksData = {
-                exportDate,
-                version: '1.0',
-                project: 'bookmarks',
-                data: bookmarks
-            };
-            zip.file('bookmarks.json', JSON.stringify(bookmarksData, null, 2));
+        try {
+            const exportedProjects = await this.backupService.exportSelectedData(selection);
+            alert(`Export erfolgreich!\nExportierte Projekte: ${exportedProjects.join(', ')}`);
+        } catch (e) {
+            console.error('Export failed', e);
+            alert('Export fehlgeschlagen.');
         }
-
-        // Export Journal as separate JSON file
-        if (selection.journal) {
-            const journalEntries = this.journalService.entries();
-            const journalData = {
-                exportDate,
-                version: '1.0',
-                project: 'journal',
-                data: journalEntries
-            };
-            zip.file('journal.json', JSON.stringify(journalData, null, 2));
-        }
-
-        // Export Budget as separate JSON file
-        if (selection.budget) {
-            const transactions = localStorage.getItem('mybudget_transactions');
-            const accounts = localStorage.getItem('mybudget_accounts');
-            const categories = localStorage.getItem('mybudget_categories');
-            const fixedCosts = localStorage.getItem('mybudget_fixedcosts');
-            const fixedCostGroups = localStorage.getItem('mybudget_fixedcostgroups');
-
-            const budgetData = {
-                exportDate,
-                version: '1.2',
-                project: 'budget',
-                data: {
-                    transactions: transactions ? JSON.parse(transactions) : [],
-                    accounts: accounts ? JSON.parse(accounts) : [],
-                    categories: categories ? JSON.parse(categories) : [],
-                    fixedCosts: fixedCosts ? JSON.parse(fixedCosts) : [],
-                    fixedCostGroups: fixedCostGroups ? JSON.parse(fixedCostGroups) : []
-                }
-            };
-            zip.file('budget.json', JSON.stringify(budgetData, null, 2));
-        }
-
-        // Export RecentlyPlayed (YouTube URL History) as separate JSON file
-        if (selection.recentlyPlayed) {
-            const urlHistory = localStorage.getItem('youtube_url_history');
-            const recentlyPlayedData = {
-                exportDate,
-                version: '1.0',
-                project: 'recentlyPlayed',
-                data: urlHistory ? JSON.parse(urlHistory) : []
-            };
-            zip.file('recentlyplayed.json', JSON.stringify(recentlyPlayedData, null, 2));
-        }
-
-        // Generate and download
-        const blob = await zip.generateAsync({ type: 'blob' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `dashboard_backup_${new Date().toISOString().split('T')[0]}.zip`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-
-        const selectedProjects = [];
-        if (selection.bookmarks) selectedProjects.push('Lesezeichen');
-        if (selection.journal) selectedProjects.push('Journal');
-        if (selection.budget) selectedProjects.push('Budget');
-        if (selection.recentlyPlayed) selectedProjects.push('Zuletzt gespielt');
-
-        alert(`Export erfolgreich!\nExportierte Projekte: ${selectedProjects.join(', ')}`);
     }
 
     triggerImportAll() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.zip';
-        input.onchange = (e: any) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.processImportAllFile(file);
-            }
-        };
-        input.click();
+        this.backupService.triggerImport((file) => this.processImportAllFile(file));
     }
 
     private async processImportAllFile(file: File) {
         try {
-            const JSZip = (await import('jszip')).default;
-            const zip = await JSZip.loadAsync(file);
-
+            const projectsToImport = await this.backupService.getAvailableProjects(file);
             const selection = this.projectSelection();
-            const importedProjects: string[] = [];
-            const projectsToImport: string[] = [];
 
-            // Check which files exist in the ZIP
-            const bookmarksFile = zip.file('bookmarks.json');
-            const journalFile = zip.file('journal.json');
-            const budgetFile = zip.file('budget.json');
-            const recentlyPlayedFile = zip.file('recentlyplayed.json');
+            // Filter available projects by user selection (UI only allows selecting abstract "projects", 
+            // but we need to map that logic if we want to respect the checkboxes during import too)
+            // The existing UI has checkboxes for Bookmarks, Journal, Budget, RecentlyPlayed.
 
-            // Also check for legacy format (dashboard_backup.json)
-            const legacyFile = zip.file('dashboard_backup.json');
-
-            // Determine which projects can be imported
-            if (selection.bookmarks && bookmarksFile) projectsToImport.push('Lesezeichen');
-            if (selection.journal && journalFile) projectsToImport.push('Journal');
-            if (selection.budget && budgetFile) projectsToImport.push('Budget');
-            if (selection.recentlyPlayed && recentlyPlayedFile) projectsToImport.push('Zuletzt gespielt');
-
-            // If no new format files found, try legacy format
-            if (projectsToImport.length === 0 && legacyFile) {
-                await this.processLegacyImport(legacyFile, selection);
-                return;
-            }
+            // We'll trust the BackupService to handle the "legacy" check logic internally or we check it here?
+            // BackupService.importSelectedData handles checking if file exists in ZIP.
+            // But we want to warn user BEFORE importing.
 
             if (projectsToImport.length === 0) {
-                alert('Keine passenden Daten in der Backup-Datei gefunden oder keine Projekte ausgewählt.');
+                alert('Keine passenden Daten in der Backup-Datei gefunden.');
                 return;
             }
 
-            if (!confirm(`Warnung: Der Import überschreibt alle bestehenden Daten für:\n${projectsToImport.join(', ')}\n\nFortfahren?`)) {
+            // We construct a friendly list for the confirm dialog
+            // Note: getAvailableProjects returns raw file keys or 'legacy'.
+            // For a nice message we might want to check what WILL be imported based on SELECTION + AVAILABILITY.
+
+            // But to keep it simple and consistent with previous behavior:
+            if (!confirm(`Warnung: Der Import überschreibt alle bestehenden Daten für die ausgewählten und im Backup enthaltenen Projekte.\n\nFortfahren?`)) {
                 return;
             }
 
-            // Import Bookmarks
-            if (selection.bookmarks && bookmarksFile) {
-                const content = await bookmarksFile.async('string');
-                const bookmarksData = JSON.parse(content);
-                const bookmarks = (bookmarksData.data || []).map((b: any) => ({
-                    ...b,
-                    createdAt: b.createdAt || Date.now()
-                }));
-                this.bookmarkService.importBookmarks(bookmarks, true);
-                importedProjects.push('Lesezeichen');
+            const importedProjects = await this.backupService.importSelectedData(file, selection);
+
+            if (importedProjects.length > 0) {
+                this.toggleSettingsModal();
+                alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
+                window.location.reload();
+            } else {
+                alert('Keine Daten importiert (überprüfen Sie Ihre Auswahl).');
             }
 
-            // Import Journal
-            if (selection.journal && journalFile) {
-                const content = await journalFile.async('string');
-                const journalData = JSON.parse(content);
-                const entries = (journalData.data || []).map((e: any) => ({
-                    ...e,
-                    date: new Date(e.date)
-                }));
-                localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
-                importedProjects.push('Journal');
-            }
-
-            // Import Budget
-            if (selection.budget && budgetFile) {
-                const content = await budgetFile.async('string');
-                const budgetData = JSON.parse(content);
-                const budget = budgetData.data || {};
-                if (budget.transactions) {
-                    localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
-                }
-                if (budget.accounts) {
-                    localStorage.setItem('mybudget_accounts', JSON.stringify(budget.accounts));
-                }
-                if (budget.categories) {
-                    localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
-                }
-                if (budget.fixedCosts) {
-                    localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
-                }
-                if (budget.fixedCostGroups) {
-                    localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
-                }
-                importedProjects.push('Budget');
-            }
-
-            // Import RecentlyPlayed (YouTube URL History)
-            if (selection.recentlyPlayed && recentlyPlayedFile) {
-                const content = await recentlyPlayedFile.async('string');
-                const recentlyPlayedData = JSON.parse(content);
-                localStorage.setItem('youtube_url_history', JSON.stringify(recentlyPlayedData.data || []));
-                importedProjects.push('Zuletzt gespielt');
-            }
-
-            this.toggleSettingsModal();
-            alert(`Import erfolgreich!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
-
-            // Reload to apply changes
-            window.location.reload();
         } catch (e) {
             console.error('Import failed', e);
             alert('Import fehlgeschlagen. Bitte überprüfen Sie das Dateiformat.');
         }
-    }
-
-    private async processLegacyImport(legacyFile: any, selection: ProjectSelection) {
-        const content = await legacyFile.async('string');
-        const data = JSON.parse(content);
-
-        if (!data.projects) {
-            alert('Ungültige Backup-Datei: Keine Projektdaten gefunden.');
-            return;
-        }
-
-        const importedProjects: string[] = [];
-        const projectsToImport: string[] = [];
-
-        if (selection.bookmarks && data.projects.bookmarks) projectsToImport.push('Lesezeichen');
-        if (selection.journal && data.projects.journal) projectsToImport.push('Journal');
-        if (selection.budget && data.projects.budget) projectsToImport.push('Budget');
-
-        if (projectsToImport.length === 0) {
-            alert('Keine passenden Daten in der Backup-Datei gefunden oder keine Projekte ausgewählt.');
-            return;
-        }
-
-        if (!confirm(`Warnung: Der Import überschreibt alle bestehenden Daten für:\n${projectsToImport.join(', ')}\n\nFortfahren?`)) {
-            return;
-        }
-
-        // Import Bookmarks
-        if (selection.bookmarks && data.projects.bookmarks) {
-            const bookmarks = data.projects.bookmarks.map((b: any) => ({
-                ...b,
-                createdAt: b.createdAt || Date.now()
-            }));
-            this.bookmarkService.importBookmarks(bookmarks, true);
-            importedProjects.push('Lesezeichen');
-        }
-
-        // Import Journal
-        if (selection.journal && data.projects.journal) {
-            const entries = data.projects.journal.map((e: any) => ({
-                ...e,
-                date: new Date(e.date)
-            }));
-            localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
-            importedProjects.push('Journal');
-        }
-
-        // Import Budget
-        if (selection.budget && data.projects.budget) {
-            const budget = data.projects.budget;
-            if (budget.transactions) {
-                localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
-            }
-            if (budget.accounts) {
-                localStorage.setItem('mybudget_accounts', JSON.stringify(budget.accounts));
-            }
-            if (budget.categories) {
-                localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
-            }
-            if (budget.fixedCosts) {
-                localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
-            }
-            if (budget.fixedCostGroups) {
-                localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
-            }
-            importedProjects.push('Budget');
-        }
-
-        this.toggleSettingsModal();
-        alert(`Import erfolgreich (Legacy-Format)!\nImportierte Projekte: ${importedProjects.join(', ')}\n\nBitte laden Sie die Seite neu, um alle Änderungen zu sehen.`);
-
-        window.location.reload();
     }
 
     deleteAllData() {
@@ -530,6 +319,7 @@ export class Dashboard {
             return;
         }
 
+        // Helper to get nice names for confirmation
         const projectsToDelete = [];
         if (selection.bookmarks) projectsToDelete.push('Lesezeichen');
         if (selection.journal) projectsToDelete.push('Journal');
@@ -545,29 +335,7 @@ export class Dashboard {
             return;
         }
 
-        // Delete Bookmarks
-        if (selection.bookmarks) {
-            localStorage.removeItem('dev0gig_bookmarks');
-        }
-
-        // Delete Journal
-        if (selection.journal) {
-            localStorage.removeItem('terminal_journal_entries');
-        }
-
-        // Delete Budget
-        if (selection.budget) {
-            localStorage.removeItem('mybudget_transactions');
-            localStorage.removeItem('mybudget_accounts');
-            localStorage.removeItem('mybudget_categories');
-            localStorage.removeItem('mybudget_fixedcosts');
-            localStorage.removeItem('mybudget_fixedcostgroups');
-        }
-
-        // Delete RecentlyPlayed (YouTube URL History)
-        if (selection.recentlyPlayed) {
-            localStorage.removeItem('youtube_url_history');
-        }
+        this.backupService.deleteAllData(selection);
 
         this.toggleSettingsModal();
         alert(`Gelöscht: ${projectsToDelete.join(', ')}\n\nDie Seite wird neu geladen.`);

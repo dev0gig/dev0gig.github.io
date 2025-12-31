@@ -132,6 +132,15 @@ export class FlashcardsService {
         this.saveDecks();
     }
 
+    deleteAllData(): void {
+        this._cards.set([]);
+        this._decks.set([]);
+        this._currentIndex.set(0);
+        this._activeDeckId.set(null);
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(DECKS_STORAGE_KEY);
+    }
+
     // --- Import/Export ---
 
     /**

@@ -6,11 +6,12 @@ import { FixedCost, Account, Category, FixedCostGroup } from '../../budget.model
 import { BudgetUtilityService } from '../../budget.utility.service';
 import { BudgetStateService } from '../../budget.state.service';
 import { BudgetPdfService } from '../../budget.pdf.service';
+import { FixedCostItemComponent } from './fixed-cost-item/fixed-cost-item';
 
 @Component({
     selector: 'app-fixed-costs-view',
     standalone: true,
-    imports: [CommonModule, FormsModule, DragDropModule],
+    imports: [CommonModule, FormsModule, DragDropModule, FixedCostItemComponent],
     templateUrl: './fixed-costs-view.html'
 })
 export class FixedCostsViewComponent {
@@ -39,6 +40,8 @@ export class FixedCostsViewComponent {
     @Output() editGroup = new EventEmitter<FixedCostGroup>();
     @Output() deleteGroup = new EventEmitter<string>();
     @Output() reorderFixedCosts = new EventEmitter<string[]>();
+
+    // Updated output signature to match strict types
     @Output() submitFixedCost = new EventEmitter<{
         id?: string;
         name: string;
@@ -55,7 +58,6 @@ export class FixedCostsViewComponent {
     // Inline editing state
     expandedFixedCostId = signal<string | null>(null);
     editingFixedCostId = signal<string | null>(null);
-    inlineFixedCostTypes = signal<Map<string, 'income' | 'expense' | 'transfer'>>(new Map());
 
     // Expose Math to template
     Math = Math;
@@ -64,55 +66,12 @@ export class FixedCostsViewComponent {
         return this.utilityService.formatCurrency(amount);
     }
 
-    getAccountById(id: string | undefined): Account | undefined {
-        if (!id) return undefined;
-        return this.accounts.find(a => a.id === id);
-    }
-
-    getCategoryFullName(id: string): string {
-        return this.stateService.getCategoryFullName(id);
-    }
-
     getGroupById(id: string): FixedCostGroup | undefined {
         return this.groups.find(g => g.id === id);
     }
 
     getSortedGroups(): FixedCostGroup[] {
         return [...this.groups].sort((a, b) => a.order - b.order);
-    }
-
-    getSortedCategories(): Category[] {
-        return [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    /**
-     * Gets categories filtered by fixed cost type for inline editing:
-     * - income: shows categories with type 'income' or 'both'
-     * - expense: shows categories with type 'expense' or 'both'
-     * - transfer: returns empty array (transfers have no category)
-     */
-    getFilteredCategoriesForFixedCost(fixedCostId: string): Category[] {
-        const type = this.getInlineFixedCostType(fixedCostId);
-
-        // Transfers don't have categories
-        if (type === 'transfer') {
-            return [];
-        }
-
-        // Filter categories based on type
-        return [...this.categories]
-            .filter(cat => {
-                if (cat.type === 'both') return true;
-                return cat.type === type;
-            })
-            .sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    /**
-     * Checks if category field should be disabled (for transfers)
-     */
-    isCategoryDisabledForFixedCost(fixedCostId: string): boolean {
-        return this.getInlineFixedCostType(fixedCostId) === 'transfer';
     }
 
     getFixedCostsByGroup(groupId: string | null): FixedCost[] {
@@ -148,13 +107,6 @@ export class FixedCostsViewComponent {
             this.editingFixedCostId.set(null);
         } else {
             this.expandedFixedCostId.set(id);
-            // Initialize type for inline editing
-            const fixedCost = this.fixedCosts.find(fc => fc.id === id);
-            if (fixedCost) {
-                const types = new Map(this.inlineFixedCostTypes());
-                types.set(id, fixedCost.type);
-                this.inlineFixedCostTypes.set(types);
-            }
         }
     }
 
@@ -164,51 +116,18 @@ export class FixedCostsViewComponent {
 
     cancelInlineEdit(id: string): void {
         this.editingFixedCostId.set(null);
-        // Reset type to original
-        const fixedCost = this.fixedCosts.find(fc => fc.id === id);
-        if (fixedCost) {
-            const types = new Map(this.inlineFixedCostTypes());
-            types.set(id, fixedCost.type);
-            this.inlineFixedCostTypes.set(types);
-        }
     }
 
     isEditingInline(id: string): boolean {
         return this.editingFixedCostId() === id;
     }
 
-    getInlineFixedCostType(id: string): 'income' | 'expense' | 'transfer' {
-        return this.inlineFixedCostTypes().get(id) || 'expense';
-    }
-
-    setInlineFixedCostType(id: string, type: 'income' | 'expense' | 'transfer'): void {
-        const types = new Map(this.inlineFixedCostTypes());
-        types.set(id, type);
-        this.inlineFixedCostTypes.set(types);
-    }
-
-    onInlineFixedCostEdit(event: Event, fixedCostId: string): void {
-        event.preventDefault();
-        const form = event.target as HTMLFormElement;
-        const formData = new FormData(form);
-
-        const type = this.getInlineFixedCostType(fixedCostId);
-        const fixedCost = this.fixedCosts.find(fc => fc.id === fixedCostId);
+    // Handler for the save event from child component
+    onSaveFixedCost(id: string, data: any): void {
+        const fixedCost = this.fixedCosts.find(fc => fc.id === id);
         if (!fixedCost) return;
 
-        const data = {
-            name: formData.get('name') as string,
-            amount: parseFloat(formData.get('amount') as string),
-            type: type,
-            category: formData.get('category') as string,
-            account: formData.get('account') as string,
-            toAccount: type === 'transfer' ? formData.get('toAccount') as string : undefined,
-            groupId: formData.get('groupId') as string || undefined,
-            note: formData.get('note') as string || undefined,
-            excludeFromTotal: (formData.get('excludeFromTotal') as string) === 'on'
-        };
-
-        this.stateService.updateFixedCost(fixedCostId, data);
+        this.stateService.updateFixedCost(id, data);
         this.editingFixedCostId.set(null);
     }
 
@@ -234,10 +153,18 @@ export class FixedCostsViewComponent {
                 const groupIdAttr = containerElement.getAttribute('data-group-id');
                 if (groupIdAttr === 'null' || groupIdAttr === null) {
                     targetGroupId = undefined;
+                } else if (groupIdAttr === 'excluded') {
+                    // Moving to excluded list
+                    // Special case: we need to set excludeFromTotal=true
+                    // But here we rely on the implementation below
+                    targetGroupId = undefined; // No group
                 } else {
                     targetGroupId = groupIdAttr;
                 }
             }
+
+            // Check if moving to/from excluded list
+            const isTargetExcluded = targetContainer.element.nativeElement.getAttribute('data-group-id') === 'excluded';
 
             // Update the fixed cost's groupId
             const currentData = this.fixedCosts.find(fc => fc.id === draggedItem.id);
@@ -249,9 +176,9 @@ export class FixedCostsViewComponent {
                     category: currentData.category,
                     account: currentData.account,
                     toAccount: currentData.toAccount,
-                    groupId: targetGroupId,
+                    groupId: isTargetExcluded ? undefined : targetGroupId,
                     note: currentData.note,
-                    excludeFromTotal: currentData.excludeFromTotal
+                    excludeFromTotal: isTargetExcluded ? true : false // If target is excluded list, set flag
                 });
             }
         } else if (event.previousIndex !== event.currentIndex) {
@@ -291,30 +218,6 @@ export class FixedCostsViewComponent {
 
     onDeleteGroup(id: string): void {
         this.deleteGroup.emit(id);
-    }
-
-    getTypeIcon(type: 'income' | 'expense' | 'transfer'): string {
-        switch (type) {
-            case 'income': return 'trending_up';
-            case 'expense': return 'trending_down';
-            case 'transfer': return 'swap_horiz';
-        }
-    }
-
-    getTypeColor(type: 'income' | 'expense' | 'transfer'): string {
-        switch (type) {
-            case 'income': return 'text-green-500';
-            case 'expense': return 'text-red-500';
-            case 'transfer': return 'text-purple-500';
-        }
-    }
-
-    getTypeBgColor(type: 'income' | 'expense' | 'transfer'): string {
-        switch (type) {
-            case 'income': return 'bg-green-500/20';
-            case 'expense': return 'bg-red-500/20';
-            case 'transfer': return 'bg-purple-500/20';
-        }
     }
 
     exportPdf(): void {

@@ -11,14 +11,40 @@ export interface ProjectSelection {
     mtgInventory: boolean;
 }
 
+interface BackupData<T> {
+    exportDate: string;
+    version: string;
+    project: string;
+    data: T;
+}
+
+interface BookmarkDTO {
+    id: string;
+    // other properties if needed, for now just partial
+    createdAt?: number;
+    [key: string]: any; // Allow loose typing for now as we transition
+}
+
+interface JournalEntryDTO {
+    id: string;
+    date: string;
+    text: string;
+    tags: string[];
+}
+
+interface LegacyBackup {
+    projects: {
+        bookmarks?: any[];
+        journal?: any[];
+        budget?: any;
+    };
+}
+
 @Injectable({ providedIn: 'root' })
 export class BackupService {
     private bookmarkService = inject(BookmarkService);
     private flashcardsService = inject(FlashcardsService);
 
-    /**
-     * Generate backup filename with current date
-     */
     private generateFilename(): string {
         const now = new Date();
         const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
@@ -201,19 +227,19 @@ export class BackupService {
 
         if (selection.bookmarks && bookmarksFile) {
             const content = await bookmarksFile.async('string');
-            const bookmarksData = JSON.parse(content);
-            const bookmarks = (bookmarksData.data || []).map((b: any) => ({
+            const dataWrapper = JSON.parse(content) as BackupData<BookmarkDTO[]>;
+            const bookmarks = (dataWrapper.data || []).map((b) => ({
                 ...b,
-                createdAt: b.createdAt || Date.now()
+                createdAt: (b as any).createdAt || Date.now()
             }));
-            this.bookmarkService.importBookmarks(bookmarks, true);
+            this.bookmarkService.importBookmarks(bookmarks as any[], true);
             importedProjects.push('Lesezeichen');
         }
 
         if (selection.journal && journalFile) {
             const content = await journalFile.async('string');
-            const journalData = JSON.parse(content);
-            const entries = (journalData.data || []).map((e: any) => ({
+            const dataWrapper = JSON.parse(content) as BackupData<JournalEntryDTO[]>;
+            const entries = (dataWrapper.data || []).map((e) => ({
                 ...e,
                 date: new Date(e.date)
             }));
@@ -223,8 +249,8 @@ export class BackupService {
 
         if (selection.budget && budgetFile) {
             const content = await budgetFile.async('string');
-            const budgetData = JSON.parse(content);
-            const budget = budgetData.data || {};
+            const dataWrapper = JSON.parse(content) as BackupData<any>;
+            const budget = dataWrapper.data || {};
             if (budget.transactions) {
                 localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
             }
@@ -245,14 +271,14 @@ export class BackupService {
 
         if (selection.recentlyPlayed && recentlyPlayedFile) {
             const content = await recentlyPlayedFile.async('string');
-            const recentlyPlayedData = JSON.parse(content);
-            localStorage.setItem('youtube_url_history', JSON.stringify(recentlyPlayedData.data || []));
+            const dataWrapper = JSON.parse(content) as BackupData<any[]>;
+            localStorage.setItem('youtube_url_history', JSON.stringify(dataWrapper.data || []));
             importedProjects.push('Zuletzt gespielt');
         }
 
         if (selection.flashcards && flashcardsFile) {
             const content = await flashcardsFile.async('string');
-            const importData = JSON.parse(content);
+            const importData = JSON.parse(content) as BackupData<{ cards: any[], decks: any[] }>;
             if (importData.data) {
                 const cardsToImport = Array.isArray(importData.data.cards) ? importData.data.cards : [];
                 const decksToImport = Array.isArray(importData.data.decks) ? importData.data.decks : [];
@@ -266,7 +292,7 @@ export class BackupService {
 
         if (selection.mtgInventory && mtgInventoryFile) {
             const content = await mtgInventoryFile.async('string');
-            const mtgData = JSON.parse(content);
+            const mtgData = JSON.parse(content) as BackupData<any>;
             if (mtgData.data) {
                 if (mtgData.data.cards) {
                     localStorage.setItem('mtg-cards', JSON.stringify(mtgData.data.cards));
@@ -286,7 +312,7 @@ export class BackupService {
      */
     private async processLegacyImport(legacyFile: any, selection: ProjectSelection): Promise<string[]> {
         const content = await legacyFile.async('string');
-        const data = JSON.parse(content);
+        const data = JSON.parse(content) as LegacyBackup;
         const importedProjects: string[] = [];
 
         if (!data.projects) {
@@ -294,16 +320,16 @@ export class BackupService {
         }
 
         if (selection.bookmarks && data.projects.bookmarks) {
-            const bookmarks = data.projects.bookmarks.map((b: any) => ({
+            const bookmarks = data.projects.bookmarks.map((b) => ({
                 ...b,
-                createdAt: b.createdAt || Date.now()
+                createdAt: (b as any).createdAt || Date.now()
             }));
-            this.bookmarkService.importBookmarks(bookmarks, true);
+            this.bookmarkService.importBookmarks(bookmarks as any[], true);
             importedProjects.push('Lesezeichen');
         }
 
         if (selection.journal && data.projects.journal) {
-            const entries = data.projects.journal.map((e: any) => ({
+            const entries = data.projects.journal.map((e) => ({
                 ...e,
                 date: new Date(e.date)
             }));
@@ -332,6 +358,56 @@ export class BackupService {
         }
 
         return importedProjects;
+    }
+
+    /**
+     * Delete all data for selected projects
+     */
+    deleteAllData(selection: ProjectSelection): string[] {
+        const deletedProjects: string[] = [];
+
+        // Delete Bookmarks
+        if (selection.bookmarks) {
+            localStorage.removeItem('dev0gig_bookmarks');
+            deletedProjects.push('Lesezeichen');
+        }
+
+        // Delete Journal
+        if (selection.journal) {
+            localStorage.removeItem('terminal_journal_entries');
+            deletedProjects.push('Journal');
+        }
+
+        // Delete Budget
+        if (selection.budget) {
+            localStorage.removeItem('mybudget_transactions');
+            localStorage.removeItem('mybudget_accounts');
+            localStorage.removeItem('mybudget_categories');
+            localStorage.removeItem('mybudget_fixedcosts');
+            localStorage.removeItem('mybudget_fixedcostgroups');
+            deletedProjects.push('Budget');
+        }
+
+        // Delete RecentlyPlayed
+        if (selection.recentlyPlayed) {
+            localStorage.removeItem('youtube_url_history');
+            deletedProjects.push('Zuletzt gespielt');
+        }
+
+        // Delete Flashcards
+        if (selection.flashcards) {
+            this.flashcardsService.deleteAllData();
+            deletedProjects.push('Flashcards');
+        }
+
+        // Delete MTG Inventory
+        if (selection.mtgInventory) {
+            localStorage.removeItem('mtg-cards');
+            localStorage.removeItem('mtg-cache');
+            deletedProjects.push('MTG Inventory');
+        }
+
+        return deletedProjects;
     }
 
     /**

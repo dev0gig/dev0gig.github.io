@@ -1,0 +1,243 @@
+<div class="fixed-cost-item border-b border-dash-border last:border-b-0">
+    
+    <!-- Row Content -->
+    <div class="p-3 md:p-4 hover:bg-dash-card-hover transition-colors cursor-pointer"
+        (click)="expand.emit(fixedCost.id)">
+        <div class="flex items-center gap-3">
+            <!-- Drag Handle (Projected from parent via CDK? No, we need handle inside) -->
+            <!-- We will use cdkDragHandle here, but it only works if this component is inside a cdkDrag element. 
+                 Ideally, the parent puts cdkDrag on the container of this component. 
+                 But to make the handle work, the handle must be inside cdkDrag. 
+                 So the handles inside this component will implicitly work if the host is inside cdkDrag. -->
+            <div class="cursor-grab active:cursor-grabbing text-dash-text-dim hover:text-dash-accent flex-shrink-0"
+                cdkDragHandle (click)="$event.stopPropagation()">
+                <span class="material-symbols-sharp text-xl">drag_indicator</span>
+            </div>
+
+            <!-- Type Icon -->
+            <div class="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                [ngClass]="getTypeBgColor(fixedCost.type)">
+                <span class="material-symbols-sharp text-base"
+                    [ngClass]="getTypeColor(fixedCost.type)">{{ getTypeIcon(fixedCost.type) }}</span>
+            </div>
+
+            <!-- Name -->
+            <div class="flex-1 min-w-0">
+                <div class="font-medium text-dash-text truncate" title="{{ fixedCost.name }}">{{
+                    fixedCost.name }}</div>
+                <div class="text-xs text-dash-text-dim truncate">
+                    @if (fixedCost.type === 'transfer') {
+                    {{ getAccountById(fixedCost.account)?.name || '?' }} → {{
+                    getAccountById(fixedCost.toAccount || '')?.name || '?' }}
+                    } @else {
+                    {{ getAccountById(fixedCost.account)?.name || 'Unbekannt' }} · {{
+                    getCategoryFullName(fixedCost.category) }}
+                    }
+                </div>
+            </div>
+
+            <!-- Note Indicator -->
+            @if (fixedCost.note) {
+            <span class="material-symbols-sharp text-sm text-dash-text-dim"
+                title="Hat Notiz">note</span>
+            }
+
+            <!-- Amount -->
+            <div class="font-mono font-bold text-right whitespace-nowrap"
+                [ngClass]="getTypeColor(fixedCost.type)">
+                {{ fixedCost.type === 'income' ? '+' : fixedCost.type === 'expense' ? '-' : '' }}{{
+                formatCurrency(fixedCost.amount) }}
+            </div>
+
+            <!-- Quick Book Button -->
+            <button type="button" (click)="book.emit(fixedCost); $event.stopPropagation()"
+                class="gradient-btn text-white px-2 md:px-3 py-1.5 rounded-sm text-xs font-medium flex items-center gap-1 flex-shrink-0"
+                title="Als Transaktion buchen">
+                <span class="material-symbols-sharp text-sm">add</span>
+                <span class="hidden sm:inline">Buchen</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Expanded Edit Form -->
+    @if (isExpanded) {
+    <div class="px-3 md:px-4 pb-3 md:pb-4 border-t border-dash-border"
+        (click)="$event.stopPropagation()">
+        <form (submit)="onSubmit($event)" class="space-y-4 pt-4">
+
+            <!-- Type Selection -->
+            <div>
+                <label
+                    class="block text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Typ</label>
+                <div class="flex gap-2">
+                    <button type="button" (click)="setType('expense')"
+                        [disabled]="!isEditing"
+                        [class]="editType() === 'expense' ? 'flex-1 bg-red-500/20 text-red-500 border border-red-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                        Ausgabe
+                    </button>
+                    <button type="button" (click)="setType('income')"
+                        [disabled]="!isEditing"
+                        [class]="editType() === 'income' ? 'flex-1 bg-green-500/20 text-green-500 border border-green-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                        Einnahme
+                    </button>
+                    <button type="button" (click)="setType('transfer')"
+                        [disabled]="!isEditing"
+                        [class]="editType() === 'transfer' ? 'flex-1 bg-purple-500/20 text-purple-500 border border-purple-500 px-4 py-2 rounded-sm text-sm font-medium transition-colors disabled:opacity-50' : 'flex-1 bg-dash-bg text-dash-text-dim px-4 py-2 rounded-sm text-sm font-medium transition-colors border border-dash-border disabled:opacity-50'">
+                        Transfer
+                    </button>
+                </div>
+            </div>
+
+            <!-- All fields in compact responsive grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Betrag</label>
+                    <input type="number" name="amount" step="0.01" required [value]="fixedCost.amount"
+                        [disabled]="!isEditing"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                        placeholder="0,00">
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Kategorie</label>
+                    <select name="category" [required]="!isCategoryDisabled()"
+                        [disabled]="!isEditing || isCategoryDisabled()"
+                        [class]="isCategoryDisabled() 
+                            ? 'w-full bg-dash-bg/50 border border-dash-border/50 text-dash-text-dim px-2 py-1.5 rounded-sm text-sm cursor-not-allowed opacity-50' 
+                            : 'w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed'">
+                        @if (isCategoryDisabled()) {
+                        <option value="">Nicht verfügbar bei Transfer</option>
+                        } @else if (getFilteredCategories().length === 0) {
+                        <option value="">Keine passenden Kategorien</option>
+                        } @else {
+                        <option value="">Wählen</option>
+                        @for (category of getFilteredCategories(); track
+                        category.id) {
+                        <option [value]="category.id" [selected]="category.id === fixedCost.category">{{
+                            category.name }}</option>
+                        }
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">
+                        {{ editType() === 'transfer' ? 'Von Konto' : 'Konto'
+                        }}
+                    </label>
+                    <select name="account" required [disabled]="!isEditing"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">Wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id" [selected]="account.id === fixedCost.account">{{
+                            account.name }}</option>
+                        }
+                    </select>
+                </div>
+                <!-- Transfer Target Account -->
+                 @if (editType() === 'transfer') {
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Nach
+                        Konto</label>
+                    <select name="toAccount"
+                        required
+                        [disabled]="!isEditing"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">Wählen</option>
+                        @for (account of accounts; track account.id) {
+                        <option [value]="account.id" [selected]="account.id === fixedCost.toAccount">
+                            {{ account.name }}</option>
+                        }
+                    </select>
+                </div>
+                 }
+                @if (groups.length > 0) {
+                <div>
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Gruppe</label>
+                    <select name="groupId" [disabled]="!isEditing"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">Keine Gruppe</option>
+                        @for (group of groups; track group.id) {
+                        <option [value]="group.id" [selected]="group.id === fixedCost.groupId">{{
+                            group.name }}</option>
+                        }
+                    </select>
+                </div>
+                }
+                
+                <!-- Helper logic to span columns correctly depending on visible fields -->
+                <div class="col-span-2 md:col-span-3 lg:col-span-2"
+                    [class.lg:col-span-1]="editType() === 'transfer'">
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Name</label>
+                    <input type="text" name="name" required [value]="fixedCost.name"
+                        [disabled]="!isEditing"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                        placeholder="z.B. Miete">
+                </div>
+
+                <!-- Full width Notes field -->
+                <div class="col-span-2 md:col-span-3 lg:col-span-6">
+                    <label
+                        class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Notiz</label>
+                    <textarea name="note" [value]="fixedCost.note || ''"
+                        [disabled]="!isEditing"
+                        class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                        placeholder="Optionale Notiz..." rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- Exclude from Total -->
+            <div class="flex items-center gap-3">
+                <input type="checkbox" name="excludeFromTotal" id="excludeFromTotal_item_{{ fixedCost.id }}"
+                    [checked]="fixedCost.excludeFromTotal" [disabled]="!isEditing"
+                    class="w-4 h-4 bg-dash-bg border border-dash-border rounded accent-dash-accent disabled:opacity-50">
+                <label for="excludeFromTotal_item_{{ fixedCost.id }}"
+                    class="text-sm text-dash-text-dim cursor-pointer">
+                    Nicht in Summe einrechnen
+                </label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap justify-end gap-2 pt-2">
+                <button type="button" *ngIf="!isEditing"
+                    (click)="toggleEdit.emit(fixedCost.id); $event.stopPropagation()"
+                    class="px-2 sm:px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                    <span class="material-symbols-sharp text-sm">edit</span>
+                    <span class="hidden sm:inline">Bearbeiten</span>
+                </button>
+
+                <button type="button" *ngIf="isEditing"
+                    (click)="cancelEdit.emit(fixedCost.id); $event.stopPropagation()"
+                    class="px-2 sm:px-3 py-1 bg-dash-bg hover:bg-dash-border text-dash-text-dim hover:text-white text-xs rounded-sm border border-dash-border transition-colors flex items-center gap-1">
+                    <span class="material-symbols-sharp text-sm">close</span>
+                    <span class="hidden sm:inline">Abbrechen</span>
+                </button>
+
+                <button type="submit" *ngIf="isEditing"
+                    class="px-2 sm:px-3 py-1 bg-dash-accent hover:bg-dash-accent-hover text-white text-xs rounded-sm transition-colors flex items-center gap-1">
+                    <span class="material-symbols-sharp text-sm">save</span>
+                    <span class="hidden sm:inline">Speichern</span>
+                </button>
+
+                <button type="button"
+                    (click)="delete.emit(fixedCost.id); $event.stopPropagation()"
+                    class="px-2 sm:px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs rounded-sm border border-red-500/30 transition-colors flex items-center gap-1">
+                    <span class="material-symbols-sharp text-sm">delete</span>
+                    <span class="hidden sm:inline">Löschen</span>
+                </button>
+
+                <button type="button" (click)="book.emit(fixedCost); $event.stopPropagation()"
+                    class="px-2 sm:px-3 py-1 bg-dash-accent/10 hover:bg-dash-accent/20 text-dash-accent text-xs rounded-sm border border-dash-accent/30 transition-colors flex items-center gap-1"
+                    title="Als Transaktion buchen">
+                    <span class="material-symbols-sharp text-sm">add</span>
+                    <span class="hidden sm:inline">Buchen</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    }
+</div>
