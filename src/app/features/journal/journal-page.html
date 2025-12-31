@@ -91,6 +91,8 @@
                     <div class="flex items-center gap-3">
                         <input type="date" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event)"
                             class="bg-dash-bg border border-dash-border rounded-sm px-3 py-2 text-sm text-dash-text focus:border-dash-accent focus:outline-none transition-colors">
+                        <input type="time" [ngModel]="selectedTime()" (ngModelChange)="selectedTime.set($event)"
+                            class="bg-dash-bg border border-dash-border rounded-sm px-3 py-2 text-sm text-dash-text focus:border-dash-accent focus:outline-none transition-colors">
                         <button (click)="toggleNewEntryModal()"
                             class="text-dash-text-dim hover:text-white transition-colors">
                             <span class="material-symbols-sharp">close</span>
@@ -208,18 +210,7 @@
                 <h2 class="text-xs font-bold text-dash-text-dim uppercase mb-2 tracking-wider">Total Entries</h2>
                 <div class="flex items-center justify-between">
                     <div class="text-2xl font-bold text-dash-accent">{{ journal.entries().length }}</div>
-                    @if (journal.duplicateEntriesCount() > 0) {
-                    <button (click)="toggleDuplicateFilter()"
-                        class="flex items-center gap-1 px-2 py-1 rounded-sm text-xs transition-all"
-                        [class.bg-red-500/20]="!journal.duplicateFilter()"
-                        [class.text-red-400]="!journal.duplicateFilter()"
-                        [class.hover:bg-red-500/30]="!journal.duplicateFilter()"
-                        [class.bg-red-500]="journal.duplicateFilter()" [class.text-white]="journal.duplicateFilter()"
-                        title="Click to show entries with duplicate dates">
-                        <span class="material-symbols-sharp text-sm">warning</span>
-                        <span class="font-mono">{{ journal.duplicateEntriesCount() }}</span>
-                    </button>
-                    }
+
                 </div>
             </div>
 

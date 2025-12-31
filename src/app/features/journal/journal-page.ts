@@ -33,6 +33,7 @@ export class JournalPage {
     // New Entry Modal state
     showNewEntryModal = signal(false);
     selectedDate = signal(this.getTodayIso());
+    selectedTime = signal(this.getCurrentTimeIso());
 
     // Form fields for modal
     newEntryMainText = signal('');
@@ -96,11 +97,17 @@ export class JournalPage {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
+    private getCurrentTimeIso(): string {
+        const d = new Date();
+        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
     toggleNewEntryModal() {
         this.showNewEntryModal.update(v => !v);
         // Reset fields when opening
         if (this.showNewEntryModal()) {
             this.selectedDate.set(this.getTodayIso());
+            this.selectedTime.set(this.getCurrentTimeIso());
             this.newEntryMainText.set('');
             this.newEntrySysWin.set('');
             this.newEntryLearn.set('');
@@ -135,7 +142,16 @@ export class JournalPage {
         const combinedText = parts.join('\n');
 
         if (combinedText) {
-            this.journal.addEntryWithDate(combinedText, new Date(this.selectedDate()));
+            const selectedDateStr = this.selectedDate();
+            const selectedTimeStr = this.selectedTime();
+
+            // Create date object from date and time inputs
+            const dateObj = new Date(selectedDateStr);
+            const [hours, minutes] = selectedTimeStr.split(':').map(Number);
+            dateObj.setHours(hours);
+            dateObj.setMinutes(minutes);
+
+            this.journal.addEntryWithDate(combinedText, dateObj);
             this.showNewEntryModal.set(false);
         }
     }
@@ -157,13 +173,7 @@ export class JournalPage {
         return filter !== null && filter.year === this.currentYear && filter.month === month;
     }
 
-    toggleDuplicateFilter() {
-        if (this.journal.duplicateFilter()) {
-            this.journal.clearDuplicateFilter();
-        } else {
-            this.journal.setDuplicateFilter(true);
-        }
-    }
+
 
     async onExport() {
         const blob = await this.journal.exportData();

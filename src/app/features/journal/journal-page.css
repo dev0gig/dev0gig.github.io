@@ -6,7 +6,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
 }
 
+/* Make time input clock icon white */
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 0.8;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
     opacity: 0.8;
 }
 
@@ -24,5 +34,5 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .tag-pill:hover {
     transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

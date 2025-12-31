@@ -19,8 +19,8 @@ export class EntryList {
     const current = this.journal.currentDate();
     const entries = this.journal.displayEntries();
 
-    // When duplicate filter or global search is active, show all entries (already filtered by service)
-    if (this.journal.duplicateFilter() || this.journal.isGlobalSearchActive()) {
+    // When global search is active, show all entries (already filtered by service)
+    if (this.journal.isGlobalSearchActive()) {
       return entries;
     }
 
@@ -56,11 +56,14 @@ export class EntryList {
 
   saveDateEdit(entry: any, event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.value) {
-      const newDate = new Date(input.value);
-      if (!isNaN(newDate.getTime())) {
-        this.journal.updateEntryDate(entry.id, newDate);
-      }
+    const newDate = new Date(input.value);
+    if (!isNaN(newDate.getTime())) {
+      // Preserve original time
+      const originalDate = new Date(entry.date);
+      newDate.setHours(originalDate.getHours());
+      newDate.setMinutes(originalDate.getMinutes());
+      newDate.setSeconds(originalDate.getSeconds());
+      this.journal.updateEntryDate(entry.id, newDate);
     }
     this.editingDateId = null;
   }

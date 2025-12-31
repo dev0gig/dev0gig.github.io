@@ -32,9 +32,7 @@ export class JournalService {
   private selectedMonthFilter = signal<{ year: number; month: number } | null>(null);
   readonly monthFilter = this.selectedMonthFilter.asReadonly();
 
-  // Duplicate filter state
-  private showDuplicatesOnly = signal<boolean>(false);
-  readonly duplicateFilter = this.showDuplicatesOnly.asReadonly();
+
 
   // Global search active state
   readonly isGlobalSearchActive = computed(() => this.searchQuerySignal().length > 0);
@@ -42,7 +40,6 @@ export class JournalService {
   readonly displayEntries = computed(() => {
     const query = this.searchQuerySignal().toLowerCase();
     const monthFilter = this.selectedMonthFilter();
-    const duplicateFilter = this.showDuplicatesOnly();
     const entries = this.entriesSignal();
     let result = entries;
 
@@ -54,58 +51,18 @@ export class JournalService {
       );
     }
 
-    // Apply duplicate filter
-    if (duplicateFilter) {
-      const duplicates = this.duplicateDates();
-      result = result.filter(e => duplicates.has(this.getDateKey(e.date)));
-    }
+
 
     // Then apply search query
     if (query) {
       result = result.filter(e => e.text.toLowerCase().includes(query));
     }
 
-    // Sort by date only (ignore time)
-    return result.sort((a, b) => {
-      const dateA = new Date(a.date.getFullYear(), a.date.getMonth(), a.date.getDate()).getTime();
-      const dateB = new Date(b.date.getFullYear(), b.date.getMonth(), b.date.getDate()).getTime();
-      return dateB - dateA;
-    });
+    // Sort by full timestamp descending (newest first)
+    return result.sort((a, b) => b.date.getTime() - a.date.getTime());
   });
 
-  // Detect duplicate dates (entries with the same date)
-  readonly duplicateDates = computed(() => {
-    const entries = this.entriesSignal();
-    const dateCount = new Map<string, number>();
 
-    // Count entries per date (using date string without time)
-    for (const entry of entries) {
-      const dateKey = this.getDateKey(entry.date);
-      dateCount.set(dateKey, (dateCount.get(dateKey) || 0) + 1);
-    }
-
-    // Return set of date keys that have more than one entry
-    const duplicates = new Set<string>();
-    for (const [dateKey, count] of dateCount) {
-      if (count > 1) {
-        duplicates.add(dateKey);
-      }
-    }
-    return duplicates;
-  });
-
-  // Check if an entry has a duplicate date
-  hasDuplicateDate(entry: JournalEntry): boolean {
-    const dateKey = this.getDateKey(entry.date);
-    return this.duplicateDates().has(dateKey);
-  }
-
-  // Count of entries with duplicate dates
-  readonly duplicateEntriesCount = computed(() => {
-    const entries = this.entriesSignal();
-    const duplicates = this.duplicateDates();
-    return entries.filter(e => duplicates.has(this.getDateKey(e.date))).length;
-  });
 
   // Helper to get date key (YYYY-MM-DD format)
   private getDateKey(date: Date): string {
@@ -236,17 +193,7 @@ export class JournalService {
     this.selectedMonthFilter.set(null);
   }
 
-  setDuplicateFilter(show: boolean) {
-    this.showDuplicatesOnly.set(show);
-    // Clear month filter when showing duplicates
-    if (show) {
-      this.selectedMonthFilter.set(null);
-    }
-  }
 
-  clearDuplicateFilter() {
-    this.showDuplicatesOnly.set(false);
-  }
 
   prevMonth() {
     this.currentDate.update(d => {

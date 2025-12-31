@@ -3,14 +3,9 @@
     <div class="flex-1 overflow-y-auto flex flex-col custom-scrollbar">
         <div class="p-6 flex flex-col gap-4">
             @for (entry of filteredEntries(); track entry.id) {
-            <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative"
-                [class.border-2]="editingEntryId === entry.id || journal.hasDuplicateDate(entry)"
+            <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative border border-dash-border/50 hover:border-dash-accent/50"
                 [class.border-dashed]="editingEntryId === entry.id"
-                [class.border-amber-400]="editingEntryId === entry.id && !journal.hasDuplicateDate(entry)"
-                [class.border-red-500/60]="journal.hasDuplicateDate(entry) && editingEntryId !== entry.id"
-                [class.border]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)"
-                [class.border-dash-border/50]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)"
-                [class.hover:border-dash-accent/50]="editingEntryId !== entry.id && !journal.hasDuplicateDate(entry)">
+                [class.border-amber-400]="editingEntryId === entry.id">
                 <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-2">
                         @if (editingDateId === entry.id) {
@@ -18,15 +13,12 @@
                             class="bg-dash-bg border border-dash-border rounded px-1 py-0.5 text-xs text-dash-text text-[10px] w-32 focus:outline-none focus:border-dash-accent"
                             (change)="saveDateEdit(entry, $event)" (blur)="cancelDateEdit()" autofocus>
                         } @else {
-                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd,
-                            yyyy':'Europe/Vienna' }}</span>
+                        <span class="text-xs font-mono text-dash-accent">{{ entry.date | date:'MMM dd, yyyy ·
+                            HH:mm':'Europe/Vienna' }}</span>
                         <button class="text-dash-text-dim hover:text-dash-accent transition-colors"
                             (click)="startEditingDate(entry)" title="Edit Date">
                             <span class="material-symbols-sharp text-[10px]">edit</span>
                         </button>
-                        }
-                        @if (journal.hasDuplicateDate(entry)) {
-                        <span class="text-[10px] text-red-400 font-medium">duplicate date</span>
                         }
                     </div>
                     <button class="text-dash-text-dim hover:text-red-400 transition-opacity"
