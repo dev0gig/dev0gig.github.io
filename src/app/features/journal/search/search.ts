@@ -1,4 +1,5 @@
 import { Component, inject, effect } from '@angular/core';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { JournalService } from '../journal';
 
@@ -12,10 +13,18 @@ import { JournalService } from '../journal';
 export class Search {
   journal = inject(JournalService);
   query = '';
+  private searchSubject = new Subject<string>();
 
   constructor() {
     effect(() => {
       this.query = this.journal.searchQuery();
+    });
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.journal.setSearchQuery(query);
     });
   }
 
@@ -24,7 +33,7 @@ export class Search {
   }
 
   onSearch() {
-    this.journal.setSearchQuery(this.query);
+    this.searchSubject.next(this.query);
   }
 
   clearSearch() {
