@@ -16,7 +16,7 @@ const DEFAULT_CUSTOM_ICONS: Record<string, string> = {
     "Google Docs": "https://play-lh.googleusercontent.com/emmbClh_hm0WpWZqJ0X59B8Pz1mKoB9HVLkYMktxhGE6_-30SdGoa-BmYW73RJ8MGZQ=w240-h480-rw",
     "Google Drive": "https://play-lh.googleusercontent.com/t-juVwXA8lDAk8uQ2L6d6K83jpgQoqmK1icB_l9yvhIAQ2QT_1XbRwg5IpY08906qEw=w240-h480-rw",
     "Google Kontakte": "https://play-lh.googleusercontent.com/fvhPW8dpGXM42Y-6aQU8Yl25L1l_mVgeoM-n08FxAkM7umAHkNs8wcs4MA49E67a7WVt=w240-h480-rw",
-    "Google Maps": "https://www.google.com/maps/@48.1419654,16.2101379,14z?entry=ttu&g_ep=EgoyMDI1MDkxMC4wIKXMDSoASAFQAw%3D%3D",
+    "Google Maps": "https://play-lh.googleusercontent.com/Kf8WTct65hFJxBUDm5E-EpYsiDoLQiGGbnuyP6HBNax43YShXti9THPon1YKB6zPYpA=w240-h480-rw",
     "Google Messages": "https://play-lh.googleusercontent.com/9AZOTXU_CpreTFAXUPAmJNkm8VGCb1C90fjJ9pHGcVmpGMDSTq3cUbaQJdBT9Tdp9A=w240-h480-rw",
     "Google Sheets": "https://play-lh.googleusercontent.com/keE2gN0Hqh8-Tsf_RYZ_-yS2uo6ToqYVyRBv_UZaLXsgeeHBd2YPcEUWEF4DEtfGyb1h=w240-h480-rw",
     "Google Wallet": "https://play-lh.googleusercontent.com/DHBlQKvUNbopIS-VjQb3fUKQ_QH0Em-Q66AwG6LwD1Sach3lUvEWDb6hh8xNvKGmctU=w240-h480-rw",
@@ -29,7 +29,7 @@ const DEFAULT_CUSTOM_ICONS: Record<string, string> = {
     "Post": "https://play-lh.googleusercontent.com/LCn0zMVjJXauMDNclMVMv8Ht-TNHHLqbCA61Xa7OR3X489dtOgpdFpzXT7H8KM_yTppO=s48-rw",
     "Prime Gaming": "https://yt3.googleusercontent.com/uRKrpN7-levqpjptf6nrIC406OVhVf4felZ3_WBWbGdrMa30J4-b_kFzAQj8ZymHjMdyFQcHGw=s900-c-k-c0x00ffffff-no-rj",
     "SmartMeter": "https://assets.kununu.com/media/prod/profiles/logos/ef562319-46f1-4b23-85e6-bf23be68c388_1_669fb75ad5ad7.gif",
-    "Tasks": "https://tasks.google.com/tasks/",
+    "Tasks": "https://play-lh.googleusercontent.com/pjUulZ-Vdo7qPKxk3IRhnk8SORPlgSydSyYEjm7fGcoXO8wDyYisWXwQqEjMryZ_sqK2=w240-h480-rw",
     "WhatsApp": "https://play-lh.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN=w240-h480-rw",
     "WienEnergie": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnPowqsn3fDxVC2TsvbrvIel8wHprfsqgS7A&s"
 };
