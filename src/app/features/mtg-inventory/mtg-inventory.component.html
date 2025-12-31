@@ -34,132 +34,44 @@
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-bold text-dash-text">MTG Settings</h2>
                     <button (click)="toggleSettingsModal()"
-                        class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
+                        class="text-dash-text-dim hover:text-white transition-colors"><span
+                            class="material-symbols-sharp">close</span></button>
                 </div>
-
                 <div class="flex flex-col gap-3">
                     <button (click)="exportCollection()"
                         class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
                         <span class="material-symbols-sharp">download</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Export Collection</span>
-                            <span class="text-xs opacity-70">Download als Arena-Format (.txt)</span>
-                        </div>
+                        <div class="flex flex-col"><span class="font-bold text-sm">Export Collection</span><span
+                                class="text-xs opacity-70">Download als Arena-Format (.txt)</span></div>
                     </button>
-
                     <button (click)="openImportModal()"
                         class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
                         <span class="material-symbols-sharp">upload</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Import Collection</span>
-                            <span class="text-xs opacity-70">Arena-Format importieren (kein API-Call)</span>
-                        </div>
+                        <div class="flex flex-col"><span class="font-bold text-sm">Import Collection</span><span
+                                class="text-xs opacity-70">Arena-Format importieren (kein API-Call)</span></div>
                     </button>
-
                     <div class="border-t border-dash-border my-2"></div>
-
                     <button (click)="clearCache()"
                         class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-yellow-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
                         <span class="material-symbols-sharp">cached</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Cache leeren</span>
-                            <span class="text-xs opacity-70">Bilder werden neu geladen</span>
-                        </div>
+                        <div class="flex flex-col"><span class="font-bold text-sm">Cache leeren</span><span
+                                class="text-xs opacity-70">Bilder werden neu geladen</span></div>
                     </button>
-
                     <button (click)="clearCollection()"
                         class="flex items-center gap-3 p-3 bg-dash-bg hover:bg-red-600 rounded-sm text-dash-text-dim hover:text-white transition-colors text-left">
                         <span class="material-symbols-sharp">delete_forever</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">Sammlung löschen</span>
-                            <span class="text-xs opacity-70">Alle Karten permanent entfernen</span>
-                        </div>
+                        <div class="flex flex-col"><span class="font-bold text-sm">Sammlung löschen</span><span
+                                class="text-xs opacity-70">Alle Karten permanent entfernen</span></div>
                     </button>
                 </div>
             </div>
         </div>
         }
 
-        <!-- Controls Card -->
-        <div class="gradient-card p-4 rounded-sm">
-            <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
-                <div class="flex gap-2 items-center">
-                    <div class="relative group flex-1 sm:flex-none sm:w-32">
-                        <span
-                            class="absolute left-2 top-1/2 -translate-y-1/2 text-dash-text-dim text-[10px] uppercase">SET-#</span>
-                        <input #setNumberInput type="text" [ngModel]="inputSetNumber()"
-                            (ngModelChange)="inputSetNumber.set($event)" (keydown.enter)="addCard()"
-                            placeholder="MH2-405"
-                            class="w-full bg-dash-bg border border-dash-border text-dash-text pl-12 pr-2 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors uppercase" />
-                    </div>
-                    <button (click)="addCard()" [disabled]="isAddingCard() || !inputSetNumber()"
-                        class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0"
-                        title="Hinzufügen">
-                        @if (isAddingCard()) {
-                        <span class="material-symbols-sharp text-lg animate-spin">progress_activity</span>
-                        } @else {
-                        <span class="material-symbols-sharp text-lg">add</span>
-                        }
-                    </button>
-                    <!-- Mobile Set Filter Toggle -->
-                    @if (allSets().length > 0) {
-                    <button (click)="toggleMobileSetFilter()"
-                        class="sm:hidden bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all flex items-center justify-center flex-shrink-0"
-                        [class.bg-dash-accent]="showMobileSetFilter()"
-                        [class.border-dash-accent]="showMobileSetFilter()" title="Sets filtern">
-                        <span class="material-symbols-sharp text-lg">folder</span>
-                    </button>
-                    }
-                </div>
-
-                <div class="hidden sm:block w-px h-6 bg-dash-border mx-1"></div>
-
-                <div class="relative group flex-1">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">
-                        <span class="material-symbols-sharp text-lg">search</span>
-                    </span>
-                    <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
-                        placeholder="Sammlung durchsuchen..."
-                        class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-8 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors" />
-                    @if (searchTerm()) {
-                    <button (click)="searchTerm.set('')"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-white">
-                        <span class="material-symbols-sharp text-sm">close</span>
-                    </button>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Set Filter Dropdown -->
-        @if (showMobileSetFilter() && allSets().length > 0) {
-        <div class="sm:hidden gradient-card p-4 rounded-sm">
-            <div class="flex items-center gap-2 mb-3">
-                <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
-                <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Sets</h3>
-                @if (selectedSet()) {
-                <button (click)="selectSet(null)"
-                    class="ml-auto text-xs text-dash-accent hover:text-white flex items-center gap-1 py-1 px-2 bg-dash-bg rounded-sm border border-dash-accent">
-                    <span class="material-symbols-sharp text-sm">close</span>
-                    Filter entfernen
-                </button>
-                }
-            </div>
-            <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                @for (set of allSets(); track set.code) {
-                <button (click)="selectSet(set.code)" [class]="selectedSet() === set.code
-                        ? 'bg-dash-accent text-white border-dash-accent'
-                        : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
-                    class="px-3 py-2 rounded-sm text-xs border transition-all">
-                    <span class="font-mono">{{ set.code }}</span>
-                    <span class="opacity-60 ml-1">({{ set.count }})</span>
-                </button>
-                }
-            </div>
-        </div>
-        }
+        <!-- Filter & Controls Component -->
+        <app-mtg-filter [allSets]="allSets()" [(selectedSet)]="selectedSet" [(searchTerm)]="searchTerm"
+            (toast)="handleToast($event)">
+        </app-mtg-filter>
 
         <!-- Main Content with Sidebar Layout -->
         <div class="flex gap-4">
@@ -437,269 +349,15 @@
 
         <!-- Card Detail Modal -->
         @if (showDetailModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" (click)="closeDetailModal()"></div>
-            <div
-                class="relative gradient-card p-4 sm:p-5 rounded-sm shadow-2xl w-full max-w-4xl flex flex-col sm:flex-row gap-4 sm:gap-6 accent-glow max-h-[90vh] overflow-y-auto">
-
-                <!-- Left: Card Image -->
-                <div class="w-full sm:w-96 flex-shrink-0">
-                    <div
-                        class="aspect-[5/7] overflow-hidden rounded-xl sm:rounded-2xl max-w-[200px] sm:max-w-none mx-auto sm:mx-0">
-                        @if (getDetails(showDetailModal()!.card)?.imageUrl) {
-                        <img [src]="getDetails(showDetailModal()!.card)!.imageUrl"
-                            [alt]="showDetailModal()!.card.nameEN"
-                            class="w-full h-full object-contain rounded-xl sm:rounded-2xl" />
-                        } @else {
-                        <div
-                            class="w-full h-full bg-dash-bg flex flex-col items-center justify-center gap-2 rounded-xl sm:rounded-2xl">
-                            @if (isLoading(showDetailModal()!.card)) {
-                            <span
-                                class="material-symbols-sharp text-3xl sm:text-4xl text-dash-text-dim animate-pulse">image</span>
-                            <span class="text-xs sm:text-sm text-dash-text-dim">Lädt...</span>
-                            } @else {
-                            <span
-                                class="material-symbols-sharp text-3xl sm:text-4xl text-dash-text-dim opacity-50">playing_cards</span>
-                            <span class="text-xs sm:text-sm text-dash-text-dim">Kein Bild</span>
-                            }
-                        </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Right: Card Details -->
-                <div class="flex-1 flex flex-col gap-2 sm:gap-3 min-w-0">
-                    <!-- Header with Rarity Badge -->
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="text-base sm:text-lg font-bold text-dash-text leading-tight">
-                                {{ getDetails(showDetailModal()!.card)?.nameDE || showDetailModal()!.card.nameEN }}
-                            </h2>
-                            @if (getDetails(showDetailModal()!.card)?.rarity) {
-                            <span [class]="{
-                                'bg-gray-600': getDetails(showDetailModal()!.card)!.rarity === 'common',
-                                'bg-gray-400': getDetails(showDetailModal()!.card)!.rarity === 'uncommon',
-                                'bg-yellow-600': getDetails(showDetailModal()!.card)!.rarity === 'rare',
-                                'bg-orange-500': getDetails(showDetailModal()!.card)!.rarity === 'mythic'
-                            }" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full text-white">
-                                {{ getDetails(showDetailModal()!.card)!.rarity }}
-                            </span>
-                            }
-                        </div>
-                        <button (click)="closeDetailModal()"
-                            class="text-dash-text-dim hover:text-white transition-colors flex-shrink-0 -mt-1">
-                            <span class="material-symbols-sharp">close</span>
-                        </button>
-                    </div>
-
-                    <!-- Card Info -->
-                    <div class="flex flex-col gap-1 sm:gap-1.5 text-xs sm:text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-dash-text-dim">English</span>
-                            <span class="text-dash-text text-right">{{ showDetailModal()!.card.nameEN }}</span>
-                        </div>
-                        @if (getDetails(showDetailModal()!.card)?.setName) {
-                        <div class="flex justify-between">
-                            <span class="text-dash-text-dim">Set</span>
-                            <span class="text-dash-text text-right truncate ml-2">{{
-                                getDetails(showDetailModal()!.card)!.setName
-                                }}</span>
-                        </div>
-                        }
-                        <div class="flex justify-between">
-                            <span class="text-dash-text-dim">Code</span>
-                            <span class="text-dash-text font-mono">{{ showDetailModal()!.card.set }} #{{
-                                showDetailModal()!.card.collectorNumber }}</span>
-                        </div>
-                        @if (getDetails(showDetailModal()!.card)?.manaCost) {
-                        <div class="flex justify-between">
-                            <span class="text-dash-text-dim">Mana</span>
-                            <span class="text-dash-text font-mono">{{ getDetails(showDetailModal()!.card)!.manaCost
-                                }}</span>
-                        </div>
-                        }
-                    </div>
-
-                    <!-- Legalities -->
-                    @if (getDetails(showDetailModal()!.card)?.legalities) {
-                    <div class="bg-dash-bg p-2 sm:p-3 rounded-sm">
-                        <div class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider mb-1.5 sm:mb-2">
-                            Formate</div>
-                        <div class="flex flex-wrap gap-1 sm:gap-1.5">
-                            @if (getDetails(showDetailModal()!.card)?.legalities?.standard) {
-                            <span
-                                [class]="getDetails(showDetailModal()!.card)!.legalities!.standard === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Standard</span>
-                            }
-                            @if (getDetails(showDetailModal()!.card)?.legalities?.modern) {
-                            <span
-                                [class]="getDetails(showDetailModal()!.card)!.legalities!.modern === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Modern</span>
-                            }
-                            @if (getDetails(showDetailModal()!.card)?.legalities?.commander) {
-                            <span
-                                [class]="getDetails(showDetailModal()!.card)!.legalities!.commander === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Commander</span>
-                            }
-                            @if (getDetails(showDetailModal()!.card)?.legalities?.pioneer) {
-                            <span
-                                [class]="getDetails(showDetailModal()!.card)!.legalities!.pioneer === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Pioneer</span>
-                            }
-                            @if (getDetails(showDetailModal()!.card)?.legalities?.legacy) {
-                            <span
-                                [class]="getDetails(showDetailModal()!.card)!.legalities!.legacy === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Legacy</span>
-                            }
-                            @if (getDetails(showDetailModal()!.card)?.legalities?.pauper) {
-                            <span
-                                [class]="getDetails(showDetailModal()!.card)!.legalities!.pauper === 'legal' ? 'bg-green-600' : 'bg-red-600/50'"
-                                class="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 sm:px-2 py-0.5 rounded text-white">Pauper</span>
-                            }
-                        </div>
-                    </div>
-                    }
-
-                    <!-- EUR Prices -->
-                    <div class="flex flex-col gap-1.5 sm:gap-2">
-                        <div class="flex items-center justify-between">
-                            <span
-                                class="text-[10px] sm:text-xs text-dash-text-dim uppercase tracking-wider">Preise</span>
-                            <button (click)="refreshPrices()" [disabled]="isRefreshingPrices()"
-                                class="flex items-center gap-1 px-2 py-1 text-[10px] sm:text-xs bg-dash-bg hover:bg-dash-accent rounded-sm text-dash-text-dim hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Preise aktualisieren">
-                                @if (isRefreshingPrices()) {
-                                <span class="material-symbols-sharp text-sm animate-spin">progress_activity</span>
-                                } @else {
-                                <span class="material-symbols-sharp text-sm">refresh</span>
-                                }
-                                <span class="hidden sm:inline">Aktualisieren</span>
-                            </button>
-                        </div>
-                        @if (getDetails(showDetailModal()!.card)?.priceEur) {
-                        <div class="bg-dash-bg p-2 sm:p-3 rounded-sm flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="material-symbols-sharp text-dash-accent text-base sm:text-lg">payments</span>
-                                <span class="text-xs sm:text-sm text-dash-text-dim">Preis</span>
-                            </div>
-                            <span class="font-bold text-lg sm:text-xl text-green-400">€{{
-                                getDetails(showDetailModal()!.card)!.priceEur }}</span>
-                        </div>
-                        }
-                        @if (getDetails(showDetailModal()!.card)?.priceEurFoil) {
-                        <div class="bg-dash-bg p-2 sm:p-3 rounded-sm flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="material-symbols-sharp text-yellow-400 text-base sm:text-lg">auto_awesome</span>
-                                <span class="text-xs sm:text-sm text-dash-text-dim">Foil</span>
-                            </div>
-                            <span class="font-bold text-lg sm:text-xl text-yellow-400">€{{
-                                getDetails(showDetailModal()!.card)!.priceEurFoil }}</span>
-                        </div>
-                        } @else if (!getDetails(showDetailModal()!.card)?.priceEur) {
-                        <div class="bg-dash-bg p-2 sm:p-3 rounded-sm text-center text-dash-text-dim text-xs sm:text-sm">
-                            Keine Preisdaten verfügbar
-                        </div>
-                        }
-                    </div>
-
-                    <!-- Cardmarket Link -->
-                    @if (getDetails(showDetailModal()!.card)?.cardmarketUrl) {
-                    <a [href]="getDetails(showDetailModal()!.card)!.cardmarketUrl" target="_blank" rel="noopener"
-                        class="bg-blue-600 hover:bg-blue-500 p-2 sm:p-3 rounded-sm flex items-center justify-center gap-2 text-white font-bold transition-colors text-sm">
-                        <span class="material-symbols-sharp text-base sm:text-lg">shopping_cart</span>
-                        Auf Cardmarket kaufen
-                    </a>
-                    }
-
-                    <!-- Quantity Controls -->
-                    <div class="flex items-center justify-between border-t border-dash-border pt-2 sm:pt-3 mt-auto">
-                        <div class="flex items-center gap-2">
-                            <span class="text-dash-text-dim text-xs sm:text-sm">Anzahl:</span>
-                            <div class="flex items-center gap-1">
-                                <button (click)="updateQuantity(showDetailModal()!.card, -1)"
-                                    class="w-8 h-8 bg-dash-bg hover:bg-red-600 hover:text-white rounded-sm flex items-center justify-center transition-colors text-dash-text-dim">
-                                    <span class="material-symbols-sharp text-sm">remove</span>
-                                </button>
-                                <span class="w-8 sm:w-10 text-center font-bold text-base sm:text-lg text-dash-text">
-                                    {{ getCardCount(showDetailModal()!.card) }}
-                                </span>
-                                <button (click)="updateQuantity(showDetailModal()!.card, 1)"
-                                    class="w-8 h-8 bg-dash-bg hover:bg-green-600 hover:text-white rounded-sm flex items-center justify-center transition-colors text-dash-text-dim">
-                                    <span class="material-symbols-sharp text-sm">add</span>
-                                </button>
-                            </div>
-                        </div>
-                        <button (click)="removeCard(showDetailModal()!.index)"
-                            class="px-2 sm:px-3 py-2 text-red-400 hover:bg-red-600 hover:text-white rounded-sm transition-colors flex items-center gap-1 text-xs sm:text-sm"
-                            title="Alle Kopien entfernen">
-                            <span class="material-symbols-sharp text-sm">delete</span>
-                            <span class="hidden sm:inline">Entfernen</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <app-mtg-card-detail-modal [card]="showDetailModal()!.card" [index]="showDetailModal()!.index"
+            (close)="closeDetailModal()" (toast)="handleToast($event)">
+        </app-mtg-card-detail-modal>
         }
 
         <!-- Import Modal -->
         @if (showImportModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeImportModal()"></div>
-            <div
-                class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-dash-text">TXT-Datei importieren</h2>
-                    <button (click)="closeImportModal()" class="text-dash-text-dim hover:text-white transition-colors">
-                        <span class="material-symbols-sharp">close</span>
-                    </button>
-                </div>
-
-                <div class="text-xs text-dash-text-dim space-y-1">
-                    <p>Wähle eine .txt Datei im Arena-Format:</p>
-                    <code class="text-dash-accent block">1 Counterspell (MH2) 405</code>
-                    <p class="text-green-400 flex items-center gap-1 mt-2">
-                        <span class="material-symbols-sharp text-sm">bolt</span>
-                        Keine API-Anfragen beim Import!
-                    </p>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <label
-                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-dash-border rounded-sm cursor-pointer bg-dash-bg hover:bg-dash-card hover:border-dash-accent transition-all">
-                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <span class="material-symbols-sharp text-3xl text-dash-text-dim mb-2">upload_file</span>
-                            <p class="text-sm text-dash-text-dim">Klicken, um .txt Datei auszuwählen</p>
-                            @if (selectedFileName()) {
-                            <p class="text-xs text-dash-accent mt-2 font-mono">{{ selectedFileName() }}</p>
-                            }
-                        </div>
-                        <input #fileInput type="file" accept=".txt" class="hidden" (change)="onFileSelected($event)" />
-                    </label>
-                </div>
-
-                @if (lastImportResult()) {
-                <div class="text-sm">
-                    <span class="text-green-400">{{ lastImportResult()!.success }} Karten hinzugefügt</span>
-                    @if (lastImportResult()!.failed > 0) {
-                    <span class="text-red-400 ml-2">{{ lastImportResult()!.failed }} Zeilen nicht erkannt</span>
-                    }
-                </div>
-                }
-
-                <div class="flex justify-end gap-2">
-                    <button (click)="closeImportModal()"
-                        class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
-                        Schließen
-                    </button>
-                    <button (click)="executeImport()" [disabled]="!importText()"
-                        class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
-                        Importieren
-                    </button>
-                </div>
-            </div>
-        </div>
+        <app-mtg-import-modal (close)="closeImportModal()" (toast)="handleToast($event)">
+        </app-mtg-import-modal>
         }
 
         <!-- Toast Notification -->

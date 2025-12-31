@@ -1,0 +1,77 @@
+<!-- Controls Card -->
+<div class="gradient-card p-4 rounded-sm">
+    <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <div class="flex gap-2 items-center">
+            <div class="relative group flex-1 sm:flex-none sm:w-32">
+                <span
+                    class="absolute left-2 top-1/2 -translate-y-1/2 text-dash-text-dim text-[10px] uppercase">SET-#</span>
+                <input #setNumberInput type="text" [ngModel]="inputSetNumber()"
+                    (ngModelChange)="inputSetNumber.set($event)" (keydown.enter)="addCard()" placeholder="MH2-405"
+                    class="w-full bg-dash-bg border border-dash-border text-dash-text pl-12 pr-2 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors uppercase" />
+            </div>
+            <button (click)="addCard()" [disabled]="isAddingCard() || !inputSetNumber()"
+                class="bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0"
+                title="Hinzufügen">
+                @if (isAddingCard()) {
+                <span class="material-symbols-sharp text-lg animate-spin">progress_activity</span>
+                } @else {
+                <span class="material-symbols-sharp text-lg">add</span>
+                }
+            </button>
+            <!-- Mobile Set Filter Toggle -->
+            @if (allSets().length > 0) {
+            <button (click)="toggleMobileSetFilter()"
+                class="sm:hidden bg-dash-card hover:bg-dash-accent border border-dash-border hover:border-dash-accent text-dash-text hover:text-white px-3 h-10 rounded-sm transition-all flex items-center justify-center flex-shrink-0"
+                [class.bg-dash-accent]="showMobileSetFilter()" [class.border-dash-accent]="showMobileSetFilter()"
+                title="Sets filtern">
+                <span class="material-symbols-sharp text-lg">folder</span>
+            </button>
+            }
+        </div>
+
+        <div class="hidden sm:block w-px h-6 bg-dash-border mx-1"></div>
+
+        <div class="relative group flex-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-dash-text-dim">
+                <span class="material-symbols-sharp text-lg">search</span>
+            </span>
+            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="onSearchTermChange($event)"
+                placeholder="Sammlung durchsuchen..."
+                class="w-full bg-dash-bg border border-dash-border text-dash-text pl-10 pr-8 h-10 rounded-sm text-sm focus:outline-none focus:border-dash-accent transition-colors" />
+            @if (searchTerm()) {
+            <button (click)="onSearchTermChange('')"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-dim hover:text-white">
+                <span class="material-symbols-sharp text-sm">close</span>
+            </button>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Set Filter Dropdown -->
+@if (showMobileSetFilter() && allSets().length > 0) {
+<div class="sm:hidden gradient-card p-4 rounded-sm mt-4">
+    <div class="flex items-center gap-2 mb-3">
+        <span class="material-symbols-sharp text-dash-accent text-sm">folder</span>
+        <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider">Sets</h3>
+        @if (selectedSet()) {
+        <button (click)="selectSet(null)"
+            class="ml-auto text-xs text-dash-accent hover:text-white flex items-center gap-1 py-1 px-2 bg-dash-bg rounded-sm border border-dash-accent">
+            <span class="material-symbols-sharp text-sm">close</span>
+            Filter entfernen
+        </button>
+        }
+    </div>
+    <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+        @for (set of allSets(); track set.code) {
+        <button (click)="selectSet(set.code)" [class]="selectedSet() === set.code
+                        ? 'bg-dash-accent text-white border-dash-accent'
+                        : 'bg-dash-bg text-dash-text-dim border-dash-border hover:border-dash-accent hover:text-white'"
+            class="px-3 py-2 rounded-sm text-xs border transition-all">
+            <span class="font-mono">{{ set.code }}</span>
+            <span class="opacity-60 ml-1">({{ set.count }})</span>
+        </button>
+        }
+    </div>
+</div>
+}

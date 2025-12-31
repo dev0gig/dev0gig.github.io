@@ -7,39 +7,40 @@ import { SidebarService } from '../../shared/sidebar.service';
 import { MtgInventoryService } from './mtg-inventory.service';
 import { MtgCardBasic, getCardKey } from './mtg-card.model';
 import { LazyCardDirective } from './lazy-card.directive';
+import { MtgFilterComponent } from './components/mtg-filter/mtg-filter.component';
+
+import { MtgCardDetailModalComponent } from './components/mtg-card-detail-modal/mtg-card-detail-modal.component';
+import { MtgImportModalComponent } from './components/mtg-import-modal/mtg-import-modal.component';
 
 @Component({
     selector: 'app-mtg-inventory',
     standalone: true,
-    imports: [CommonModule, FormsModule, HttpClientModule, AppsLauncher, LazyCardDirective],
+    imports: [CommonModule, FormsModule, HttpClientModule, AppsLauncher, LazyCardDirective, MtgFilterComponent, MtgCardDetailModalComponent, MtgImportModalComponent],
     templateUrl: './mtg-inventory.component.html'
 })
 export class MtgInventoryComponent {
     protected inventoryService = inject(MtgInventoryService);
     private sidebarService = inject(SidebarService);
 
-    @ViewChild('setNumberInput') setNumberInput!: ElementRef<HTMLInputElement>;
+
 
     // --- Signals from Service ---
     cards = this.inventoryService.cards;
     cacheVersion = this.inventoryService.cacheVersion;
 
     // --- Local UI State ---
-    inputSetNumber = signal<string>('');
     searchTerm = signal<string>('');
     selectedSet = signal<string | null>(null);
     selectedRarity = signal<string | null>(null);
     currentPage = signal<number>(1);
     readonly pageSize = 50;
 
-    isAddingCard = signal<boolean>(false);
     showSettingsModal = signal<boolean>(false);
     showImportModal = signal<boolean>(false);
     showDetailModal = signal<{ card: MtgCardBasic; index: number } | null>(null);
-    showMobileSetFilter = signal<boolean>(false);
-    importText = signal<string>('');
-    selectedFileName = signal<string>('');
-    lastImportResult = signal<{ success: number; failed: number } | null>(null);
+
+    // Import state moved to MtgImportModalComponent
+    // Detail view state moved to MtgCardDetailModalComponent
     toastMessage = signal<string>('');
     toastType = signal<'success' | 'error'>('success');
 
@@ -183,19 +184,6 @@ export class MtgInventoryComponent {
         return this.inventoryService.getCardCount(card.set, card.collectorNumber);
     }
 
-    updateQuantity(card: MtgCardBasic, delta: number): void {
-        const currentCount = this.getCardCount(card);
-        if (currentCount + delta <= 0) {
-            // Would remove all - close modal and remove
-            this.inventoryService.updateCardQuantity(card.set, card.collectorNumber, -currentCount);
-            this.showDetailModal.set(null);
-            this.showToast('Karte aus Sammlung entfernt.', 'success');
-        } else {
-            this.inventoryService.updateCardQuantity(card.set, card.collectorNumber, delta);
-            this.showToast(delta > 0 ? 'Kopie hinzugefügt!' : 'Kopie entfernt.', 'success');
-        }
-    }
-
     // --- Set Filter ---
     selectSet(setCode: string | null): void {
         this.selectedSet.set(setCode);
@@ -232,60 +220,11 @@ export class MtgInventoryComponent {
         this.sidebarService.toggleRight();
     }
 
-    toggleMobileSetFilter(): void {
-        this.showMobileSetFilter.update(v => !v);
-    }
-
     // --- Card Actions ---
-    async addCard(): Promise<void> {
-        const input = this.inputSetNumber().trim().toUpperCase();
+    // addCard moved to child component
 
-        if (!input) return;
 
-        // Parse the input: expects format "SET-NUMBER" (e.g., "MH2-405")
-        const separatorIndex = input.lastIndexOf('-');
 
-        let set: string;
-        let number: string;
-
-        if (separatorIndex > 0) {
-            // Found a hyphen, split accordingly
-            set = input.substring(0, separatorIndex).trim();
-            number = input.substring(separatorIndex + 1).trim();
-        } else {
-            // No hyphen found, show error
-            this.showToast('Format: SET-# (z.B. MH2-405)', 'error');
-            return;
-        }
-
-        if (!set || !number) {
-            this.showToast('Format: SET-# (z.B. MH2-405)', 'error');
-            return;
-        }
-
-        this.isAddingCard.set(true);
-
-        try {
-            const success = await this.inventoryService.addCardManually(set, number);
-
-            if (success) {
-                this.inputSetNumber.set('');
-                this.showToast('Karte hinzugefügt!', 'success');
-            } else {
-                this.showToast('Karte nicht gefunden.', 'error');
-            }
-        } finally {
-            this.isAddingCard.set(false);
-            // Re-focus input for quick consecutive entries
-            setTimeout(() => this.setNumberInput?.nativeElement?.focus(), 0);
-        }
-    }
-
-    removeCard(index: number): void {
-        this.inventoryService.removeCardByIndex(index);
-        this.showDetailModal.set(null);
-        this.showToast('Karte entfernt.', 'success');
-    }
 
     openDetailModal(card: MtgCardBasic, index: number): void {
         this.inventoryService.queueFetch(card.set, card.collectorNumber);
@@ -298,31 +237,10 @@ export class MtgInventoryComponent {
         this.showDetailModal.set(null);
     }
 
-    isRefreshingPrices = signal<boolean>(false);
-
-    async refreshPrices(): Promise<void> {
-        const modalData = this.showDetailModal();
-        if (!modalData) return;
-
-        this.isRefreshingPrices.set(true);
-        try {
-            await this.inventoryService.refreshPricesForDetailView(
-                modalData.card.set,
-                modalData.card.collectorNumber
-            );
-            this.showToast('Preise aktualisiert!', 'success');
-        } catch {
-            this.showToast('Preis-Aktualisierung fehlgeschlagen.', 'error');
-        } finally {
-            this.isRefreshingPrices.set(false);
-        }
-    }
+    // isRefreshingPrices, refreshPrices moved to child component
 
     // --- Import/Export ---
     openImportModal(): void {
-        this.importText.set('');
-        this.selectedFileName.set('');
-        this.lastImportResult.set(null);
         this.showImportModal.set(true);
         this.showSettingsModal.set(false);
     }
@@ -331,29 +249,7 @@ export class MtgInventoryComponent {
         this.showImportModal.set(false);
     }
 
-    onFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const file = input.files?.[0];
-
-        if (file) {
-            this.selectedFileName.set(file.name);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-                this.importText.set(content || '');
-            };
-            reader.readAsText(file);
-        }
-    }
-
-    executeImport(): void {
-        const text = this.importText().trim();
-        if (!text) return;
-
-        const result = this.inventoryService.importFromArenaFormat(text);
-        this.lastImportResult.set(result);
-        this.showToast(`Import: ${result.success} Karten hinzugefügt`, 'success');
-    }
+    // executeImport moved to child component
 
     exportCollection(): void {
         const text = this.inventoryService.exportToArenaFormat();
@@ -378,6 +274,10 @@ export class MtgInventoryComponent {
     }
 
     // --- Toast ---
+    handleToast(event: { message: string, type: 'success' | 'error' }): void {
+        this.showToast(event.message, event.type);
+    }
+
     private showToast(message: string, type: 'success' | 'error'): void {
         this.toastMessage.set(message);
         this.toastType.set(type);

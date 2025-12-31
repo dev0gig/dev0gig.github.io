@@ -1,0 +1,54 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeModal()"></div>
+    <div class="relative gradient-card p-6 rounded-sm shadow-2xl w-full max-w-lg flex flex-col gap-4 accent-glow">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-dash-text">TXT-Datei importieren</h2>
+            <button (click)="closeModal()" class="text-dash-text-dim hover:text-white transition-colors">
+                <span class="material-symbols-sharp">close</span>
+            </button>
+        </div>
+
+        <div class="text-xs text-dash-text-dim space-y-1">
+            <p>Wähle eine .txt Datei im Arena-Format:</p>
+            <code class="text-dash-accent block">1 Counterspell (MH2) 405</code>
+            <p class="text-green-400 flex items-center gap-1 mt-2">
+                <span class="material-symbols-sharp text-sm">bolt</span>
+                Keine API-Anfragen beim Import!
+            </p>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <label
+                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-dash-border rounded-sm cursor-pointer bg-dash-bg hover:bg-dash-card hover:border-dash-accent transition-all">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <span class="material-symbols-sharp text-3xl text-dash-text-dim mb-2">upload_file</span>
+                    <p class="text-sm text-dash-text-dim">Klicken, um .txt Datei auszuwählen</p>
+                    @if (selectedFileName()) {
+                    <p class="text-xs text-dash-accent mt-2 font-mono">{{ selectedFileName() }}</p>
+                    }
+                </div>
+                <input #fileInput type="file" accept=".txt" class="hidden" (change)="onFileSelected($event)" />
+            </label>
+        </div>
+
+        @if (lastImportResult()) {
+        <div class="text-sm">
+            <span class="text-green-400">{{ lastImportResult()!.success }} Karten hinzugefügt</span>
+            @if (lastImportResult()!.failed > 0) {
+            <span class="text-red-400 ml-2">{{ lastImportResult()!.failed }} Zeilen nicht erkannt</span>
+            }
+        </div>
+        }
+
+        <div class="flex justify-end gap-2">
+            <button (click)="closeModal()"
+                class="px-4 py-2 text-sm text-dash-text-dim hover:text-dash-text transition-colors">
+                Schließen
+            </button>
+            <button (click)="executeImport()" [disabled]="!importText()"
+                class="px-4 py-2 gradient-btn text-white rounded-sm text-sm font-medium disabled:opacity-50">
+                Importieren
+            </button>
+        </div>
+    </div>
+</div>
