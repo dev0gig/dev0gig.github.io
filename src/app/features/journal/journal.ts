@@ -137,7 +137,7 @@ export class JournalService {
 
   // Extract hashtags from text
   private extractTags(text: string): string[] {
-    const regex = /#(\w+)/g;
+    const regex = /#([a-zA-Z0-9_äöüßÄÖÜ]+)/g;
     const tags: string[] = [];
     let match;
     while ((match = regex.exec(text)) !== null) {

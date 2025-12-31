@@ -121,7 +121,7 @@ export class EntryList {
     const searchQuery = this.journal.searchQuery().trim().toLowerCase();
 
     // First pass: split by tags
-    const tagRegex = /#(\w+)/g;
+    const tagRegex = /#([a-zA-Z0-9_äöüßÄÖÜ]+)/g;
     let lastIndex = 0;
     let match;
     const tagSegments: { type: 'text' | 'tag', content: string }[] = [];
