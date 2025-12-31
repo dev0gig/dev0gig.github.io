@@ -4,6 +4,7 @@ export interface JournalEntry {
   id: string;
   date: Date;
   text: string;
+  tags: string[];
 }
 
 @Injectable({
@@ -34,6 +35,9 @@ export class JournalService {
   private showDuplicatesOnly = signal<boolean>(false);
   readonly duplicateFilter = this.showDuplicatesOnly.asReadonly();
 
+  // Global search active state
+  readonly isGlobalSearchActive = computed(() => this.searchQuerySignal().length > 0);
+
   readonly displayEntries = computed(() => {
     const query = this.searchQuerySignal().toLowerCase();
     const monthFilter = this.selectedMonthFilter();
@@ -41,8 +45,8 @@ export class JournalService {
     const entries = this.entriesSignal();
     let result = entries;
 
-    // Apply month filter first
-    if (monthFilter) {
+    // Apply month filter first (but skip if global search is active)
+    if (monthFilter && !query) {
       result = result.filter(e =>
         e.date.getFullYear() === monthFilter.year &&
         e.date.getMonth() === monthFilter.month
@@ -129,6 +133,64 @@ export class JournalService {
     return counts;
   });
 
+  // Tags from currently viewed month (for Tag Cloud)
+  readonly monthlyTags = computed(() => {
+    // Use selected month filter if set, otherwise use current calendar view month
+    const current = this.currentDate();
+    const monthFilter = this.selectedMonthFilter();
+    const year = monthFilter ? monthFilter.year : current.getFullYear();
+    const month = monthFilter ? monthFilter.month : current.getMonth();
+
+    const entries = this.entriesSignal().filter(e =>
+      e.date.getFullYear() === year &&
+      e.date.getMonth() === month
+    );
+
+    const tagCounts = new Map<string, number>();
+    for (const entry of entries) {
+      for (const tag of entry.tags || []) {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      }
+    }
+
+    return Array.from(tagCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag, count]) => ({ tag, count }));
+  });
+
+  // Tags from current search results
+  readonly searchResultTags = computed(() => {
+    const query = this.searchQuerySignal().toLowerCase();
+    if (!query) return [];
+
+    const entries = this.displayEntries();
+    const tagCounts = new Map<string, number>();
+
+    for (const entry of entries) {
+      for (const tag of entry.tags || []) {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      }
+    }
+
+    return Array.from(tagCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag, count]) => ({ tag, count }));
+  });
+
+  // Extract hashtags from text
+  private extractTags(text: string): string[] {
+    const regex = /#(\w+)/g;
+    const tags: string[] = [];
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const tag = match[1].toLowerCase();
+      if (!tags.includes(tag)) {
+        tags.push(tag);
+      }
+    }
+    return tags;
+  }
+
   constructor() {
     // Auto-save effect - skip first execution to avoid overwriting loaded data
     effect(() => {
@@ -149,6 +211,14 @@ export class JournalService {
 
   setSearchQuery(query: string) {
     this.searchQuerySignal.set(query);
+  }
+
+  clearSearch() {
+    this.searchQuerySignal.set('');
+  }
+
+  searchByTag(tag: string) {
+    this.searchQuerySignal.set(`#${tag}`);
   }
 
   setCurrentDate(date: Date) {
@@ -202,6 +272,7 @@ export class JournalService {
       id: crypto.randomUUID(),
       date: new Date(),
       text: text,
+      tags: this.extractTags(text),
     };
     this.entriesSignal.update(entries => [newEntry, ...entries]);
   }
@@ -211,6 +282,7 @@ export class JournalService {
       id: crypto.randomUUID(),
       date: date,
       text: text,
+      tags: this.extractTags(text),
     };
     this.entriesSignal.update(entries => [newEntry, ...entries]);
   }
@@ -359,7 +431,7 @@ export class JournalService {
 
   updateEntry(id: string, text: string) {
     this.entriesSignal.update(entries =>
-      entries.map(e => e.id === id ? { ...e, text } : e)
+      entries.map(e => e.id === id ? { ...e, text, tags: this.extractTags(text) } : e)
     );
   }
 
@@ -381,7 +453,8 @@ export class JournalService {
     try {
       return JSON.parse(stored).map((e: any) => ({
         ...e,
-        date: new Date(e.date)
+        date: new Date(e.date),
+        tags: e.tags || this.extractTags(e.text),
       }));
     } catch {
       return [];
@@ -498,7 +571,8 @@ export class JournalService {
         newEntries.push({
           id: crypto.randomUUID(),
           date: date,
-          text: text.trim()
+          text: text.trim(),
+          tags: this.extractTags(text.trim())
         });
       }
     }

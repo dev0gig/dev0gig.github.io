@@ -40,6 +40,42 @@ export class JournalPage {
     newEntryImpulse = signal('');
     newEntryBeauty = signal('');
 
+    // Store colors for consistent tag coloring
+    private tagColors = new Map<string, string>();
+
+    getTagColor(tag: string): string {
+        if (this.tagColors.has(tag)) {
+            return this.tagColors.get(tag)!;
+        }
+
+        // Pastel color palette
+        const pastelColors = [
+            'hsl(340, 70%, 85%)', // pink
+            'hsl(210, 70%, 85%)', // blue
+            'hsl(120, 50%, 80%)', // green
+            'hsl(45, 80%, 85%)',  // yellow
+            'hsl(280, 60%, 85%)', // purple
+            'hsl(180, 60%, 80%)', // teal
+            'hsl(30, 80%, 85%)',  // orange
+            'hsl(0, 70%, 85%)',   // red
+        ];
+
+        // Simple hash function
+        let hash = 0;
+        for (let i = 0; i < tag.length; i++) {
+            hash = ((hash << 5) - hash) + tag.charCodeAt(i);
+            hash |= 0;
+        }
+
+        const color = pastelColors[Math.abs(hash) % pastelColors.length];
+        this.tagColors.set(tag, color);
+        return color;
+    }
+
+    onTagClick(tag: string) {
+        this.journal.searchByTag(tag);
+    }
+
     private getTodayIso(): string {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

@@ -43,7 +43,15 @@
                     } @else {
                     <div (click)="startEditing(entry, $event)"
                         class="whitespace-pre-wrap text-sm text-dash-text/90 leading-relaxed cursor-pointer hover:text-dash-text transition-colors">
-                        {{ entry.text }}
+                        @for (segment of parseTextWithTags(entry.text); track $index) {
+                        @if (segment.type === 'text') {
+                        <span>{{ segment.content }}</span>
+                        } @else {
+                        <button (click)="onTagClick(segment.content, $event)" class="inline-tag-pill"
+                            [style.background-color]="getTagColor(segment.content)"
+                            title="Click to filter by #{{ segment.content }}">#{{ segment.content }}</button>
+                        }
+                        }
                     </div>
                     }
                 </div>

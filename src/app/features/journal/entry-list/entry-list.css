@@ -8,3 +8,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
 }
+
+/* Inline tag pills in entry text */
+.inline-tag-pill {
+    display: inline;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: inherit;
+    font-weight: 500;
+    color: #1f2937;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: none;
+    line-height: inherit;
+}
+
+.inline-tag-pill:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}

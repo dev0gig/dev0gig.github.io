@@ -14,13 +14,13 @@ import { Search } from '../search/search';
 export class EntryList {
   protected journal = inject(JournalService);
 
-  // Filtered entries for current month (or all when duplicate filter is active)
+  // Filtered entries for current month (or all when duplicate/search filter is active)
   filteredEntries = computed(() => {
     const current = this.journal.currentDate();
     const entries = this.journal.displayEntries();
 
-    // When duplicate filter is active, show all entries (already filtered by service)
-    if (this.journal.duplicateFilter()) {
+    // When duplicate filter or global search is active, show all entries (already filtered by service)
+    if (this.journal.duplicateFilter() || this.journal.isGlobalSearchActive()) {
       return entries;
     }
 
@@ -110,6 +110,66 @@ export class EntryList {
     if (confirm('Are you sure you want to delete this entry?')) {
       this.journal.deleteEntry(id);
     }
+  }
+
+  // Parse text into segments with highlighted tags
+  parseTextWithTags(text: string): { type: 'text' | 'tag', content: string }[] {
+    const segments: { type: 'text' | 'tag', content: string }[] = [];
+    const regex = /#(\w+)/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      // Add text before the tag
+      if (match.index > lastIndex) {
+        segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+      }
+      // Add the tag
+      segments.push({ type: 'tag', content: match[1] });
+      lastIndex = regex.lastIndex;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      segments.push({ type: 'text', content: text.slice(lastIndex) });
+    }
+
+    return segments;
+  }
+
+  // Store colors for consistent tag coloring
+  private tagColors = new Map<string, string>();
+
+  getTagColor(tag: string): string {
+    if (this.tagColors.has(tag)) {
+      return this.tagColors.get(tag)!;
+    }
+
+    const pastelColors = [
+      'hsl(340, 70%, 85%)',
+      'hsl(210, 70%, 85%)',
+      'hsl(120, 50%, 80%)',
+      'hsl(45, 80%, 85%)',
+      'hsl(280, 60%, 85%)',
+      'hsl(180, 60%, 80%)',
+      'hsl(30, 80%, 85%)',
+      'hsl(0, 70%, 85%)',
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < tag.length; i++) {
+      hash = ((hash << 5) - hash) + tag.charCodeAt(i);
+      hash |= 0;
+    }
+
+    const color = pastelColors[Math.abs(hash) % pastelColors.length];
+    this.tagColors.set(tag, color);
+    return color;
+  }
+
+  onTagClick(tag: string, event: MouseEvent) {
+    event.stopPropagation(); // Prevent triggering edit mode
+    this.journal.searchByTag(tag);
   }
 
 }

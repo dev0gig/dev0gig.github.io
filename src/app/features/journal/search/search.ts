@@ -10,10 +10,15 @@ import { JournalService } from '../journal';
   styleUrl: './search.css'
 })
 export class Search {
-  private journal = inject(JournalService);
+  journal = inject(JournalService);
   query = '';
 
   onSearch() {
     this.journal.setSearchQuery(this.query);
+  }
+
+  clearSearch() {
+    this.query = '';
+    this.journal.clearSearch();
   }
 }
