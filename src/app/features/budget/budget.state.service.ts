@@ -219,5 +219,6 @@ export class BudgetStateService {
         return this.importExportService.importExtendedFormat(data);
     }
     importLegacyFormat(jsonData: any[]) { return this.importExportService.importLegacyFormat(jsonData); }
+    importTransactionsFromCSV(transactions: Transaction[]) { return this.importExportService.importTransactionsFromCSV(transactions); }
     getExportData() { return this.importExportService.getExportData(); }
 }

@@ -226,4 +226,16 @@ export class BudgetImportExportService {
             fixkosten: fixedCostsData
         };
     }
+
+    // ==================== Import from CSV ====================
+
+    importTransactionsFromCSV(transactions: Transaction[]): number {
+        if (transactions.length === 0) return 0;
+
+        // Replace all transactions
+        this.dataService.transactions.set(transactions);
+        this.dataService.saveTransactions();
+
+        return transactions.length;
+    }
 }
