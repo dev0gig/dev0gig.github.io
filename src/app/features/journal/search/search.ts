@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JournalService } from '../journal';
 
@@ -12,6 +12,16 @@ import { JournalService } from '../journal';
 export class Search {
   journal = inject(JournalService);
   query = '';
+
+  constructor() {
+    effect(() => {
+      this.query = this.journal.searchQuery();
+    });
+  }
+
+  get isTagFilter(): boolean {
+    return this.query.startsWith('#');
+  }
 
   onSearch() {
     this.journal.setSearchQuery(this.query);
