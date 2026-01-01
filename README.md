@@ -17,11 +17,6 @@ Behalte deine Finanzen voll im Griff.
 - **Trends**: Visuelle Grafiken zeigen dir, wie sich dein Vermögen entwickelt.
 - **Sparziele**: Setze dir Budgets für verschiedene Kategorien.
 
-### 🎨 Manga Studio
-Für die kreative Pause.
-- **Reader**: Lies deine Manga-Sammlung direkt in der App.
-- **Builder**: Erstelle eigene einfache Manga-Seiten und Geschichten.
-
 ### 🎵 Musik & Atmosphäre
 - **Integrierter Player**: Spiele deine Lieblings-YouTube-Playlists (z.B. Lofi Beats) direkt in der Seitenleiste ab, während du arbeitest.
 - **Zuletzt gehört**: Schnellzugriff auf deine ständigen Begleiter.

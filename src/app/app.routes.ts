@@ -14,14 +14,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/budget/budget-page').then(m => m.BudgetPage)
     },
     {
-        path: 'manga-builder',
-        loadComponent: () => import('./features/manga-builder/manga-builder-page').then(m => m.MangaBuilderPage)
-    },
-    {
-        path: 'manga-reader',
-        loadComponent: () => import('./features/manga-reader/manga-reader-page').then(m => m.MangaReaderPage)
-    },
-    {
         path: 'savings-simulator',
         loadComponent: () => import('./features/savings-simulator/savings-simulator.component').then(m => m.SavingsSimulatorComponent)
     },

@@ -19,74 +19,57 @@
             </button>
         </div>
 
-        <!-- Projects Section -->
-        <div>
-            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2 px-1">Tools</h3>
-            <div class="grid grid-cols-3 gap-2">
-                <!-- Dashboard -->
-                <a routerLink="/" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Dashboard">
-                    <span class="material-symbols-sharp text-2xl">dashboard</span>
-                    <span class="text-[10px] font-medium">Dashboard</span>
-                </a>
-                <!-- Journal App -->
-                <a routerLink="/journal" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Journal">
-                    <span class="material-symbols-sharp text-2xl">book</span>
-                    <span class="text-[10px] font-medium">Journal</span>
-                </a>
-                <!-- My Budget -->
-                <a routerLink="/budget" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Budget">
-                    <span class="material-symbols-sharp text-2xl">account_balance_wallet</span>
-                    <span class="text-[10px] font-medium">Budget</span>
-                </a>
-                <!-- Savings Simulator -->
-                <a routerLink="/savings-simulator" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Savings Sim">
-                    <span class="material-symbols-sharp text-2xl">savings</span>
-                    <span class="text-[10px] font-medium text-center leading-tight">Savings<br>Sim</span>
-                </a>
-                <!-- Flashcards -->
-                <a routerLink="/flashcards" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Flashcards">
-                    <span class="material-symbols-sharp text-2xl">style</span>
-                    <span class="text-[10px] font-medium">Flashcards</span>
-                </a>
-                <!-- Install PWA -->
-                <button *ngIf="pwa.canInstall()" (click)="installPwa()"
-                    class="aspect-square bg-dash-bg/50 hover:bg-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Install App">
-                    <span class="material-symbols-sharp text-2xl">download</span>
-                    <span class="text-[10px] font-medium">Install</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Entertainment Section -->
-        <div>
-            <h3 class="text-xs font-bold text-dash-text-dim uppercase tracking-wider mb-2 px-1">Unterhaltung</h3>
-            <div class="grid grid-cols-3 gap-2">
-                <!-- Manga Builder -->
-                <a routerLink="/manga-builder" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="Manga Builder">
-                    <span class="material-symbols-sharp text-2xl">auto_stories</span>
-                    <span class="text-[10px] font-medium text-center leading-tight">Manga<br>Builder</span>
-                </a>
-                <!-- MTG Inventory -->
-                <a routerLink="/mtg-inventory" (click)="sidebarService.closeAfterAction()"
-                    class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
-                    title="MTG Inventory">
-                    <span class="material-symbols-sharp text-2xl">playing_cards</span>
-                    <span class="text-[10px] font-medium text-center leading-tight">MTG<br>Inventory</span>
-                </a>
-            </div>
+        <!-- Navigation Grid -->
+        <div class="grid grid-cols-3 gap-2">
+            <!-- Dashboard -->
+            <a routerLink="/" (click)="sidebarService.closeAfterAction()"
+                class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="Dashboard">
+                <span class="material-symbols-sharp text-2xl">dashboard</span>
+                <span class="text-[10px] font-medium">Dashboard</span>
+            </a>
+            <!-- Journal App -->
+            <a routerLink="/journal" (click)="sidebarService.closeAfterAction()"
+                class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="Journal">
+                <span class="material-symbols-sharp text-2xl">book</span>
+                <span class="text-[10px] font-medium">Journal</span>
+            </a>
+            <!-- My Budget -->
+            <a routerLink="/budget" (click)="sidebarService.closeAfterAction()"
+                class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="Budget">
+                <span class="material-symbols-sharp text-2xl">account_balance_wallet</span>
+                <span class="text-[10px] font-medium">Budget</span>
+            </a>
+            <!-- Savings Simulator -->
+            <a routerLink="/savings-simulator" (click)="sidebarService.closeAfterAction()"
+                class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="Savings Sim">
+                <span class="material-symbols-sharp text-2xl">savings</span>
+                <span class="text-[10px] font-medium text-center leading-tight">Savings<br>Sim</span>
+            </a>
+            <!-- Flashcards -->
+            <a routerLink="/flashcards" (click)="sidebarService.closeAfterAction()"
+                class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="Flashcards">
+                <span class="material-symbols-sharp text-2xl">style</span>
+                <span class="text-[10px] font-medium">Flashcards</span>
+            </a>
+            <!-- MTG Inventory -->
+            <a routerLink="/mtg-inventory" (click)="sidebarService.closeAfterAction()"
+                class="aspect-square bg-dash-bg rounded-sm flex flex-col items-center justify-center gap-0.5 hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="MTG Inventory">
+                <span class="material-symbols-sharp text-2xl">playing_cards</span>
+                <span class="text-[10px] font-medium text-center leading-tight">MTG<br>Inventory</span>
+            </a>
+            <!-- Install PWA -->
+            <button *ngIf="pwa.canInstall()" (click)="installPwa()"
+                class="aspect-square bg-dash-bg/50 hover:bg-dash-accent rounded-sm flex flex-col items-center justify-center gap-1 cursor-pointer text-dash-text-dim hover:text-white transition-all hover:shadow-md"
+                title="Install App">
+                <span class="material-symbols-sharp text-2xl">download</span>
+                <span class="text-[10px] font-medium">Install</span>
+            </button>
         </div>
 
         <!-- Favorites Section -->
