@@ -20,14 +20,11 @@ export class CategoryModalComponent implements OnInit {
     categoryType = signal<'income' | 'expense' | 'both'>('expense');
 
     ngOnInit(): void {
-        console.log('[CategoryModal] ngOnInit - editingCategory:', this.editingCategory);
         // Initialize form with editing data if present
         if (this.editingCategory) {
-            console.log('[CategoryModal] EDIT MODE - loading category:', this.editingCategory.name);
             this.categoryName.set(this.editingCategory.name);
             this.categoryType.set(this.editingCategory.type);
         } else {
-            console.log('[CategoryModal] NEW MODE - resetting form');
             this.categoryName.set('');
             this.categoryType.set('expense');
         }
@@ -36,27 +33,18 @@ export class CategoryModalComponent implements OnInit {
     onSubmit(event: Event): void {
         event.preventDefault();
         event.stopPropagation(); // CRITICAL: Prevent native form submit from bubbling to parent!
-        console.log('----------------------------------------');
-        console.log('[CategoryModal] onSubmit TRIGGERED');
-        console.log('[CategoryModal] categoryName signal value:', this.categoryName());
-        console.log('[CategoryModal] categoryType signal value:', this.categoryType());
 
         const name = this.categoryName().trim();
         const type = this.categoryType();
-        console.log('[CategoryModal] After trim - name:', name, 'type:', type);
 
         if (!name) {
-            console.log('[CategoryModal] ERROR: Name is empty, NOT emitting');
             return; // Don't submit if name is empty
         }
 
-        console.log('[CategoryModal] SUCCESS: Emitting submit event with:', { name, type });
         this.submit.emit({
             name: name,
             type: type
         });
-        console.log('[CategoryModal] submit.emit() called');
-        console.log('----------------------------------------');
     }
 
     onClose(): void {

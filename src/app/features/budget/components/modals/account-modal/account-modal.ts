@@ -17,7 +17,6 @@ export class AccountModalComponent {
 
     onSubmit(event: Event): void {
         event.preventDefault();
-        console.log('[AccountModal] onSubmit called');
 
         const form = event.target as HTMLFormElement;
         const formData = new FormData(form);
@@ -30,12 +29,7 @@ export class AccountModalComponent {
             balance: isNaN(balance) ? 0 : balance
         };
 
-        console.log('[AccountModal] Data to submit:', JSON.stringify(data));
-        console.log('[AccountModal] Emitting submit event NOW');
-
         this.submit.emit(data);
-
-        console.log('[AccountModal] Submit event emitted');
     }
 
     onClose(): void {

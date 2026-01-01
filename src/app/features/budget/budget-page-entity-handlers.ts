@@ -39,18 +39,12 @@ export class BudgetPageEntityHandlers {
     }
 
     deleteAllCategories() {
-        console.log('[EntityHandlers] deleteAllCategories called');
-        console.log('[EntityHandlers] Categories BEFORE delete:', JSON.stringify(this.stateService.categories()));
         this.stateService.deleteAllCategories();
-        console.log('[EntityHandlers] Categories AFTER delete:', JSON.stringify(this.stateService.categories()));
         this.showToastFn('Alle Kategorien gelöscht');
     }
 
     deleteSelectedCategories(ids: string[]) {
-        console.log('[EntityHandlers] deleteSelectedCategories called with ids:', ids);
-        console.log('[EntityHandlers] Categories BEFORE delete:', JSON.stringify(this.stateService.categories()));
         this.stateService.deleteSelectedCategories(ids);
-        console.log('[EntityHandlers] Categories AFTER delete:', JSON.stringify(this.stateService.categories()));
         this.showToastFn(`${ids.length} Kategorien gelöscht`);
     }
 

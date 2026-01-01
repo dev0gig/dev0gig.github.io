@@ -104,7 +104,6 @@ export class SettingsModalComponent {
     }
 
     onDeleteAllCategories(): void {
-        console.log('[SettingsModal] onDeleteAllCategories called');
         this.deleteAllCategories.emit();
         this.selectedCategoryIds.set(new Set());
     }
@@ -115,12 +114,9 @@ export class SettingsModalComponent {
 
     onDeleteSelectedCategories(): void {
         const ids = Array.from(this.selectedCategoryIds());
-        console.log('[SettingsModal] onDeleteSelectedCategories called, ids:', ids);
         if (ids.length > 0) {
             this.deleteSelectedCategories.emit(ids);
             this.selectedCategoryIds.set(new Set());
-        } else {
-            console.log('[SettingsModal] No categories selected, nothing to delete');
         }
     }
 

@@ -44,9 +44,7 @@ export class BudgetPageModalHandlers {
     }
 
     toggleCategoryModal() {
-        const newState = !this.showCategoryModal();
-        console.log('[ModalHandlers] toggleCategoryModal called, new state:', newState, 'editingCategory:', this.editingCategory());
-        this.showCategoryModal.set(newState);
+        this.showCategoryModal.set(!this.showCategoryModal());
     }
 
     toggleFixedCostModal() {
@@ -101,7 +99,6 @@ export class BudgetPageModalHandlers {
     }
 
     openEditCategoryModal(category: Category) {
-        console.log('[ModalHandlers] openEditCategoryModal called with:', category);
         this.editingCategory.set(category);
         this.showCategoryModal.set(true);
     }
@@ -161,50 +158,26 @@ export class BudgetPageModalHandlers {
     }
 
     onAccountModalSubmit(data: { name: string; balance: number }) {
-        console.log('[ModalHandlers] onAccountModalSubmit CALLED');
-        console.log('[ModalHandlers] Data received:', JSON.stringify(data));
-        console.log('[ModalHandlers] editingAccount:', this.editingAccount());
-        console.log('[ModalHandlers] showAccountModal BEFORE:', this.showAccountModal());
-
         if (this.editingAccount()) {
-            console.log('[ModalHandlers] MODE: Updating existing account');
             this.stateService.updateAccount(this.editingAccount()!.id, data.name, data.balance);
         } else {
-            console.log('[ModalHandlers] MODE: Creating new account');
             this.stateService.addAccount(data.name, data.balance);
         }
 
-        console.log('[ModalHandlers] Closing modal now');
         this.showAccountModal.set(false);
         this.editingAccount.set(null);
-
-        console.log('[ModalHandlers] showAccountModal AFTER:', this.showAccountModal());
-        console.log('[ModalHandlers] onAccountModalSubmit COMPLETE');
     }
 
     onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) {
-        console.log('========================================');
-        console.log('[ModalHandlers] onCategoryModalSubmit CALLED');
-        console.log('[ModalHandlers] Data received:', JSON.stringify(data));
-
         if (!data || typeof data.name !== 'string' || !['income', 'expense', 'both'].includes(data.type)) {
-            console.log('[ModalHandlers] ERROR: Invalid data received (likely native form event), ignoring');
             return;
         }
 
-        console.log('[ModalHandlers] editingCategory is:', this.editingCategory());
-        console.log('[ModalHandlers] Categories BEFORE operation:', JSON.stringify(this.stateService.categories()));
-
         if (this.editingCategory()) {
-            console.log('[ModalHandlers] MODE: Updating existing category ID:', this.editingCategory()!.id);
             this.stateService.updateCategory(this.editingCategory()!.id, data.name, data.type);
         } else {
-            console.log('[ModalHandlers] MODE: Adding NEW category');
             this.stateService.addCategory(data.name, data.type);
         }
-
-        console.log('[ModalHandlers] Categories AFTER operation:', JSON.stringify(this.stateService.categories()));
-        console.log('========================================');
 
         this.toggleCategoryModal();
         this.editingCategory.set(null);

@@ -15,9 +15,7 @@ export class BudgetFilterService {
     // ==================== Search & Filter ====================
 
     onSearch(query: string) {
-        console.log('[FilterService] onSearch called with query:', query);
         this.dataService.searchQuery.set(query);
-        console.log('[FilterService] searchQuery signal updated to:', this.dataService.searchQuery());
     }
 
     onMonthChange(date: Date) {
@@ -25,9 +23,6 @@ export class BudgetFilterService {
     }
 
     getFilteredTransactions(): Transaction[] {
-        console.log('[FilterService] getFilteredTransactions called');
-        console.log('[FilterService] Current searchQuery:', this.dataService.searchQuery());
-        console.log('[FilterService] Total transactions:', this.dataService.transactions().length);
         let filtered = this.dataService.transactions();
 
         // Filter by Account
@@ -41,7 +36,7 @@ export class BudgetFilterService {
         // Filter by Search
         const query = this.dataService.searchQuery().toLowerCase();
         if (query) {
-            console.log('[FilterService] Filtering with query:', query);
+
             filtered = filtered.filter(t => {
                 // Search in title/description (with null check)
                 if (t.description && t.description.toLowerCase().includes(query)) return true;
@@ -81,7 +76,6 @@ export class BudgetFilterService {
 
                 return false;
             });
-            console.log('[FilterService] Filtered to', filtered.length, 'transactions');
         }
         return filtered;
     }
