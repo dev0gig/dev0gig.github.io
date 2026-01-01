@@ -137,16 +137,7 @@ export class JournalService {
       e.date.getMonth() === month
     );
 
-    const tagCounts = new Map<string, number>();
-    for (const entry of entries) {
-      for (const tag of entry.tags || []) {
-        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-      }
-    }
-
-    return Array.from(tagCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([tag, count]) => ({ tag, count }));
+    return this.calculateTagStats(entries);
   });
 
   // Tags from current search results
@@ -154,18 +145,7 @@ export class JournalService {
     const query = this.searchQuerySignal().toLowerCase();
     if (!query) return [];
 
-    const entries = this.displayEntries();
-    const tagCounts = new Map<string, number>();
-
-    for (const entry of entries) {
-      for (const tag of entry.tags || []) {
-        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-      }
-    }
-
-    return Array.from(tagCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([tag, count]) => ({ tag, count }));
+    return this.calculateTagStats(this.displayEntries());
   });
 
   // Extract hashtags from text
@@ -180,6 +160,19 @@ export class JournalService {
       }
     }
     return tags;
+  }
+
+  // Count and sort tags from entries
+  private calculateTagStats(entries: JournalEntry[]): { tag: string; count: number }[] {
+    const tagCounts = new Map<string, number>();
+    for (const entry of entries) {
+      for (const tag of entry.tags || []) {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      }
+    }
+    return Array.from(tagCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag, count]) => ({ tag, count }));
   }
 
   constructor() {

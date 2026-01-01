@@ -59,10 +59,10 @@ export class BudgetPage {
     settingsService = inject(SettingsService);
     router = inject(Router);
 
-    // Budget services
-    stateService = inject(BudgetStateService);
-    utilityService = inject(BudgetUtilityService);
-    statsService = inject(BudgetStatsService);
+    // Budget services (public for template access)
+    public stateService = inject(BudgetStateService);
+    public utilityService = inject(BudgetUtilityService);
+    public statsService = inject(BudgetStatsService);
 
     // UI State signals
     showTransactionModal = signal(false);
@@ -104,10 +104,10 @@ export class BudgetPage {
     // Expose Math to template
     Math = Math;
 
-    // Handler instances
-    private modalHandlers: BudgetPageModalHandlers;
-    private entityHandlers: BudgetPageEntityHandlers;
-    private importExportHandlers: BudgetPageImportExportHandlers;
+    // Handler instances (public for template access)
+    public modalHandlers: BudgetPageModalHandlers;
+    public entityHandlers: BudgetPageEntityHandlers;
+    public importExportHandlers: BudgetPageImportExportHandlers;
 
     constructor() {
         // Initialize handlers
@@ -151,83 +151,7 @@ export class BudgetPage {
         });
     }
 
-    // ==================== Passthrough properties for template ====================
-
-    // State service delegations (direct readonly assignments for better performance)
-    readonly transactions = this.stateService.transactions;
-    readonly accounts = this.stateService.accounts;
-    readonly categories = this.stateService.categories;
-    readonly fixedCosts = this.stateService.fixedCosts;
-    readonly fixedCostGroups = this.stateService.fixedCostGroups;
-    readonly selectedAccountId = this.stateService.selectedAccountId;
-    readonly searchQuery = this.stateService.searchQuery;
-    readonly selectedMonth = this.stateService.selectedMonth;
-
-    getCategoryById(id: string) { return this.stateService.getCategoryById(id); }
-    getCategoryFullName(id: string) { return this.stateService.getCategoryFullName(id); }
-    getSortedCategories() { return this.stateService.getSortedCategories(); }
-    getAccountById(id: string) { return this.stateService.getAccountById(id); }
-    getTotalBalance() { return this.stateService.getTotalBalance(); }
-    getFilteredTransactions() { return this.stateService.getFilteredTransactions(); }
-    getSortedTransactions() { return this.stateService.getSortedTransactions(); }
-    getFixedCosts() { return this.stateService.getFixedCosts(); }
-    getFixedCostsSortedByCategory() { return this.stateService.getFixedCostsSortedByCategory(); }
-    getFixedCostsTotal() { return this.stateService.getFixedCostsTotal(); }
-    getFixedIncomeTotal() { return this.stateService.getFixedIncomeTotal(); }
-    getFixedTransferTotal() { return this.stateService.getFixedTransferTotal(); }
-    getFixedIncomeCount() { return this.stateService.getFixedIncomeCount(); }
-    getFixedExpenseCount() { return this.stateService.getFixedExpenseCount(); }
-    getFixedTransferCount() { return this.stateService.getFixedTransferCount(); }
-    getExcludedFixedCostsTotal() { return this.stateService.getExcludedFixedCostsTotal(); }
-    getExcludedFixedCostsCount() { return this.stateService.getExcludedFixedCostsCount(); }
-    getFixedCostsSortedByOrder() { return this.stateService.getFixedCostsSortedByOrder(); }
-    getFixedCostGroupsSortedByOrder() { return this.stateService.getFixedCostGroupsSortedByOrder(); }
-
-    // Utility service delegations
-    formatCurrency(amount: number) { return this.utilityService.formatCurrency(amount); }
-    formatDate(dateStr: string) { return this.utilityService.formatDate(dateStr); }
-    getTodayDateString() { return this.utilityService.getTodayDateString(); }
-
-    // Stats service delegations
-    getStats() { return this.statsService.getStats(); }
-    getCategoryStats() { return this.statsService.getCategoryStats(); }
-    getIncomeCategoryStats() { return this.statsService.getIncomeCategoryStats(); }
-    getDailyTrend() { return this.statsService.getDailyTrend(); }
-    getPieChartGradient() { return this.statsService.getPieChartGradient(); }
-    getIncomePieChartGradient() { return this.statsService.getIncomePieChartGradient(); }
-    getTrendPoints() { return this.statsService.getTrendPoints(); }
-    getTrendAreaPoints() { return this.statsService.getTrendAreaPoints(); }
-    getTrendMaxValue() { return this.statsService.getTrendMaxValue(); }
-    getTrendMinValue() { return this.statsService.getTrendMinValue(); }
-    getZeroLineY() { return this.statsService.getZeroLineY(); }
-    getDaysInSelectedMonth() { return this.statsService.getDaysInSelectedMonth(); }
-    getSelectedMonthName() { return this.statsService.getSelectedMonthName(); }
-    getIncomeTransactionCount() { return this.statsService.getIncomeTransactionCount(); }
-    getExpenseTransactionCount() { return this.statsService.getExpenseTransactionCount(); }
-    getTopExpenses() { return this.statsService.getTopExpenses(); }
-    getAverageDailyExpense() { return this.statsService.getAverageDailyExpense(); }
-    getAverageDailyIncome() { return this.statsService.getAverageDailyIncome(); }
-    getLargestExpense() { return this.statsService.getLargestExpense(); }
-    getLargestIncome() { return this.statsService.getLargestIncome(); }
-
-    // ==================== Modal Handler Delegations ====================
-
-    toggleSettingsModal() { this.modalHandlers.toggleSettingsModal(); }
-    toggleTransactionModal() { this.modalHandlers.toggleTransactionModal(); }
-    toggleAccountModal() { this.modalHandlers.toggleAccountModal(); }
-    toggleCategoryModal() { this.modalHandlers.toggleCategoryModal(); }
-    toggleFixedCostModal() { this.modalHandlers.toggleFixedCostModal(); }
-    toggleFixedCostGroupModal() { this.modalHandlers.toggleFixedCostGroupModal(); }
-
-    openNewTransactionModal() { this.modalHandlers.openNewTransactionModal(); }
-    openEditTransactionModal(transaction: Transaction) { this.modalHandlers.openEditTransactionModal(transaction); }
-    openNewFixedCostModal() { this.modalHandlers.openNewFixedCostModal(); }
-    openEditFixedCostModalUnified(fixedCost: FixedCost) { this.modalHandlers.openEditFixedCostModalUnified(fixedCost); }
-    openBookFixedCostModal(fixedCost: FixedCost) { this.modalHandlers.openBookFixedCostModal(fixedCost); }
-    openEditAccountModal(account: Account) { this.modalHandlers.openEditAccountModal(account); }
-    openEditCategoryModal(category: Category) { this.modalHandlers.openEditCategoryModal(category); }
-    openEditFixedCostModal(fixedCost: FixedCost) { this.modalHandlers.openEditFixedCostModal(fixedCost); }
-    openEditFixedCostGroupModal(group: FixedCostGroup) { this.modalHandlers.openEditFixedCostGroupModal(group); }
+    // ==================== Transaction Modal Submit (contains actual logic) ====================
 
     onTransactionModalSubmit(data: any) {
         const isEditing = !!this.editingTransaction();
@@ -274,48 +198,6 @@ export class BudgetPage {
             this.showToast('Transaktion hinzugefügt');
         }
     }
-    onAccountModalSubmit(data: { name: string; balance: number }) { this.modalHandlers.onAccountModalSubmit(data); }
-    onCategoryModalSubmit(data: { name: string; type: 'income' | 'expense' | 'both' }) { this.modalHandlers.onCategoryModalSubmit(data); }
-    onFixedCostModalSubmit(data: any) { this.modalHandlers.onFixedCostModalSubmit(data); }
-    onFixedCostGroupModalSubmit(data: { name: string }) { this.modalHandlers.onFixedCostGroupModalSubmit(data); }
-
-    // ==================== Entity Handler Delegations ====================
-
-    selectAccount(id: string | null) { this.entityHandlers.selectAccount(id); }
-    deleteAccount(id: string) { this.entityHandlers.deleteAccount(id); }
-    deleteCategory(id: string) { this.entityHandlers.deleteCategory(id); }
-    deleteAllCategories() { this.entityHandlers.deleteAllCategories(); }
-    deleteSelectedCategories(ids: string[]) { this.entityHandlers.deleteSelectedCategories(ids); }
-    loadDefaultCategories() { return this.entityHandlers.loadDefaultCategories(); }
-
-    toggleExpansion(id: string) { this.entityHandlers.toggleExpansion(id); }
-    deleteTransaction(id: string) { this.entityHandlers.deleteTransaction(id); }
-    deleteAllTransactions() { this.entityHandlers.deleteAllTransactions(); }
-
-    toggleInlineEdit(transactionId: string) { this.entityHandlers.toggleInlineEdit(transactionId); }
-    cancelInlineEdit(transactionId: string) { this.entityHandlers.cancelInlineEdit(transactionId); }
-    isEditingInline(transactionId: string) { return this.entityHandlers.isEditingInline(transactionId); }
-    setInlineTransactionType(transactionId: string, type: 'income' | 'expense' | 'transfer') {
-        this.entityHandlers.setInlineTransactionType(transactionId, type);
-    }
-    getInlineTransactionType(transactionId: string) { return this.entityHandlers.getInlineTransactionType(transactionId); }
-    onInlineTransactionEdit(event: Event, transactionId: string) { this.entityHandlers.onInlineTransactionEdit(event, transactionId); }
-
-    deleteFixedCost(id: string) { this.entityHandlers.deleteFixedCost(id); }
-    createTransactionFromFixedCost(fixedCost: FixedCost) { this.entityHandlers.createTransactionFromFixedCost(fixedCost); }
-    clearPrefillData() { this.entityHandlers.clearPrefillData(); }
-    copyTransactionToFixedCost(transaction: Transaction) { this.entityHandlers.copyTransactionToFixedCost(transaction); }
-
-    deleteFixedCostGroup(id: string) { this.entityHandlers.deleteFixedCostGroup(id); }
-    reorderFixedCosts(ids: string[]) { this.entityHandlers.reorderFixedCosts(ids); }
-    deleteAllFixedCostGroups() { this.entityHandlers.deleteAllFixedCostGroups(); }
-    deleteSelectedFixedCostGroups(ids: string[]) { this.entityHandlers.deleteSelectedFixedCostGroups(ids); }
-    reorderFixedCostGroups(ids: string[]) { this.entityHandlers.reorderFixedCostGroups(ids); }
-
-    // ==================== Import/Export Delegations ====================
-
-    triggerImport() { this.importExportHandlers.triggerImport(); }
-    triggerExport() { this.importExportHandlers.triggerExport(); }
 
     // ==================== UI Methods ====================
 
@@ -375,6 +257,6 @@ export class BudgetPage {
             this.stateService.addFixedCost(data);
         }
 
-        this.toggleFixedCostModal();
+        this.modalHandlers.toggleFixedCostModal();
     }
 }

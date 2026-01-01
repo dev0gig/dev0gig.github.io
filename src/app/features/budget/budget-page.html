@@ -6,7 +6,7 @@
             class="md:col-span-12 flex items-center justify-between gradient-header p-3 md:p-4 rounded-sm sticky top-0 z-50 shadow-lg">
             <div class="flex items-center gap-2 md:gap-4">
                 <!-- Apps Launcher -->
-                <app-apps-launcher (openSettings)="toggleSettingsModal()"></app-apps-launcher>
+                <app-apps-launcher (openSettings)="modalHandlers.toggleSettingsModal()"></app-apps-launcher>
                 <h1 class="text-xs md:text-sm font-bold tracking-widest text-dash-text-dim uppercase">Budget</h1>
             </div>
             <div class="flex gap-2 text-xs font-mono text-dash-text-dim items-center">
@@ -28,10 +28,11 @@
                         <span class="hidden md:inline">Fixkosten</span>
                     </button>
                 </div>
-                <div class="hidden sm:block">TRANSACTIONS <span class="text-white">{{ transactions().length }}</span>
+                <div class="hidden sm:block">TRANSACTIONS <span class="text-white">{{ stateService.transactions().length
+                        }}</span>
                 </div>
                 <!-- Local Settings Button -->
-                <button (click)="toggleSettingsModal()"
+                <button (click)="modalHandlers.toggleSettingsModal()"
                     class="w-10 h-10 bg-dash-bg rounded-sm flex items-center justify-center hover:bg-dash-accent cursor-pointer text-dash-text-dim hover:text-white transition-all"
                     title="Budget Settings">
                     <span class="material-symbols-sharp text-xl">settings</span>
@@ -47,18 +48,24 @@
 
         <!-- Settings Modal -->
         @if (showSettingsModal()) {
-        <app-settings-modal [accounts]="accounts()" [categories]="categories()"
-            [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleSettingsModal()" (importData)="triggerImport()"
-            (exportData)="triggerExport()" (deleteAllTransactions)="deleteAllTransactions()"
-            (addAccount)="toggleAccountModal()" (editAccount)="openEditAccountModal($event)"
-            (deleteAccount)="deleteAccount($event)" (addCategory)="editingCategory.set(null); toggleCategoryModal()"
-            (editCategory)="openEditCategoryModal($event)" (deleteCategory)="deleteCategory($event)"
-            (deleteAllCategories)="deleteAllCategories()" (deleteSelectedCategories)="deleteSelectedCategories($event)"
-            (loadDefaultCategories)="loadDefaultCategories()" (addGroup)="toggleFixedCostGroupModal()"
-            (editGroup)="openEditFixedCostGroupModal($event)" (deleteGroup)="deleteFixedCostGroup($event)"
-            (deleteAllGroups)="deleteAllFixedCostGroups()"
-            (deleteSelectedGroups)="deleteSelectedFixedCostGroups($event)"
-            (reorderGroups)="reorderFixedCostGroups($event)">
+        <app-settings-modal [accounts]="stateService.accounts()" [categories]="stateService.categories()"
+            [groups]="stateService.getFixedCostGroupsSortedByOrder()" (close)="modalHandlers.toggleSettingsModal()"
+            (importData)="importExportHandlers.triggerImport()" (exportData)="importExportHandlers.triggerExport()"
+            (deleteAllTransactions)="entityHandlers.deleteAllTransactions()"
+            (addAccount)="modalHandlers.toggleAccountModal()" (editAccount)="modalHandlers.openEditAccountModal($event)"
+            (deleteAccount)="entityHandlers.deleteAccount($event)"
+            (addCategory)="editingCategory.set(null); modalHandlers.toggleCategoryModal()"
+            (editCategory)="modalHandlers.openEditCategoryModal($event)"
+            (deleteCategory)="entityHandlers.deleteCategory($event)"
+            (deleteAllCategories)="entityHandlers.deleteAllCategories()"
+            (deleteSelectedCategories)="entityHandlers.deleteSelectedCategories($event)"
+            (loadDefaultCategories)="entityHandlers.loadDefaultCategories()"
+            (addGroup)="modalHandlers.toggleFixedCostGroupModal()"
+            (editGroup)="modalHandlers.openEditFixedCostGroupModal($event)"
+            (deleteGroup)="entityHandlers.deleteFixedCostGroup($event)"
+            (deleteAllGroups)="entityHandlers.deleteAllFixedCostGroups()"
+            (deleteSelectedGroups)="entityHandlers.deleteSelectedFixedCostGroups($event)"
+            (reorderGroups)="entityHandlers.reorderFixedCostGroups($event)">
         </app-settings-modal>
         }
 
@@ -67,44 +74,59 @@
 
             <!-- TRANSACTIONS VIEW -->
             @if (viewMode() === 'transactions') {
-            <app-transactions-view [transactions]="getSortedTransactions()" [accounts]="accounts()"
-                [categories]="categories()" [searchQuery]="searchQuery()" [newlyCreatedId]="newlyCreatedTransactionId()"
-                (addTransaction)="openNewTransactionModal()" (editTransaction)="openEditTransactionModal($event)"
-                (deleteTransaction)="deleteTransaction($event)" (copyToFixedCost)="copyTransactionToFixedCost($event)"
+            <app-transactions-view [transactions]="stateService.getSortedTransactions()"
+                [accounts]="stateService.accounts()" [categories]="stateService.categories()"
+                [searchQuery]="stateService.searchQuery()" [newlyCreatedId]="newlyCreatedTransactionId()"
+                (addTransaction)="modalHandlers.openNewTransactionModal()"
+                (editTransaction)="modalHandlers.openEditTransactionModal($event)"
+                (deleteTransaction)="entityHandlers.deleteTransaction($event)"
+                (copyToFixedCost)="entityHandlers.copyTransactionToFixedCost($event)"
                 (search)="stateService.onSearch($event)">
             </app-transactions-view>
             }
 
             <!-- STATISTICS VIEW -->
             @if (viewMode() === 'statistics') {
-            <app-statistics-view [stats]="getStats()" [categoryStats]="getCategoryStats()"
-                [incomeCategoryStats]="getIncomeCategoryStats()" [dailyTrend]="getDailyTrend()"
-                [topExpenses]="getTopExpenses()" [selectedMonthName]="getSelectedMonthName()"
-                [selectedAccountName]="selectedAccountId() ? (getAccountById(selectedAccountId()!)?.name ?? null) : null"
-                [transactionCount]="getSortedTransactions().length"
-                [incomeTransactionCount]="getIncomeTransactionCount()"
-                [expenseTransactionCount]="getExpenseTransactionCount()"
-                [averageDailyExpense]="getAverageDailyExpense()" [averageDailyIncome]="getAverageDailyIncome()"
-                [largestExpense]="getLargestExpense()" [largestIncome]="getLargestIncome()"
-                [pieChartGradient]="getPieChartGradient()" [incomePieChartGradient]="getIncomePieChartGradient()"
-                [trendPoints]="getTrendPoints()" [trendAreaPoints]="getTrendAreaPoints()"
-                [trendMaxValue]="getTrendMaxValue()" [trendMinValue]="getTrendMinValue()" [zeroLineY]="getZeroLineY()"
-                [daysInSelectedMonth]="getDaysInSelectedMonth()">
+            <app-statistics-view [stats]="statsService.getStats()" [categoryStats]="statsService.getCategoryStats()"
+                [incomeCategoryStats]="statsService.getIncomeCategoryStats()"
+                [dailyTrend]="statsService.getDailyTrend()" [topExpenses]="statsService.getTopExpenses()"
+                [selectedMonthName]="statsService.getSelectedMonthName()"
+                [selectedAccountName]="stateService.selectedAccountId() ? (stateService.getAccountById(stateService.selectedAccountId()!)?.name ?? null) : null"
+                [transactionCount]="stateService.getSortedTransactions().length"
+                [incomeTransactionCount]="statsService.getIncomeTransactionCount()"
+                [expenseTransactionCount]="statsService.getExpenseTransactionCount()"
+                [averageDailyExpense]="statsService.getAverageDailyExpense()"
+                [averageDailyIncome]="statsService.getAverageDailyIncome()"
+                [largestExpense]="statsService.getLargestExpense()" [largestIncome]="statsService.getLargestIncome()"
+                [pieChartGradient]="statsService.getPieChartGradient()"
+                [incomePieChartGradient]="statsService.getIncomePieChartGradient()"
+                [trendPoints]="statsService.getTrendPoints()" [trendAreaPoints]="statsService.getTrendAreaPoints()"
+                [trendMaxValue]="statsService.getTrendMaxValue()" [trendMinValue]="statsService.getTrendMinValue()"
+                [zeroLineY]="statsService.getZeroLineY()" [daysInSelectedMonth]="statsService.getDaysInSelectedMonth()">
             </app-statistics-view>
             }
 
             <!-- FIXKOSTEN VIEW -->
             @if (viewMode() === 'fixedcosts') {
-            <app-fixed-costs-view [fixedCosts]="getFixedCostsSortedByOrder()" [accounts]="accounts()"
-                [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()"
-                [fixedIncomeTotal]="getFixedIncomeTotal()" [fixedCostsTotal]="getFixedCostsTotal()"
-                [fixedTransferTotal]="getFixedTransferTotal()" [fixedIncomeCount]="getFixedIncomeCount()"
-                [fixedExpenseCount]="getFixedExpenseCount()" [fixedTransferCount]="getFixedTransferCount()"
-                [excludedTotal]="getExcludedFixedCostsTotal()" [excludedCount]="getExcludedFixedCostsCount()"
-                (addFixedCost)="openNewFixedCostModal()" (editFixedCost)="openEditFixedCostModalUnified($event)"
-                (deleteFixedCost)="deleteFixedCost($event)" (createTransaction)="openBookFixedCostModal($event)"
-                (addGroup)="toggleFixedCostGroupModal()" (editGroup)="openEditFixedCostGroupModal($event)"
-                (deleteGroup)="deleteFixedCostGroup($event)" (reorderFixedCosts)="reorderFixedCosts($event)">
+            <app-fixed-costs-view [fixedCosts]="stateService.getFixedCostsSortedByOrder()"
+                [accounts]="stateService.accounts()" [categories]="stateService.categories()"
+                [groups]="stateService.getFixedCostGroupsSortedByOrder()"
+                [fixedIncomeTotal]="stateService.getFixedIncomeTotal()"
+                [fixedCostsTotal]="stateService.getFixedCostsTotal()"
+                [fixedTransferTotal]="stateService.getFixedTransferTotal()"
+                [fixedIncomeCount]="stateService.getFixedIncomeCount()"
+                [fixedExpenseCount]="stateService.getFixedExpenseCount()"
+                [fixedTransferCount]="stateService.getFixedTransferCount()"
+                [excludedTotal]="stateService.getExcludedFixedCostsTotal()"
+                [excludedCount]="stateService.getExcludedFixedCostsCount()"
+                (addFixedCost)="modalHandlers.openNewFixedCostModal()"
+                (editFixedCost)="modalHandlers.openEditFixedCostModalUnified($event)"
+                (deleteFixedCost)="entityHandlers.deleteFixedCost($event)"
+                (createTransaction)="modalHandlers.openBookFixedCostModal($event)"
+                (addGroup)="modalHandlers.toggleFixedCostGroupModal()"
+                (editGroup)="modalHandlers.openEditFixedCostGroupModal($event)"
+                (deleteGroup)="entityHandlers.deleteFixedCostGroup($event)"
+                (reorderFixedCosts)="entityHandlers.reorderFixedCosts($event)">
             </app-fixed-costs-view>
             }
 
@@ -112,47 +134,52 @@
 
         <!-- Sidebar -->
         <aside class="md:col-span-4 lg:col-span-3 flex flex-col gap-4 order-1 md:order-2">
-            <app-budget-sidebar [stats]="getStats()" [accounts]="accounts()" [transactions]="transactions()"
-                [selectedAccountId]="selectedAccountId()" [totalBalance]="getTotalBalance()"
-                (selectAccount)="selectAccount($event)" (monthChange)="onMonthChange($event)">
+            <app-budget-sidebar [stats]="statsService.getStats()" [accounts]="stateService.accounts()"
+                [transactions]="stateService.transactions()" [selectedAccountId]="stateService.selectedAccountId()"
+                [totalBalance]="stateService.getTotalBalance()" (selectAccount)="entityHandlers.selectAccount($event)"
+                (monthChange)="stateService.onMonthChange($event)">
             </app-budget-sidebar>
         </aside>
 
         <!-- Transaction Modal -->
         @if (showTransactionModal()) {
         <app-transaction-modal [editingTransaction]="editingTransaction()"
-            [prefillFromFixedCost]="prefillFromFixedCost()" [accounts]="accounts()" [categories]="categories()"
-            (close)="toggleTransactionModal(); editingTransaction.set(null); prefillFromFixedCost.set(null)"
+            [prefillFromFixedCost]="prefillFromFixedCost()" [accounts]="stateService.accounts()"
+            [categories]="stateService.categories()"
+            (close)="modalHandlers.toggleTransactionModal(); editingTransaction.set(null); prefillFromFixedCost.set(null)"
             (transactionSubmit)="onTransactionModalSubmit($event)">
         </app-transaction-modal>
         }
 
         <!-- Account Modal -->
         @if (showAccountModal()) {
-        <app-account-modal [editingAccount]="editingAccount()" (close)="toggleAccountModal(); editingAccount.set(null)"
-            (submit)="onAccountModalSubmit($event)">
+        <app-account-modal [editingAccount]="editingAccount()"
+            (close)="modalHandlers.toggleAccountModal(); editingAccount.set(null)"
+            (submit)="modalHandlers.onAccountModalSubmit($event)">
         </app-account-modal>
         }
 
         <!-- Category Modal -->
         @if (showCategoryModal()) {
         <app-category-modal [editingCategory]="editingCategory()"
-            (close)="toggleCategoryModal(); editingCategory.set(null)" (submit)="onCategoryModalSubmit($event)">
+            (close)="modalHandlers.toggleCategoryModal(); editingCategory.set(null)"
+            (submit)="modalHandlers.onCategoryModalSubmit($event)">
         </app-category-modal>
         }
 
         <!-- Fixed Cost Group Modal -->
         @if (showFixedCostGroupModal()) {
-        <app-fixed-cost-group-modal [editingGroup]="editingFixedCostGroup()" (close)="toggleFixedCostGroupModal()"
-            (groupSubmit)="onFixedCostGroupModalSubmit($event)">
+        <app-fixed-cost-group-modal [editingGroup]="editingFixedCostGroup()"
+            (close)="modalHandlers.toggleFixedCostGroupModal()"
+            (groupSubmit)="modalHandlers.onFixedCostGroupModalSubmit($event)">
         </app-fixed-cost-group-modal>
         }
 
         <!-- Fixed Cost Modal -->
         @if (showFixedCostModal()) {
-        <app-fixed-cost-modal [editingFixedCost]="editingFixedCost()" [accounts]="accounts()"
-            [categories]="categories()" [groups]="getFixedCostGroupsSortedByOrder()" (close)="toggleFixedCostModal()"
-            (submit)="onFixedCostSubmit($event)">
+        <app-fixed-cost-modal [editingFixedCost]="editingFixedCost()" [accounts]="stateService.accounts()"
+            [categories]="stateService.categories()" [groups]="stateService.getFixedCostGroupsSortedByOrder()"
+            (close)="modalHandlers.toggleFixedCostModal()" (submit)="onFixedCostSubmit($event)">
         </app-fixed-cost-modal>
         }
 

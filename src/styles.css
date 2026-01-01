@@ -120,12 +120,6 @@ body::after {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Firefox Scrollbar - Sehr dezent */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) #121214;
-}
-
 /* CDK Drag Drop Styles */
 .cdk-drag-preview {
     box-sizing: border-box;

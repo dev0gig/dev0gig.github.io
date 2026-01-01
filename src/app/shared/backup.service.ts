@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BookmarkService } from './bookmark.service';
 import { FlashcardsService } from '../features/flashcards/flashcards.service';
-import { JournalService } from '../features/journal/journal';
+import { JournalService, JournalEntry } from '../features/journal/journal';
 import { BudgetDataService } from '../features/budget/services/budget-data.service';
 import { MtgInventoryService } from '../features/mtg-inventory/mtg-inventory.service';
 import { STORAGE_KEYS } from '../core/storage-keys.const';
@@ -29,20 +29,7 @@ interface BookmarkDTO {
     [key: string]: any; // Allow loose typing for now as we transition
 }
 
-interface JournalEntryDTO {
-    id: string;
-    date: string;
-    text: string;
-    tags: string[];
-}
 
-interface LegacyBackup {
-    projects: {
-        bookmarks?: any[];
-        journal?: any[];
-        budget?: any;
-    };
-}
 
 @Injectable({ providedIn: 'root' })
 export class BackupService {
@@ -206,12 +193,7 @@ export class BackupService {
         const recentlyPlayedFile = zip.file('recentlyplayed.json');
         const flashcardsFile = zip.file('flashcards.json');
         const mtgInventoryFile = zip.file('mtginventory.json');
-        const legacyFile = zip.file('dashboard_backup.json');
 
-        // Handle legacy format
-        if (legacyFile && !bookmarksFile && !journalFile && !budgetFile) {
-            return this.processLegacyImport(legacyFile, selection);
-        }
 
         if (selection.bookmarks && bookmarksFile) {
             const content = await bookmarksFile.async('string');
@@ -226,7 +208,7 @@ export class BackupService {
 
         if (selection.journal && journalFile) {
             const content = await journalFile.async('string');
-            const dataWrapper = JSON.parse(content) as BackupData<JournalEntryDTO[]>;
+            const dataWrapper = JSON.parse(content) as BackupData<JournalEntry[]>;
             this.journalService.importBackupData(dataWrapper.data || []);
             importedProjects.push('Journal');
         }
@@ -271,39 +253,7 @@ export class BackupService {
         return importedProjects;
     }
 
-    /**
-     * Process legacy backup format
-     */
-    private async processLegacyImport(legacyFile: any, selection: ProjectSelection): Promise<string[]> {
-        const content = await legacyFile.async('string');
-        const data = JSON.parse(content) as LegacyBackup;
-        const importedProjects: string[] = [];
 
-        if (!data.projects) {
-            return [];
-        }
-
-        if (selection.bookmarks && data.projects.bookmarks) {
-            const bookmarks = data.projects.bookmarks.map((b) => ({
-                ...b,
-                createdAt: (b as any).createdAt || Date.now()
-            }));
-            this.bookmarkService.importBookmarks(bookmarks as any[], true);
-            importedProjects.push('Lesezeichen');
-        }
-
-        if (selection.journal && data.projects.journal) {
-            this.journalService.importBackupData(data.projects.journal);
-            importedProjects.push('Journal');
-        }
-
-        if (selection.budget && data.projects.budget) {
-            this.budgetDataService.importData(data.projects.budget);
-            importedProjects.push('Budget');
-        }
-
-        return importedProjects;
-    }
 
     /**
      * Delete all data for selected projects
@@ -368,7 +318,7 @@ export class BackupService {
         if (zip.file('recentlyplayed.json')) available.push('recentlyPlayed');
         if (zip.file('flashcards.json')) available.push('flashcards');
         if (zip.file('mtginventory.json')) available.push('mtgInventory');
-        if (zip.file('dashboard_backup.json')) available.push('legacy');
+
 
         return available;
     }
