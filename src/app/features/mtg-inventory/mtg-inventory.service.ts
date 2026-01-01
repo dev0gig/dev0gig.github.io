@@ -3,13 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Subject, BehaviorSubject } from 'rxjs';
 import { debounceTime, concatMap, filter } from 'rxjs/operators';
 import { MtgCardBasic, MtgCardDetails, ScryfallCard, getCardKey } from './mtg-card.model';
+import { STORAGE_KEYS } from '../../core/storage-keys.const';
 
 @Injectable({
     providedIn: 'root'
 })
 export class MtgInventoryService {
-    private readonly STORAGE_KEY_CARDS = 'mtg-cards';
-    private readonly STORAGE_KEY_CACHE = 'mtg-cache';
     private readonly API_BASE = 'https://api.scryfall.com/cards';
     private readonly RATE_LIMIT_MS = 100;
 
@@ -57,7 +56,7 @@ export class MtgInventoryService {
 
     private loadCardsFromStorage(): MtgCardBasic[] {
         try {
-            const stored = localStorage.getItem(this.STORAGE_KEY_CARDS);
+            const stored = localStorage.getItem(STORAGE_KEYS.MTG.CARDS);
             return stored ? JSON.parse(stored) : [];
         } catch {
             console.error('Failed to load MTG cards from localStorage');
@@ -67,7 +66,7 @@ export class MtgInventoryService {
 
     private saveCardsToStorage(): void {
         try {
-            localStorage.setItem(this.STORAGE_KEY_CARDS, JSON.stringify(this.cards()));
+            localStorage.setItem(STORAGE_KEYS.MTG.CARDS, JSON.stringify(this.cards()));
         } catch {
             console.error('Failed to save MTG cards to localStorage');
         }
@@ -75,7 +74,7 @@ export class MtgInventoryService {
 
     private loadCacheFromStorage(): [string, MtgCardDetails][] {
         try {
-            const stored = localStorage.getItem(this.STORAGE_KEY_CACHE);
+            const stored = localStorage.getItem(STORAGE_KEYS.MTG.CACHE);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 return Object.entries(parsed) as [string, MtgCardDetails][];
@@ -89,7 +88,7 @@ export class MtgInventoryService {
     private saveCacheToStorage(): void {
         try {
             const obj = Object.fromEntries(this.detailsCache);
-            localStorage.setItem(this.STORAGE_KEY_CACHE, JSON.stringify(obj));
+            localStorage.setItem(STORAGE_KEYS.MTG.CACHE, JSON.stringify(obj));
         } catch {
             console.error('Failed to save MTG cache to localStorage');
         }
@@ -318,7 +317,7 @@ export class MtgInventoryService {
      */
     clearCache(): void {
         this.detailsCache.clear();
-        localStorage.removeItem(this.STORAGE_KEY_CACHE);
+        localStorage.removeItem(STORAGE_KEYS.MTG.CACHE);
         this.cacheVersion.update(v => v + 1);
     }
 

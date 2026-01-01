@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { BookmarkService } from './bookmark.service';
 import { FlashcardsService } from '../features/flashcards/flashcards.service';
+import { JournalService } from '../features/journal/journal';
+import { BudgetDataService } from '../features/budget/services/budget-data.service';
+import { STORAGE_KEYS } from '../core/storage-keys.const';
 
 export interface ProjectSelection {
     bookmarks: boolean;
@@ -44,6 +47,8 @@ interface LegacyBackup {
 export class BackupService {
     private bookmarkService = inject(BookmarkService);
     private flashcardsService = inject(FlashcardsService);
+    private journalService = inject(JournalService);
+    private budgetDataService = inject(BudgetDataService);
 
     private generateFilename(): string {
         const now = new Date();
@@ -76,54 +81,40 @@ export class BackupService {
         const exportedProjects: string[] = [];
 
         if (selection.bookmarks) {
-            const bookmarks = this.bookmarkService.bookmarks();
             const bookmarksData = {
                 exportDate,
                 version: '1.0',
                 project: 'bookmarks',
-                data: bookmarks
+                data: this.bookmarkService.getExportData()
             };
             zip.file('bookmarks.json', JSON.stringify(bookmarksData, null, 2));
             exportedProjects.push('Lesezeichen');
         }
 
         if (selection.journal) {
-            const journalEntries = localStorage.getItem('terminal_journal_entries');
             const journalData = {
                 exportDate,
                 version: '1.0',
                 project: 'journal',
-                data: journalEntries ? JSON.parse(journalEntries) : []
+                data: this.journalService.getBackupExportData()
             };
             zip.file('journal.json', JSON.stringify(journalData, null, 2));
             exportedProjects.push('Journal');
         }
 
         if (selection.budget) {
-            const transactions = localStorage.getItem('mybudget_transactions');
-            const accounts = localStorage.getItem('mybudget_accounts');
-            const categories = localStorage.getItem('mybudget_categories');
-            const fixedCosts = localStorage.getItem('mybudget_fixedcosts');
-            const fixedCostGroups = localStorage.getItem('mybudget_fixedcostgroups');
-
             const budgetData = {
                 exportDate,
                 version: '1.2',
                 project: 'budget',
-                data: {
-                    transactions: transactions ? JSON.parse(transactions) : [],
-                    accounts: accounts ? JSON.parse(accounts) : [],
-                    categories: categories ? JSON.parse(categories) : [],
-                    fixedCosts: fixedCosts ? JSON.parse(fixedCosts) : [],
-                    fixedCostGroups: fixedCostGroups ? JSON.parse(fixedCostGroups) : []
-                }
+                data: this.budgetDataService.getExportData()
             };
             zip.file('budget.json', JSON.stringify(budgetData, null, 2));
             exportedProjects.push('Budget');
         }
 
         if (selection.recentlyPlayed) {
-            const urlHistory = localStorage.getItem('youtube_url_history');
+            const urlHistory = localStorage.getItem(STORAGE_KEYS.YOUTUBE);
             const recentlyPlayedData = {
                 exportDate,
                 version: '1.0',
@@ -147,8 +138,8 @@ export class BackupService {
         }
 
         if (selection.mtgInventory) {
-            const mtgCards = localStorage.getItem('mtg-cards');
-            const mtgCache = localStorage.getItem('mtg-cache');
+            const mtgCards = localStorage.getItem(STORAGE_KEYS.MTG.CARDS);
+            const mtgCache = localStorage.getItem(STORAGE_KEYS.MTG.CACHE);
             const mtgData = {
                 exportDate,
                 version: '1.0',
@@ -239,40 +230,21 @@ export class BackupService {
         if (selection.journal && journalFile) {
             const content = await journalFile.async('string');
             const dataWrapper = JSON.parse(content) as BackupData<JournalEntryDTO[]>;
-            const entries = (dataWrapper.data || []).map((e) => ({
-                ...e,
-                date: new Date(e.date)
-            }));
-            localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
+            this.journalService.importBackupData(dataWrapper.data || []);
             importedProjects.push('Journal');
         }
 
         if (selection.budget && budgetFile) {
             const content = await budgetFile.async('string');
             const dataWrapper = JSON.parse(content) as BackupData<any>;
-            const budget = dataWrapper.data || {};
-            if (budget.transactions) {
-                localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
-            }
-            if (budget.accounts) {
-                localStorage.setItem('mybudget_accounts', JSON.stringify(budget.accounts));
-            }
-            if (budget.categories) {
-                localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
-            }
-            if (budget.fixedCosts) {
-                localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
-            }
-            if (budget.fixedCostGroups) {
-                localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
-            }
+            this.budgetDataService.importData(dataWrapper.data || {});
             importedProjects.push('Budget');
         }
 
         if (selection.recentlyPlayed && recentlyPlayedFile) {
             const content = await recentlyPlayedFile.async('string');
             const dataWrapper = JSON.parse(content) as BackupData<any[]>;
-            localStorage.setItem('youtube_url_history', JSON.stringify(dataWrapper.data || []));
+            localStorage.setItem(STORAGE_KEYS.YOUTUBE, JSON.stringify(dataWrapper.data || []));
             importedProjects.push('Zuletzt gespielt');
         }
 
@@ -295,10 +267,10 @@ export class BackupService {
             const mtgData = JSON.parse(content) as BackupData<any>;
             if (mtgData.data) {
                 if (mtgData.data.cards) {
-                    localStorage.setItem('mtg-cards', JSON.stringify(mtgData.data.cards));
+                    localStorage.setItem(STORAGE_KEYS.MTG.CARDS, JSON.stringify(mtgData.data.cards));
                 }
                 if (mtgData.data.cache) {
-                    localStorage.setItem('mtg-cache', JSON.stringify(mtgData.data.cache));
+                    localStorage.setItem(STORAGE_KEYS.MTG.CACHE, JSON.stringify(mtgData.data.cache));
                 }
                 importedProjects.push('MTG Inventory');
             }
@@ -329,31 +301,12 @@ export class BackupService {
         }
 
         if (selection.journal && data.projects.journal) {
-            const entries = data.projects.journal.map((e) => ({
-                ...e,
-                date: new Date(e.date)
-            }));
-            localStorage.setItem('terminal_journal_entries', JSON.stringify(entries));
+            this.journalService.importBackupData(data.projects.journal);
             importedProjects.push('Journal');
         }
 
         if (selection.budget && data.projects.budget) {
-            const budget = data.projects.budget;
-            if (budget.transactions) {
-                localStorage.setItem('mybudget_transactions', JSON.stringify(budget.transactions));
-            }
-            if (budget.accounts) {
-                localStorage.setItem('mybudget_accounts', JSON.stringify(budget.accounts));
-            }
-            if (budget.categories) {
-                localStorage.setItem('mybudget_categories', JSON.stringify(budget.categories));
-            }
-            if (budget.fixedCosts) {
-                localStorage.setItem('mybudget_fixedcosts', JSON.stringify(budget.fixedCosts));
-            }
-            if (budget.fixedCostGroups) {
-                localStorage.setItem('mybudget_fixedcostgroups', JSON.stringify(budget.fixedCostGroups));
-            }
+            this.budgetDataService.importData(data.projects.budget);
             importedProjects.push('Budget');
         }
 
@@ -368,29 +321,29 @@ export class BackupService {
 
         // Delete Bookmarks
         if (selection.bookmarks) {
-            localStorage.removeItem('dev0gig_bookmarks');
+            localStorage.removeItem(STORAGE_KEYS.BOOKMARKS);
             deletedProjects.push('Lesezeichen');
         }
 
         // Delete Journal
         if (selection.journal) {
-            localStorage.removeItem('terminal_journal_entries');
+            localStorage.removeItem(STORAGE_KEYS.JOURNAL);
             deletedProjects.push('Journal');
         }
 
         // Delete Budget
         if (selection.budget) {
-            localStorage.removeItem('mybudget_transactions');
-            localStorage.removeItem('mybudget_accounts');
-            localStorage.removeItem('mybudget_categories');
-            localStorage.removeItem('mybudget_fixedcosts');
-            localStorage.removeItem('mybudget_fixedcostgroups');
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.TRANSACTIONS);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.ACCOUNTS);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.CATEGORIES);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.FIXED_COSTS);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.FIXED_COST_GROUPS);
             deletedProjects.push('Budget');
         }
 
         // Delete RecentlyPlayed
         if (selection.recentlyPlayed) {
-            localStorage.removeItem('youtube_url_history');
+            localStorage.removeItem(STORAGE_KEYS.YOUTUBE);
             deletedProjects.push('Zuletzt gespielt');
         }
 
@@ -402,8 +355,8 @@ export class BackupService {
 
         // Delete MTG Inventory
         if (selection.mtgInventory) {
-            localStorage.removeItem('mtg-cards');
-            localStorage.removeItem('mtg-cache');
+            localStorage.removeItem(STORAGE_KEYS.MTG.CARDS);
+            localStorage.removeItem(STORAGE_KEYS.MTG.CACHE);
             deletedProjects.push('MTG Inventory');
         }
 

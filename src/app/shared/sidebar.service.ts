@@ -1,12 +1,10 @@
 import { Injectable, signal } from '@angular/core';
+import { STORAGE_KEYS } from '../core/storage-keys.const';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SidebarService {
-    // LocalStorage keys
-    private readonly STORAGE_KEY_PERMANENT = 'sidebar_permanent_visible';
-
     // Setting: Are sidebars permanently visible? (default: false = show overlay mode)
     permanentSidebars = signal(false);
 
@@ -18,7 +16,7 @@ export class SidebarService {
 
     constructor() {
         // Load permanent visibility setting from localStorage
-        this.permanentSidebars.set(this.loadPreference(this.STORAGE_KEY_PERMANENT, false));
+        this.permanentSidebars.set(this.loadPreference(STORAGE_KEYS.SIDEBAR, false));
 
         // If permanent mode is enabled, open both sidebars on init
         if (this.permanentSidebars()) {
@@ -42,7 +40,7 @@ export class SidebarService {
     // Toggle permanent sidebar visibility setting
     setPermanentSidebars(value: boolean) {
         this.permanentSidebars.set(value);
-        this.savePreference(this.STORAGE_KEY_PERMANENT, value);
+        this.savePreference(STORAGE_KEYS.SIDEBAR, value);
 
         if (value) {
             // When enabling permanent mode, open both sidebars

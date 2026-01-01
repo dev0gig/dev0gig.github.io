@@ -1,4 +1,5 @@
 import { Injectable, signal, effect } from '@angular/core';
+import { STORAGE_KEYS } from '../core/storage-keys.const';
 
 export interface AccentColor {
     name: string;
@@ -16,7 +17,6 @@ export const ACCENT_COLORS: AccentColor[] = [
     { name: 'Weiß', value: '#e4e4e7', hover: '#d4d4d8' },
 ];
 
-const STORAGE_KEY = 'dashboard_accent_color';
 const DEFAULT_COLOR = ACCENT_COLORS[0]; // Lila
 
 @Injectable({
@@ -43,7 +43,7 @@ export class ThemeService {
 
     private loadAccentColor(): AccentColor {
         try {
-            const stored = localStorage.getItem(STORAGE_KEY);
+            const stored = localStorage.getItem(STORAGE_KEYS.THEME);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 // Find matching color from predefined list
@@ -58,7 +58,7 @@ export class ThemeService {
 
     private saveAccentColor(color: AccentColor) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(color));
+            localStorage.setItem(STORAGE_KEYS.THEME, JSON.stringify(color));
         } catch (e) {
             console.warn('Failed to save accent color to storage', e);
         }

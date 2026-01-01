@@ -6,6 +6,7 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { ImmoCheckComponent } from './immo-check.component';
 import { SidebarService } from '../../shared/sidebar.service';
+import { STORAGE_KEYS } from '../../core/storage-keys.const';
 
 @Component({
     selector: 'app-savings-simulator',
@@ -19,32 +20,31 @@ export class SavingsSimulatorComponent {
 
     // --- Tab Navigation ---
     activeTab = signal<'savings' | 'immocheck'>('savings');
-    // --- Persistence Helper ---
-    private load<T>(key: string, def: T): T {
-        const stored = localStorage.getItem('savings-sim-' + key);
+    private loadValue<T>(key: string, def: T): T {
+        const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : def;
     }
 
     // --- Inputs (Signals) ---
-    currentSavings = signal<number>(this.load('currentSavings', 10000));
-    monthlyContribution = signal<number>(this.load('monthlyContribution', 900));
-    cashAmount = signal<number>(this.load('cashAmount', 700));
-    cashInterestRate = signal<number>(this.load('cashInterestRate', 2.0));
-    etfAnnualReturn = signal<number>(this.load('etfAnnualReturn', 7.0));
-    timeframeYears = signal<number>(this.load('timeframeYears', 2));
-    calculationMode = signal<'duration' | 'target'>(this.load('calculationMode', 'duration'));
-    targetAmount = signal<number>(this.load('targetAmount', 40000));
+    currentSavings = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.CURRENT_SAVINGS, 10000));
+    monthlyContribution = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.MONTHLY_CONTRIBUTION, 900));
+    cashAmount = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.CASH_AMOUNT, 700));
+    cashInterestRate = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.CASH_INTEREST_RATE, 2.0));
+    etfAnnualReturn = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.ETF_ANNUAL_RETURN, 7.0));
+    timeframeYears = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.TIMEFRAME_YEARS, 2));
+    calculationMode = signal<'duration' | 'target'>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.CALCULATION_MODE, 'duration'));
+    targetAmount = signal<number>(this.loadValue(STORAGE_KEYS.SAVINGS_SIM.TARGET_AMOUNT, 40000));
 
     constructor() {
         effect(() => {
-            localStorage.setItem('savings-sim-currentSavings', JSON.stringify(this.currentSavings()));
-            localStorage.setItem('savings-sim-monthlyContribution', JSON.stringify(this.monthlyContribution()));
-            localStorage.setItem('savings-sim-cashAmount', JSON.stringify(this.cashAmount()));
-            localStorage.setItem('savings-sim-cashInterestRate', JSON.stringify(this.cashInterestRate()));
-            localStorage.setItem('savings-sim-etfAnnualReturn', JSON.stringify(this.etfAnnualReturn()));
-            localStorage.setItem('savings-sim-timeframeYears', JSON.stringify(this.timeframeYears()));
-            localStorage.setItem('savings-sim-calculationMode', JSON.stringify(this.calculationMode()));
-            localStorage.setItem('savings-sim-targetAmount', JSON.stringify(this.targetAmount()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.CURRENT_SAVINGS, JSON.stringify(this.currentSavings()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.MONTHLY_CONTRIBUTION, JSON.stringify(this.monthlyContribution()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.CASH_AMOUNT, JSON.stringify(this.cashAmount()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.CASH_INTEREST_RATE, JSON.stringify(this.cashInterestRate()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.ETF_ANNUAL_RETURN, JSON.stringify(this.etfAnnualReturn()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.TIMEFRAME_YEARS, JSON.stringify(this.timeframeYears()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.CALCULATION_MODE, JSON.stringify(this.calculationMode()));
+            localStorage.setItem(STORAGE_KEYS.SAVINGS_SIM.TARGET_AMOUNT, JSON.stringify(this.targetAmount()));
         });
     }
 

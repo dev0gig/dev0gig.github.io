@@ -1,4 +1,5 @@
 import { Injectable, signal, effect } from '@angular/core';
+import { STORAGE_KEYS } from '../core/storage-keys.const';
 
 export interface Bookmark {
     id: string;
@@ -134,7 +135,7 @@ export class BookmarkService {
     }
 
     private loadBookmarks() {
-        const saved = localStorage.getItem('dev0gig_bookmarks');
+        const saved = localStorage.getItem(STORAGE_KEYS.BOOKMARKS);
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -175,7 +176,7 @@ export class BookmarkService {
     }
 
     private saveBookmarks() {
-        localStorage.setItem('dev0gig_bookmarks', JSON.stringify(this.bookmarks()));
+        localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(this.bookmarks()));
     }
 
     addBookmark(url: string, name: string, customIconUrl?: string) {
@@ -249,5 +250,12 @@ export class BookmarkService {
 
     clearAllBookmarks() {
         this.bookmarks.set([]);
+    }
+
+    /**
+     * Returns bookmark data for backup export (used by BackupService)
+     */
+    getExportData(): Bookmark[] {
+        return this.bookmarks();
     }
 }

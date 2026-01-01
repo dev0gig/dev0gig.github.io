@@ -7,6 +7,7 @@ import { BookmarkService } from '../bookmark.service';
 import { SidebarService } from '../sidebar.service';
 import { BackupService, ProjectSelection } from '../backup.service';
 import { FlashcardsService } from '../../features/flashcards/flashcards.service';
+import { STORAGE_KEYS } from '../../core/storage-keys.const';
 
 @Component({
     selector: 'app-global-settings-modal',
@@ -241,23 +242,23 @@ export class GlobalSettingsModal {
         }
 
         if (selection.bookmarks) {
-            localStorage.removeItem('dev0gig_bookmarks');
+            localStorage.removeItem(STORAGE_KEYS.BOOKMARKS);
         }
 
         if (selection.journal) {
-            localStorage.removeItem('terminal_journal_entries');
+            localStorage.removeItem(STORAGE_KEYS.JOURNAL);
         }
 
         if (selection.budget) {
-            localStorage.removeItem('mybudget_transactions');
-            localStorage.removeItem('mybudget_accounts');
-            localStorage.removeItem('mybudget_categories');
-            localStorage.removeItem('mybudget_fixedcosts');
-            localStorage.removeItem('mybudget_fixedcostgroups');
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.TRANSACTIONS);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.ACCOUNTS);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.CATEGORIES);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.FIXED_COSTS);
+            localStorage.removeItem(STORAGE_KEYS.BUDGET.FIXED_COST_GROUPS);
         }
 
         if (selection.recentlyPlayed) {
-            localStorage.removeItem('youtube_url_history');
+            localStorage.removeItem(STORAGE_KEYS.YOUTUBE);
         }
 
         if (selection.flashcards) {
@@ -265,8 +266,8 @@ export class GlobalSettingsModal {
         }
 
         if (selection.mtgInventory) {
-            localStorage.removeItem('mtg-cards');
-            localStorage.removeItem('mtg-cache');
+            localStorage.removeItem(STORAGE_KEYS.MTG.CARDS);
+            localStorage.removeItem(STORAGE_KEYS.MTG.CACHE);
         }
 
         this.onClose();

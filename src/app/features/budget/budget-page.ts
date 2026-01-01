@@ -151,17 +151,17 @@ export class BudgetPage {
         });
     }
 
-    // ==================== Passthrough methods for template ====================
+    // ==================== Passthrough properties for template ====================
 
-    // State service delegations
-    get transactions() { return this.stateService.transactions; }
-    get accounts() { return this.stateService.accounts; }
-    get categories() { return this.stateService.categories; }
-    get fixedCosts() { return this.stateService.fixedCosts; }
-    get fixedCostGroups() { return this.stateService.fixedCostGroups; }
-    get selectedAccountId() { return this.stateService.selectedAccountId; }
-    get searchQuery() { return this.stateService.searchQuery; }
-    get selectedMonth() { return this.stateService.selectedMonth; }
+    // State service delegations (direct readonly assignments for better performance)
+    readonly transactions = this.stateService.transactions;
+    readonly accounts = this.stateService.accounts;
+    readonly categories = this.stateService.categories;
+    readonly fixedCosts = this.stateService.fixedCosts;
+    readonly fixedCostGroups = this.stateService.fixedCostGroups;
+    readonly selectedAccountId = this.stateService.selectedAccountId;
+    readonly searchQuery = this.stateService.searchQuery;
+    readonly selectedMonth = this.stateService.selectedMonth;
 
     getCategoryById(id: string) { return this.stateService.getCategoryById(id); }
     getCategoryFullName(id: string) { return this.stateService.getCategoryFullName(id); }

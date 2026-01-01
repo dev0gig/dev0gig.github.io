@@ -1,8 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Flashcard, Deck, createFlashcard, createDeck } from './flashcard.model';
-
-const STORAGE_KEY = 'flashcards_data';
-const DECKS_STORAGE_KEY = 'flashcards_decks';
+import { STORAGE_KEYS } from '../../core/storage-keys.const';
 
 @Injectable({ providedIn: 'root' })
 export class FlashcardsService {
@@ -137,8 +135,8 @@ export class FlashcardsService {
         this._decks.set([]);
         this._currentIndex.set(0);
         this._activeDeckId.set(null);
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(DECKS_STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEYS.FLASHCARDS.CARDS);
+        localStorage.removeItem(STORAGE_KEYS.FLASHCARDS.DECKS);
     }
 
     // --- Import/Export ---
@@ -273,7 +271,7 @@ export class FlashcardsService {
 
     private loadCards(): Flashcard[] {
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
+            const data = localStorage.getItem(STORAGE_KEYS.FLASHCARDS.CARDS);
             if (!data) return [];
             return JSON.parse(data) as Flashcard[];
         } catch {
@@ -283,7 +281,7 @@ export class FlashcardsService {
 
     private saveCards(): void {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(this._cards()));
+            localStorage.setItem(STORAGE_KEYS.FLASHCARDS.CARDS, JSON.stringify(this._cards()));
         } catch (e) {
             console.error('Failed to save flashcards:', e);
         }
@@ -291,7 +289,7 @@ export class FlashcardsService {
 
     private loadDecks(): Deck[] {
         try {
-            const data = localStorage.getItem(DECKS_STORAGE_KEY);
+            const data = localStorage.getItem(STORAGE_KEYS.FLASHCARDS.DECKS);
             if (!data) return [];
             return JSON.parse(data) as Deck[];
         } catch {
@@ -301,7 +299,7 @@ export class FlashcardsService {
 
     private saveDecks(): void {
         try {
-            localStorage.setItem(DECKS_STORAGE_KEY, JSON.stringify(this._decks()));
+            localStorage.setItem(STORAGE_KEYS.FLASHCARDS.DECKS, JSON.stringify(this._decks()));
         } catch (e) {
             console.error('Failed to save decks:', e);
         }

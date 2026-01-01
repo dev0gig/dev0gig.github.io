@@ -1,6 +1,7 @@
 import { Component, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { STORAGE_KEYS } from '../../core/storage-keys.const';
 
 @Component({
     selector: 'app-immo-check',
@@ -10,19 +11,19 @@ import { FormsModule } from '@angular/forms';
 })
 export class ImmoCheckComponent {
     // --- Persistence Helper ---
-    private load<T>(key: string, def: T): T {
-        const stored = localStorage.getItem('immo-check-' + key);
+    private loadValue<T>(key: string, def: T): T {
+        const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : def;
     }
 
     // --- Input Signals ---
-    netIncome = signal<number>(this.load('netIncome', 4600));
-    monthlyFixedCosts = signal<number>(this.load('monthlyFixedCosts', 2000));
-    housePrice = signal<number>(this.load('housePrice', 200000));
-    equity = signal<number>(this.load('equity', 80000));
-    interestRate = signal<number>(this.load('interestRate', 4));
-    repaymentRate = signal<number>(this.load('repaymentRate', 2.0));
-    loanDuration = signal<number>(this.load('loanDuration', 35));
+    netIncome = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.NET_INCOME, 4600));
+    monthlyFixedCosts = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.MONTHLY_FIXED_COSTS, 2000));
+    housePrice = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.HOUSE_PRICE, 200000));
+    equity = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.EQUITY, 80000));
+    interestRate = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.INTEREST_RATE, 4));
+    repaymentRate = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.REPAYMENT_RATE, 2.0));
+    loanDuration = signal<number>(this.loadValue(STORAGE_KEYS.IMMO_CHECK.LOAN_DURATION, 35));
 
     // Track which field was last changed to prevent circular updates
     private lastChanged = signal<'repayment' | 'duration' | null>(null);
@@ -30,13 +31,13 @@ export class ImmoCheckComponent {
     constructor() {
         // Persist all values
         effect(() => {
-            localStorage.setItem('immo-check-netIncome', JSON.stringify(this.netIncome()));
-            localStorage.setItem('immo-check-monthlyFixedCosts', JSON.stringify(this.monthlyFixedCosts()));
-            localStorage.setItem('immo-check-housePrice', JSON.stringify(this.housePrice()));
-            localStorage.setItem('immo-check-equity', JSON.stringify(this.equity()));
-            localStorage.setItem('immo-check-interestRate', JSON.stringify(this.interestRate()));
-            localStorage.setItem('immo-check-repaymentRate', JSON.stringify(this.repaymentRate()));
-            localStorage.setItem('immo-check-loanDuration', JSON.stringify(this.loanDuration()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.NET_INCOME, JSON.stringify(this.netIncome()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.MONTHLY_FIXED_COSTS, JSON.stringify(this.monthlyFixedCosts()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.HOUSE_PRICE, JSON.stringify(this.housePrice()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.EQUITY, JSON.stringify(this.equity()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.INTEREST_RATE, JSON.stringify(this.interestRate()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.REPAYMENT_RATE, JSON.stringify(this.repaymentRate()));
+            localStorage.setItem(STORAGE_KEYS.IMMO_CHECK.LOAN_DURATION, JSON.stringify(this.loanDuration()));
         });
     }
 
@@ -44,12 +45,12 @@ export class ImmoCheckComponent {
     importFromSavingsSimulator() {
         // The savings simulator stores its simulation results
         // We need to recalculate based on stored inputs
-        const currentSavings = JSON.parse(localStorage.getItem('savings-sim-currentSavings') || '0');
-        const monthlyContrib = JSON.parse(localStorage.getItem('savings-sim-monthlyContribution') || '0');
-        const timeframe = JSON.parse(localStorage.getItem('savings-sim-timeframeYears') || '2');
-        const cashRate = JSON.parse(localStorage.getItem('savings-sim-cashInterestRate') || '2') / 100;
-        const etfRate = JSON.parse(localStorage.getItem('savings-sim-etfAnnualReturn') || '7') / 100;
-        const cashAmount = JSON.parse(localStorage.getItem('savings-sim-cashAmount') || '0');
+        const currentSavings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVINGS_SIM.CURRENT_SAVINGS) || '0');
+        const monthlyContrib = JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVINGS_SIM.MONTHLY_CONTRIBUTION) || '0');
+        const timeframe = JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVINGS_SIM.TIMEFRAME_YEARS) || '2');
+        const cashRate = JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVINGS_SIM.CASH_INTEREST_RATE) || '2') / 100;
+        const etfRate = JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVINGS_SIM.ETF_ANNUAL_RETURN) || '7') / 100;
+        const cashAmount = JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVINGS_SIM.CASH_AMOUNT) || '0');
 
         // Calculate allocation
         const cashAlloc = monthlyContrib > 0 ? Math.min(1, cashAmount / monthlyContrib) : 0;

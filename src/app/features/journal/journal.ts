@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { JournalOcrUtilityService } from './journal-ocr-utility.service';
+import { STORAGE_KEYS } from '../../core/storage-keys.const';
 
 export interface JournalEntry {
   id: string;
@@ -19,7 +20,6 @@ interface JournalEntryDTO {
   providedIn: 'root',
 })
 export class JournalService {
-  private readonly STORAGE_KEY = 'terminal_journal_entries';
   private ocrService = inject(JournalOcrUtilityService);
 
   // Main state
@@ -299,7 +299,7 @@ export class JournalService {
   }
 
   private loadEntries(): JournalEntry[] {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.JOURNAL);
     if (!stored) return [];
     try {
       const storedEntries = JSON.parse(stored) as JournalEntryDTO[];
@@ -315,7 +315,7 @@ export class JournalService {
 
   private saveEntries(entries: JournalEntry[]) {
     const json = JSON.stringify(entries);
-    localStorage.setItem(this.STORAGE_KEY, json);
+    localStorage.setItem(STORAGE_KEYS.JOURNAL, json);
     this.calculateUsage();
   }
 
@@ -339,7 +339,7 @@ export class JournalService {
     }
 
     // Fallback to local calculation
-    const stored = localStorage.getItem(this.STORAGE_KEY) || '';
+    const stored = localStorage.getItem(STORAGE_KEYS.JOURNAL) || '';
     const bytes = new Blob([stored]).size;
 
     if (bytes < 1024) {
@@ -444,5 +444,25 @@ export class JournalService {
     }
 
     return newEntries.length;
+  }
+
+  /**
+   * Returns raw journal data for backup export (used by BackupService)
+   */
+  getBackupExportData(): JournalEntry[] {
+    return this.entriesSignal();
+  }
+
+  /**
+   * Imports journal data from backup, replaces current entries (used by BackupService)
+   */
+  importBackupData(data: any): void {
+    const entries = (data || []).map((e: any) => ({
+      ...e,
+      date: new Date(e.date),
+      tags: e.tags || this.extractTags(e.text)
+    }));
+    this.saveEntries(entries);
+    this.entriesSignal.set(entries);
   }
 }

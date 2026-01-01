@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { STORAGE_KEYS } from '../core/storage-keys.const';
 
 declare global {
     interface Window {
@@ -22,7 +23,6 @@ export class YoutubePlayerService {
     private apiReady = false;
     private apiLoadPromise: Promise<void> | null = null;
     private loopEnabled = true;
-    private readonly HISTORY_STORAGE_KEY = 'youtube_url_history';
     private readonly MAX_HISTORY_ITEMS = 5;
     private pendingVideoId: string | null = null;
     private pendingUrl: string | null = null;
@@ -45,7 +45,7 @@ export class YoutubePlayerService {
 
     private loadHistoryFromStorage(): void {
         try {
-            const stored = localStorage.getItem(this.HISTORY_STORAGE_KEY);
+            const stored = localStorage.getItem(STORAGE_KEYS.YOUTUBE);
             if (stored) {
                 const history = JSON.parse(stored) as UrlHistoryItem[];
                 this.urlHistory.set(history);
@@ -57,7 +57,7 @@ export class YoutubePlayerService {
 
     private saveHistoryToStorage(): void {
         try {
-            localStorage.setItem(this.HISTORY_STORAGE_KEY, JSON.stringify(this.urlHistory()));
+            localStorage.setItem(STORAGE_KEYS.YOUTUBE, JSON.stringify(this.urlHistory()));
         } catch (e) {
             console.error('Error saving URL history:', e);
         }
