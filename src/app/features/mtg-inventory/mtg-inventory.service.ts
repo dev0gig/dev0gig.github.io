@@ -450,6 +450,47 @@ export class MtgInventoryService {
         this.saveCardsToStorage();
     }
 
+    // --- Backup/Export/Import Delegation API ---
+
+    /**
+     * Get export data for backup (cards and cache)
+     */
+    getExportData(): { cards: MtgCardBasic[]; cache: Record<string, MtgCardDetails> } {
+        return {
+            cards: this.cards(),
+            cache: Object.fromEntries(this.detailsCache)
+        };
+    }
+
+    /**
+     * Import data from backup
+     */
+    importData(data: { cards?: MtgCardBasic[]; cache?: Record<string, MtgCardDetails> }): void {
+        if (data.cards && Array.isArray(data.cards)) {
+            this.cards.set(data.cards);
+            this.saveCardsToStorage();
+        }
+        if (data.cache && typeof data.cache === 'object') {
+            this.detailsCache.clear();
+            for (const [key, value] of Object.entries(data.cache)) {
+                this.detailsCache.set(key, value);
+            }
+            this.saveCacheToStorage();
+            this.cacheVersion.update(v => v + 1);
+        }
+    }
+
+    /**
+     * Delete all MTG data (cards and cache)
+     */
+    deleteAllData(): void {
+        this.cards.set([]);
+        this.detailsCache.clear();
+        localStorage.removeItem(STORAGE_KEYS.MTG.CARDS);
+        localStorage.removeItem(STORAGE_KEYS.MTG.CACHE);
+        this.cacheVersion.update(v => v + 1);
+    }
+
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

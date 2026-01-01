@@ -3,6 +3,7 @@ import { BookmarkService } from './bookmark.service';
 import { FlashcardsService } from '../features/flashcards/flashcards.service';
 import { JournalService } from '../features/journal/journal';
 import { BudgetDataService } from '../features/budget/services/budget-data.service';
+import { MtgInventoryService } from '../features/mtg-inventory/mtg-inventory.service';
 import { STORAGE_KEYS } from '../core/storage-keys.const';
 
 export interface ProjectSelection {
@@ -49,6 +50,7 @@ export class BackupService {
     private flashcardsService = inject(FlashcardsService);
     private journalService = inject(JournalService);
     private budgetDataService = inject(BudgetDataService);
+    private mtgInventoryService = inject(MtgInventoryService);
 
     private generateFilename(): string {
         const now = new Date();
@@ -138,16 +140,11 @@ export class BackupService {
         }
 
         if (selection.mtgInventory) {
-            const mtgCards = localStorage.getItem(STORAGE_KEYS.MTG.CARDS);
-            const mtgCache = localStorage.getItem(STORAGE_KEYS.MTG.CACHE);
             const mtgData = {
                 exportDate,
                 version: '1.0',
                 project: 'mtgInventory',
-                data: {
-                    cards: mtgCards ? JSON.parse(mtgCards) : [],
-                    cache: mtgCache ? JSON.parse(mtgCache) : {}
-                }
+                data: this.mtgInventoryService.getExportData()
             };
             zip.file('mtginventory.json', JSON.stringify(mtgData, null, 2));
             exportedProjects.push('MTG Inventory');
@@ -266,12 +263,7 @@ export class BackupService {
             const content = await mtgInventoryFile.async('string');
             const mtgData = JSON.parse(content) as BackupData<any>;
             if (mtgData.data) {
-                if (mtgData.data.cards) {
-                    localStorage.setItem(STORAGE_KEYS.MTG.CARDS, JSON.stringify(mtgData.data.cards));
-                }
-                if (mtgData.data.cache) {
-                    localStorage.setItem(STORAGE_KEYS.MTG.CACHE, JSON.stringify(mtgData.data.cache));
-                }
+                this.mtgInventoryService.importData(mtgData.data);
                 importedProjects.push('MTG Inventory');
             }
         }
@@ -355,8 +347,7 @@ export class BackupService {
 
         // Delete MTG Inventory
         if (selection.mtgInventory) {
-            localStorage.removeItem(STORAGE_KEYS.MTG.CARDS);
-            localStorage.removeItem(STORAGE_KEYS.MTG.CACHE);
+            this.mtgInventoryService.deleteAllData();
             deletedProjects.push('MTG Inventory');
         }
 
