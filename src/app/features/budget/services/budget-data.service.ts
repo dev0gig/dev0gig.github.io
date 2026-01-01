@@ -24,42 +24,110 @@ export class BudgetDataService {
 
     // ==================== Data Loading ====================
 
-    loadData() {
+    /**
+     * Loads and parses all budget data from localStorage.
+     * Returns parsed and validated arrays ready for use.
+     */
+    loadAndParseData(): { accounts: Account[]; categories: Category[] | null; fixedCosts: FixedCost[] } {
+        // Load and set transactions directly
         const transactionsData = localStorage.getItem(STORAGE_KEYS.BUDGET.TRANSACTIONS);
-        const accountsData = localStorage.getItem(STORAGE_KEYS.BUDGET.ACCOUNTS);
-        const categoriesData = localStorage.getItem(STORAGE_KEYS.BUDGET.CATEGORIES);
-        const fixedCostsData = localStorage.getItem(STORAGE_KEYS.BUDGET.FIXED_COSTS);
+        if (transactionsData) {
+            this.transactions.set(JSON.parse(transactionsData));
+        }
+
+        // Load and set fixed cost groups directly
         const fixedCostGroupsData = localStorage.getItem(STORAGE_KEYS.BUDGET.FIXED_COST_GROUPS);
+        if (fixedCostGroupsData) {
+            this.fixedCostGroups.set(JSON.parse(fixedCostGroupsData));
+        }
 
-        if (transactionsData) this.transactions.set(JSON.parse(transactionsData));
-        if (fixedCostGroupsData) this.fixedCostGroups.set(JSON.parse(fixedCostGroupsData));
+        // Parse and validate accounts
+        const accounts = this.parseAccounts();
 
-        return {
-            accountsData,
-            categoriesData,
-            fixedCostsData
-        };
+        // Parse and validate categories (null if no data exists)
+        const categories = this.parseCategories();
+
+        // Parse, validate, and migrate fixed costs
+        const fixedCosts = this.parseFixedCosts();
+
+        return { accounts, categories, fixedCosts };
     }
 
-    loadAccounts(parsedAccounts: Account[], needsSave: boolean) {
+    private parseAccounts(): Account[] {
+        const accountsData = localStorage.getItem(STORAGE_KEYS.BUDGET.ACCOUNTS);
+        if (!accountsData) return [];
+
+        let parsedAccounts: Account[] = JSON.parse(accountsData);
+        const originalCount = parsedAccounts.length;
+        parsedAccounts = parsedAccounts.filter(a =>
+            a.name && a.name.trim() !== '' &&
+            !isNaN(a.balance) && a.balance !== null && a.balance !== undefined
+        );
+        const removedCount = originalCount - parsedAccounts.length;
+        if (removedCount > 0) {
+            console.warn(`loadData: Removed ${removedCount} invalid account entries`);
+        }
+
         this.accounts.set(parsedAccounts);
-        if (needsSave) {
+        if (removedCount > 0) {
             this.saveAccounts();
         }
+        return parsedAccounts;
     }
 
-    loadCategories(parsedCategories: Category[], needsSave: boolean) {
+    private parseCategories(): Category[] | null {
+        const categoriesData = localStorage.getItem(STORAGE_KEYS.BUDGET.CATEGORIES);
+        if (!categoriesData) return null;
+
+        let parsedCategories: Category[] = JSON.parse(categoriesData);
+        const originalCount = parsedCategories.length;
+        parsedCategories = parsedCategories.filter(c =>
+            c.name && typeof c.name === 'string' && c.name.trim() !== '' &&
+            ['income', 'expense', 'both'].includes(c.type)
+        );
+        const removedCount = originalCount - parsedCategories.length;
+        if (removedCount > 0) {
+            console.warn(`loadData: Removed ${removedCount} invalid/corrupted category entries`);
+        }
+
         this.categories.set(parsedCategories);
-        if (needsSave) {
+        if (removedCount > 0) {
             this.saveCategories();
         }
+        return parsedCategories;
     }
 
-    loadFixedCosts(parsedFixedCosts: FixedCost[], needsSave: boolean) {
+    private parseFixedCosts(): FixedCost[] {
+        const fixedCostsData = localStorage.getItem(STORAGE_KEYS.BUDGET.FIXED_COSTS);
+        if (!fixedCostsData) return [];
+
+        let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
+        const originalCount = parsedFixedCosts.length;
+        parsedFixedCosts = parsedFixedCosts.filter(fc =>
+            fc.name && fc.name.trim() !== '' &&
+            !isNaN(fc.amount) && fc.amount !== null && fc.amount !== undefined &&
+            fc.category && fc.account
+        );
+        const removedCount = originalCount - parsedFixedCosts.length;
+        if (removedCount > 0) {
+            console.warn(`loadData: Removed ${removedCount} invalid fixed cost entries`);
+        }
+
+        // Migration: Add order field if missing
+        let needsMigration = false;
+        parsedFixedCosts = parsedFixedCosts.map((fc, index) => {
+            if (fc.order === undefined) {
+                needsMigration = true;
+                return { ...fc, order: index };
+            }
+            return fc;
+        });
+
         this.fixedCosts.set(parsedFixedCosts);
-        if (needsSave) {
+        if (needsMigration || removedCount > 0) {
             this.saveFixedCosts();
         }
+        return parsedFixedCosts;
     }
 
     // ==================== Data Saving ====================

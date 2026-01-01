@@ -86,51 +86,15 @@ export class MtgInventoryComponent {
 
     /** Cards filtered by search and set - grouped by unique card key */
     filteredCards = computed(() => {
+        // Trigger re-computation when cache updates
         this.cacheVersion();
 
-        const term = this.searchTerm().toLowerCase().trim();
-        const setFilter = this.selectedSet();
-        const rarityFilter = this.selectedRarity();
-
-        // First, group all cards by unique key to avoid duplicates
-        const cardMap = new Map<string, { card: MtgCardBasic; index: number }>();
-
-        this.cards().forEach((card, index) => {
-            const key = getCardKey(card.set, card.collectorNumber);
-            // Only keep the first occurrence (use the earliest index for reference)
-            if (!cardMap.has(key)) {
-                cardMap.set(key, { card, index });
-            }
-        });
-
-        let filtered = Array.from(cardMap.values());
-
-        // Filter by set
-        if (setFilter) {
-            filtered = filtered.filter(({ card }) => card.set === setFilter);
-        }
-
-        // Filter by rarity
-        if (rarityFilter) {
-            filtered = filtered.filter(({ card }) => {
-                const details = this.inventoryService.getDetails(card.set, card.collectorNumber);
-                return details?.rarity === rarityFilter;
-            });
-        }
-
-        // Filter by search term
-        if (term) {
-            filtered = filtered.filter(({ card }) => {
-                const details = this.inventoryService.getDetails(card.set, card.collectorNumber);
-                const nameDE = details?.nameDE || '';
-                return card.nameEN.toLowerCase().includes(term) ||
-                    nameDE.toLowerCase().includes(term) ||
-                    card.set.toLowerCase().includes(term) ||
-                    card.collectorNumber.includes(term);
-            });
-        }
-
-        return [...filtered].reverse();
+        // Delegate filtering logic to service
+        return this.inventoryService.getFilteredCards(
+            this.searchTerm(),
+            this.selectedSet(),
+            this.selectedRarity()
+        );
     });
 
     /** Last 5 cards with images */

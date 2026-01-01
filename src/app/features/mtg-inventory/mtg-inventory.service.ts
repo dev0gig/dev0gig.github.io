@@ -494,4 +494,58 @@ export class MtgInventoryService {
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+
+    // --- Filtered Cards Logic ---
+
+    /**
+     * Get filtered, deduplicated, and sorted cards based on search criteria.
+     * This centralizes the filtering logic previously in the component.
+     */
+    getFilteredCards(
+        searchTerm: string,
+        setFilter: string | null,
+        rarityFilter: string | null
+    ): { card: MtgCardBasic; index: number }[] {
+        const term = searchTerm.toLowerCase().trim();
+
+        // First, group all cards by unique key to avoid duplicates
+        const cardMap = new Map<string, { card: MtgCardBasic; index: number }>();
+
+        this.cards().forEach((card, index) => {
+            const key = getCardKey(card.set, card.collectorNumber);
+            // Only keep the first occurrence (use the earliest index for reference)
+            if (!cardMap.has(key)) {
+                cardMap.set(key, { card, index });
+            }
+        });
+
+        let filtered = Array.from(cardMap.values());
+
+        // Filter by set
+        if (setFilter) {
+            filtered = filtered.filter(({ card }) => card.set === setFilter);
+        }
+
+        // Filter by rarity
+        if (rarityFilter) {
+            filtered = filtered.filter(({ card }) => {
+                const details = this.getDetails(card.set, card.collectorNumber);
+                return details?.rarity === rarityFilter;
+            });
+        }
+
+        // Filter by search term
+        if (term) {
+            filtered = filtered.filter(({ card }) => {
+                const details = this.getDetails(card.set, card.collectorNumber);
+                const nameDE = details?.nameDE || '';
+                return card.nameEN.toLowerCase().includes(term) ||
+                    nameDE.toLowerCase().includes(term) ||
+                    card.set.toLowerCase().includes(term) ||
+                    card.collectorNumber.includes(term);
+            });
+        }
+
+        return [...filtered].reverse();
+    }
 }

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
+import { Transaction, Category, FixedCostGroup } from './budget.models';
 import { BudgetUtilityService } from './budget.utility.service';
 import {
     BudgetDataService,
@@ -47,64 +47,11 @@ export class BudgetStateService {
     // ==================== Data Loading/Saving ====================
 
     loadData() {
-        const { accountsData, categoriesData, fixedCostsData } = this.dataService.loadData();
+        const { categories } = this.dataService.loadAndParseData();
 
-        // Process accounts
-        if (accountsData) {
-            let parsedAccounts: Account[] = JSON.parse(accountsData);
-            const originalCount = parsedAccounts.length;
-            parsedAccounts = parsedAccounts.filter(a =>
-                a.name && a.name.trim() !== '' &&
-                !isNaN(a.balance) && a.balance !== null && a.balance !== undefined
-            );
-            const removedCount = originalCount - parsedAccounts.length;
-            if (removedCount > 0) {
-                console.warn(`loadData: Removed ${removedCount} invalid account entries`);
-            }
-            this.dataService.loadAccounts(parsedAccounts, removedCount > 0);
-        }
-
-        // Process categories
-        if (categoriesData) {
-            let parsedCategories: Category[] = JSON.parse(categoriesData);
-            const originalCount = parsedCategories.length;
-            parsedCategories = parsedCategories.filter(c =>
-                c.name && typeof c.name === 'string' && c.name.trim() !== '' &&
-                ['income', 'expense', 'both'].includes(c.type)
-            );
-            const removedCount = originalCount - parsedCategories.length;
-            if (removedCount > 0) {
-                console.warn(`loadData: Removed ${removedCount} invalid/corrupted category entries`);
-            }
-            this.dataService.loadCategories(parsedCategories, removedCount > 0);
-        } else {
+        // Add default categories if none exist
+        if (categories === null) {
             this.addDefaultCategories();
-        }
-
-        // Process fixed costs
-        if (fixedCostsData) {
-            let parsedFixedCosts: FixedCost[] = JSON.parse(fixedCostsData);
-            const originalCount = parsedFixedCosts.length;
-            parsedFixedCosts = parsedFixedCosts.filter(fc =>
-                fc.name && fc.name.trim() !== '' &&
-                !isNaN(fc.amount) && fc.amount !== null && fc.amount !== undefined &&
-                fc.category && fc.account
-            );
-            const removedCount = originalCount - parsedFixedCosts.length;
-            if (removedCount > 0) {
-                console.warn(`loadData: Removed ${removedCount} invalid fixed cost entries`);
-            }
-
-            // Migration: Add order field if missing
-            let needsMigration = false;
-            parsedFixedCosts = parsedFixedCosts.map((fc, index) => {
-                if (fc.order === undefined) {
-                    needsMigration = true;
-                    return { ...fc, order: index };
-                }
-                return fc;
-            });
-            this.dataService.loadFixedCosts(parsedFixedCosts, needsMigration || removedCount > 0);
         }
     }
 
