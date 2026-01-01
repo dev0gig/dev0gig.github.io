@@ -25,7 +25,7 @@ export class TransactionModalComponent implements OnInit, OnDestroy {
         description: string;
         category: string;
         account: string;
-        date: string;
+        date: Date;
         toAccount?: string;
         note?: string;
     }>();
@@ -162,7 +162,7 @@ export class TransactionModalComponent implements OnInit, OnDestroy {
             description: description.trim(),
             category: category,
             account: account,
-            date: date,
+            date: new Date(date),
             toAccount: this.currentTransactionType() === 'transfer' ? toAccount : undefined,
             note: formData.get('note') as string || undefined
         });

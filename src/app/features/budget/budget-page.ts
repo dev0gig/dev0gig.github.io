@@ -37,7 +37,7 @@ export interface TransactionFormData {
     category: string;
     account: string;
     toAccount?: string;
-    date: string;
+    date: Date;
 }
 
 @Component({
@@ -174,7 +174,7 @@ export class BudgetPage {
             category: data.category,
             account: data.account,
             toAccount: data.type === 'transfer' ? data.toAccount : undefined,
-            date: data.date
+            date: data.date.toISOString()
         };
 
         if (isEditing) {
