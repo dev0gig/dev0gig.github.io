@@ -30,6 +30,16 @@ import {
 } from './components';
 import { FixedCostGroupModalComponent } from './components/modals/fixed-cost-group-modal/fixed-cost-group-modal';
 
+export interface TransactionFormData {
+    type: 'income' | 'expense' | 'transfer';
+    amount: number;
+    description: string;
+    category: string;
+    account: string;
+    toAccount?: string;
+    date: string;
+}
+
 @Component({
     selector: 'app-budget-page',
     standalone: true,
@@ -153,7 +163,7 @@ export class BudgetPage {
 
     // ==================== Transaction Modal Submit (contains actual logic) ====================
 
-    onTransactionModalSubmit(data: any) {
+    onTransactionModalSubmit(data: TransactionFormData) {
         const isEditing = !!this.editingTransaction();
         const isFromFixedCost = !!this.prefillFromFixedCost();
 
