@@ -1,8 +1,8 @@
-<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-up">
+<div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-slide-in-up w-[90vw] max-w-lg">
     <div [class]="type() === 'success'
         ? 'bg-gradient-to-r from-green-600 to-emerald-500 border-2 border-green-400/50'
         : 'bg-gradient-to-r from-red-600 to-rose-500 border-2 border-red-400/50'"
-        class="p-5 rounded-lg shadow-2xl flex items-center gap-4 max-w-lg" [style.box-shadow]="type() === 'success'
+        class="p-4 sm:p-5 rounded-lg shadow-2xl flex items-center gap-3 sm:gap-4 w-full sm:max-w-lg" [style.box-shadow]="type() === 'success'
         ? '0 0 30px rgba(34, 197, 94, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'
         : '0 0 30px rgba(239, 68, 68, 0.4), 0 10px 40px rgba(0, 0, 0, 0.3)'">
         <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">

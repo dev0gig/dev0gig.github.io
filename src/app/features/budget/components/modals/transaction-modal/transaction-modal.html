@@ -100,7 +100,7 @@
             <div *ngIf="currentTransactionType() === 'transfer'">
                 <label class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Nach
                     Konto</label>
-                <select name="toAccount" [ngModel]="editingTransaction?.toAccount"
+                <select name="toAccount" [ngModel]="editingTransaction?.toAccount || prefillFromFixedCost?.toAccount"
                     [class]="'w-full bg-dash-bg border text-dash-text px-3 py-1.5 rounded-sm focus:outline-none focus:border-dash-accent' + (hasToAccountError() ? ' validation-error' : ' border-dash-border')">
                     <option value="">Wählen</option>
                     @for (account of accounts; track account.id) {

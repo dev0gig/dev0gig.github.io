@@ -45,7 +45,7 @@ export class TransactionModalComponent implements OnInit, OnDestroy {
         if (this.editingTransaction) {
             this.currentTransactionType.set(this.editingTransaction.type);
         } else if (this.prefillFromFixedCost) {
-            this.currentTransactionType.set(this.prefillFromFixedCost.type === 'income' ? 'income' : 'expense');
+            this.currentTransactionType.set(this.prefillFromFixedCost.type);
         }
     }
 
@@ -160,7 +160,7 @@ export class TransactionModalComponent implements OnInit, OnDestroy {
             type: this.currentTransactionType(),
             amount: parsedAmount,
             description: description.trim(),
-            category: category,
+            category: this.currentTransactionType() === 'transfer' ? 'transfer' : category,
             account: account,
             date: new Date(date),
             toAccount: this.currentTransactionType() === 'transfer' ? toAccount : undefined,
