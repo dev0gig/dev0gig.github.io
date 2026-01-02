@@ -53,9 +53,10 @@ export class BookmarkService {
     bookmarks = signal<Bookmark[]>([]);
 
     private readonly DEFAULT_BOOKMARKS: { name: string, url: string, createdAt: number, isFavorite?: boolean }[] = [
-        { name: '[DL] ALL Genshin PMX Models (ALWAYS UPDATING) by MarieMMD on DeviantArt', url: 'https://www.deviantart.com/mariemmd/art/DL-ALL-Genshin-PMX-Models-ALWAYS-UPDATING-945504849', createdAt: 1764340870000 },
         { name: 'A1', url: 'https://asmp.a1.net/asmp/LoginMasterServlet?userRequestURL=https%253A%252F%252Fwww.a1.net%252Fmein-a1&serviceRegistrationURL=&service=mein-a1-PROD&wrongLoginType=false&cookie=skip&level=10', createdAt: 1764400330000 },
         { name: 'Amazon', url: 'https://www.amazon.de/', createdAt: 1764400330000 },
+        { name: '20min', url: 'https://www.20min.ch/', createdAt: 1764400330000 },
+        { name: 'DerStandard', url: 'https://www.derstandard.at/', createdAt: 1764400330000 },
         { name: 'Apple TV+', url: 'https://tv.apple.com/at', createdAt: 1764400330000 },
         { name: 'Bitpanda', url: 'https://account.bitpanda.com/login', createdAt: 1764400330000 },
         { name: 'Chess.com', url: 'https://www.chess.com/daily', createdAt: 1764400330000 },
@@ -63,7 +64,6 @@ export class BookmarkService {
         { name: 'EpicGames', url: 'https://store.epicgames.com/de/', createdAt: 1764400330000 },
         { name: 'ErsteBank', url: 'https://george.sparkasse.at/?at=c#/overview', createdAt: 1764400330000 },
         { name: 'FinanzOnline', url: 'https://finanzonline.bmf.gv.at/fon/', createdAt: 1764400330000 },
-        { name: 'Flins rigged (Free) - Download Free 3D model by Aether36 (@ather36) [4900635]', url: 'https://sketchfab.com/3d-models/flins-rigged-free-4900635ff69f46f4a53bd49f1f2060bd', createdAt: 1764341510000 },
         { name: 'Fotos', url: 'https://photos.google.com/', createdAt: 1764400330000 },
         { name: 'Game8', url: 'https://game8.co/', createdAt: 1764506352000 },
         { name: 'github', url: 'https://github.com/dev0gig', createdAt: 1764400330000 },
