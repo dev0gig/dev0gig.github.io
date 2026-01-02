@@ -6,6 +6,7 @@ import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { ThemeService } from '../../shared/theme.service';
 import { SidebarService } from '../../shared/sidebar.service';
 import { SettingsService } from '../../shared/settings.service';
+import { ToastService } from '../../shared/toast.service';
 import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
 import { BudgetStateService } from './budget.state.service';
 import { BudgetUtilityService } from './budget.utility.service';
@@ -68,6 +69,7 @@ export class BudgetPage {
     sidebarService = inject(SidebarService);
     settingsService = inject(SettingsService);
     router = inject(Router);
+    private toastService = inject(ToastService);
 
     // Budget services (public for template access)
     public stateService = inject(BudgetStateService);
@@ -103,9 +105,7 @@ export class BudgetPage {
     inlineEditingTransactionId = signal<string | null>(null);
     inlineTransactionTypes = signal<Map<string, 'income' | 'expense' | 'transfer'>>(new Map());
 
-    // Toast notification
-    toastMessage = signal<string | null>(null);
-    private toastTimeout: ReturnType<typeof setTimeout> | null = null;
+
 
     // Track newly created transaction for highlight effect
     newlyCreatedTransactionId = signal<string | null>(null);
@@ -137,7 +137,7 @@ export class BudgetPage {
             this.editingFixedCostGroup,
             this.prefillFromFixedCost,
             this.currentTransactionType,
-            this.showToast.bind(this)
+            this.toastService
         );
 
         this.entityHandlers = new BudgetPageEntityHandlers(
@@ -148,7 +148,7 @@ export class BudgetPage {
             this.currentTransactionType,
             this.prefillFromFixedCost,
             this.showTransactionModal,
-            this.showToast.bind(this)
+            this.toastService
         );
 
         this.importExportHandlers = new BudgetPageImportExportHandlers(this.stateService);
@@ -201,11 +201,11 @@ export class BudgetPage {
         this.prefillFromFixedCost.set(null);
 
         if (isFromFixedCost) {
-            this.showToast(`Fixkosten "${data.description}" gebucht`);
+            this.toastService.show(`Fixkosten "${data.description}" gebucht`, 'success');
         } else if (isEditing) {
-            this.showToast('Transaktion aktualisiert');
+            this.toastService.show('Transaktion aktualisiert', 'success');
         } else {
-            this.showToast('Transaktion hinzugefügt');
+            this.toastService.show('Transaktion hinzugefügt', 'success');
         }
     }
 
@@ -232,22 +232,7 @@ export class BudgetPage {
         this.stateService.onMonthChange(date);
     }
 
-    showToast(message: string) {
-        if (this.toastTimeout) {
-            clearTimeout(this.toastTimeout);
-        }
-        this.toastMessage.set(message);
-        this.toastTimeout = setTimeout(() => {
-            this.toastMessage.set(null);
-        }, 5000);
-    }
 
-    hideToast() {
-        if (this.toastTimeout) {
-            clearTimeout(this.toastTimeout);
-        }
-        this.toastMessage.set(null);
-    }
 
 
     onFixedCostSubmit(data: {

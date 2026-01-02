@@ -2,6 +2,7 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MtgInventoryService } from '../../mtg-inventory.service';
 import { MtgCardBasic } from '../../mtg-card.model';
+import { ToastService } from '../../../../shared/toast.service';
 
 @Component({
     selector: 'app-mtg-card-detail-modal',
@@ -11,14 +12,13 @@ import { MtgCardBasic } from '../../mtg-card.model';
 })
 export class MtgCardDetailModalComponent {
     private inventoryService = inject(MtgInventoryService);
+    private toastService = inject(ToastService);
 
     // Inputs
     card = input.required<MtgCardBasic>();
     index = input.required<number>();
 
-    // Outputs
     close = output<void>();
-    toast = output<{ message: string; type: 'success' | 'error' }>();
 
     // Local State
     isRefreshingPrices = signal<boolean>(false);
@@ -46,17 +46,17 @@ export class MtgCardDetailModalComponent {
             // Would remove all - close modal and remove
             this.inventoryService.updateCardQuantity(card.set, card.collectorNumber, -currentCount);
             this.closeModal();
-            this.toast.emit({ message: 'Karte aus Sammlung entfernt.', type: 'success' });
+            this.toastService.show('Karte aus Sammlung entfernt.', 'success');
         } else {
             this.inventoryService.updateCardQuantity(card.set, card.collectorNumber, delta);
-            this.toast.emit({ message: delta > 0 ? 'Kopie hinzugefügt!' : 'Kopie entfernt.', type: 'success' });
+            this.toastService.show(delta > 0 ? 'Kopie hinzugefügt!' : 'Kopie entfernt.', 'success');
         }
     }
 
     removeCard(index: number): void {
         this.inventoryService.removeCardByIndex(index);
         this.closeModal();
-        this.toast.emit({ message: 'Karte entfernt.', type: 'success' });
+        this.toastService.show('Karte entfernt.', 'success');
     }
 
     async refreshPrices(): Promise<void> {
@@ -67,9 +67,9 @@ export class MtgCardDetailModalComponent {
                 card.set,
                 card.collectorNumber
             );
-            this.toast.emit({ message: 'Preise aktualisiert!', type: 'success' });
+            this.toastService.show('Preise aktualisiert!', 'success');
         } catch {
-            this.toast.emit({ message: 'Preis-Aktualisierung fehlgeschlagen.', type: 'error' });
+            this.toastService.show('Preis-Aktualisierung fehlgeschlagen.', 'error');
         } finally {
             this.isRefreshingPrices.set(false);
         }

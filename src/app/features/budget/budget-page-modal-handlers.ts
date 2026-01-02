@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { Transaction, FixedCost, Account, Category, FixedCostGroup } from './budget.models';
 import { BudgetStateService } from './budget.state.service';
+import { ToastService } from '../../shared/toast.service';
 
 /**
  * Budget Page Modal Handlers - Manages modal state and entity editing
@@ -23,7 +24,7 @@ export class BudgetPageModalHandlers {
         public editingFixedCostGroup: ReturnType<typeof signal<FixedCostGroup | null>>,
         public prefillFromFixedCost: ReturnType<typeof signal<FixedCost | null>>,
         public currentTransactionType: ReturnType<typeof signal<'income' | 'expense' | 'transfer'>>,
-        private showToastFn: (message: string) => void
+        private toastService: ToastService
     ) { }
 
     // ==================== Toggle Methods ====================
@@ -149,11 +150,11 @@ export class BudgetPageModalHandlers {
         this.prefillFromFixedCost.set(null);
 
         if (isFromFixedCost) {
-            this.showToastFn(`Fixkosten "${data.description}" gebucht`);
+            this.toastService.show(`Fixkosten "${data.description}" gebucht`, 'success');
         } else if (isEditing) {
-            this.showToastFn('Transaktion aktualisiert');
+            this.toastService.show('Transaktion aktualisiert', 'success');
         } else {
-            this.showToastFn('Transaktion hinzugefügt');
+            this.toastService.show('Transaktion hinzugefügt', 'success');
         }
     }
 
@@ -208,10 +209,10 @@ export class BudgetPageModalHandlers {
 
         if (isEditing) {
             this.stateService.updateFixedCostGroup(this.editingFixedCostGroup()!.id, data.name);
-            this.showToastFn(`Gruppe "${data.name}" aktualisiert`);
+            this.toastService.show(`Gruppe "${data.name}" aktualisiert`, 'success');
         } else {
             this.stateService.addFixedCostGroup(data.name);
-            this.showToastFn(`Gruppe "${data.name}" erstellt - verschiebe jetzt Fixkosten in die Gruppe`);
+            this.toastService.show(`Gruppe "${data.name}" erstellt - verschiebe jetzt Fixkosten in die Gruppe`, 'success');
         }
 
         this.showFixedCostGroupModal.set(false);

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { SidebarService } from '../../shared/sidebar.service';
+import { ToastService } from '../../shared/toast.service';
 import { MtgInventoryService } from './mtg-inventory.service';
 import { MtgCardBasic, getCardKey } from './mtg-card.model';
 import { LazyCardDirective } from './lazy-card.directive';
@@ -21,6 +22,7 @@ import { MtgImportModalComponent } from './components/mtg-import-modal/mtg-impor
 export class MtgInventoryComponent {
     protected inventoryService = inject(MtgInventoryService);
     private sidebarService = inject(SidebarService);
+    private toastService = inject(ToastService);
 
 
 
@@ -39,10 +41,7 @@ export class MtgInventoryComponent {
     showImportModal = signal<boolean>(false);
     showDetailModal = signal<{ card: MtgCardBasic; index: number } | null>(null);
 
-    // Import state moved to MtgImportModalComponent
-    // Detail view state moved to MtgCardDetailModalComponent
-    toastMessage = signal<string>('');
-    toastType = signal<'success' | 'error'>('success');
+
 
     constructor() {
         // Effect to ensure set names are loaded for each unique set
@@ -224,46 +223,33 @@ export class MtgInventoryComponent {
         a.download = 'mtg-collection.txt';
         a.click();
         URL.revokeObjectURL(url);
-        this.showToast('Export gestartet!', 'success');
+        this.toastService.show('Export gestartet!', 'success');
     }
 
     async copyExport(): Promise<void> {
         try {
             const text = this.inventoryService.exportToArenaFormat();
             await navigator.clipboard.writeText(text);
-            this.showToast('In Zwischenablage kopiert!', 'success');
+            this.toastService.show('In Zwischenablage kopiert!', 'success');
         } catch {
-            this.showToast('Kopieren fehlgeschlagen.', 'error');
+            this.toastService.show('Kopieren fehlgeschlagen.', 'error');
         }
     }
 
-    // --- Toast ---
-    handleToast(event: { message: string, type: 'success' | 'error' }): void {
-        this.showToast(event.message, event.type);
-    }
 
-    private showToast(message: string, type: 'success' | 'error'): void {
-        this.toastMessage.set(message);
-        this.toastType.set(type);
-        setTimeout(() => this.toastMessage.set(''), 3000);
-    }
-
-    hideToast(): void {
-        this.toastMessage.set('');
-    }
 
     // --- Clear ---
     clearCollection(): void {
         if (confirm('Gesamte Sammlung löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
             this.inventoryService.clearCollection();
-            this.showToast('Sammlung gelöscht.', 'success');
+            this.toastService.show('Sammlung gelöscht.', 'success');
         }
     }
 
     clearCache(): void {
         if (confirm('Cache löschen? Bilder werden beim nächsten Anzeigen neu geladen.')) {
             this.inventoryService.clearCache();
-            this.showToast('Cache gelöscht.', 'success');
+            this.toastService.show('Cache gelöscht.', 'success');
         }
     }
 }

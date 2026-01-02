@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { Transaction, FixedCost } from './budget.models';
 import { BudgetStateService } from './budget.state.service';
+import { ToastService } from '../../shared/toast.service';
 
 /**
  * Budget Page Entity Handlers - Manages entity-level operations (delete, inline edit, etc.)
@@ -15,7 +16,7 @@ export class BudgetPageEntityHandlers {
         public currentTransactionType: ReturnType<typeof signal<'income' | 'expense' | 'transfer'>>,
         public prefillFromFixedCost: ReturnType<typeof signal<FixedCost | null>>,
         public showTransactionModal: ReturnType<typeof signal<boolean>>,
-        private showToastFn: (message: string) => void
+        private toastService: ToastService
     ) { }
 
     // ==================== Account Methods ====================
@@ -40,20 +41,20 @@ export class BudgetPageEntityHandlers {
 
     deleteAllCategories() {
         this.stateService.deleteAllCategories();
-        this.showToastFn('Alle Kategorien gelöscht');
+        this.toastService.show('Alle Kategorien gelöscht', 'success');
     }
 
     deleteSelectedCategories(ids: string[]) {
         this.stateService.deleteSelectedCategories(ids);
-        this.showToastFn(`${ids.length} Kategorien gelöscht`);
+        this.toastService.show(`${ids.length} Kategorien gelöscht`, 'success');
     }
 
     loadDefaultCategories(): number {
         const addedCount = this.stateService.addDefaultCategories();
         if (addedCount > 0) {
-            this.showToastFn(`${addedCount} Standardkategorien hinzugefügt`);
+            this.toastService.show(`${addedCount} Standardkategorien hinzugefügt`, 'success');
         } else {
-            this.showToastFn('Alle Standardkategorien sind bereits vorhanden');
+            this.toastService.show('Alle Standardkategorien sind bereits vorhanden', 'success');
         }
         return addedCount;
     }
@@ -205,14 +206,14 @@ export class BudgetPageEntityHandlers {
     deleteAllFixedCostGroups() {
         if (confirm('Möchten Sie wirklich ALLE Gruppen löschen? Die Fixkosten bleiben erhalten.')) {
             this.stateService.deleteAllFixedCostGroups();
-            this.showToastFn('Alle Gruppen gelöscht');
+            this.toastService.show('Alle Gruppen gelöscht', 'success');
         }
     }
 
     deleteSelectedFixedCostGroups(ids: string[]) {
         if (confirm(`Möchten Sie die ${ids.length} ausgewählten Gruppen wirklich löschen?`)) {
             this.stateService.deleteSelectedFixedCostGroups(ids);
-            this.showToastFn(`${ids.length} Gruppen gelöscht`);
+            this.toastService.show(`${ids.length} Gruppen gelöscht`, 'success');
         }
     }
 

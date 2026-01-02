@@ -2,6 +2,7 @@ import { Component, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MtgInventoryService } from '../../mtg-inventory.service';
+import { ToastService } from '../../../../shared/toast.service';
 
 @Component({
     selector: 'app-mtg-import-modal',
@@ -11,10 +12,9 @@ import { MtgInventoryService } from '../../mtg-inventory.service';
 })
 export class MtgImportModalComponent {
     private inventoryService = inject(MtgInventoryService);
+    private toastService = inject(ToastService);
 
-    // Outputs
     close = output<void>();
-    toast = output<{ message: string; type: 'success' | 'error' }>();
 
     // Local State
     importText = signal<string>('');
@@ -46,6 +46,6 @@ export class MtgImportModalComponent {
 
         const result = this.inventoryService.importFromArenaFormat(text);
         this.lastImportResult.set(result);
-        this.toast.emit({ message: `Import: ${result.success} Karten hinzugefügt`, type: 'success' });
+        this.toastService.show(`Import: ${result.success} Karten hinzugefügt`, 'success');
     }
 }

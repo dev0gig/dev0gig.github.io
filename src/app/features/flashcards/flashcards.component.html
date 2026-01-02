@@ -371,10 +371,4 @@
         }
 
     </div>
-
-    <!-- Toast Notification (outside grid to prevent layout shift) -->
-    @if (toastMessage()) {
-    <app-toast [message]="toastMessage()" [type]="toastType()" (closed)="hideToast()">
-    </app-toast>
-    }
 </div>

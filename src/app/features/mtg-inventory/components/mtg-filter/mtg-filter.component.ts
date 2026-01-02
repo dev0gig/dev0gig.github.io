@@ -1,7 +1,8 @@
-import { Component, ElementRef, ViewChild, inject, input, output, signal, model } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, input, signal, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MtgInventoryService } from '../../mtg-inventory.service';
+import { ToastService } from '../../../../shared/toast.service';
 
 @Component({
     selector: 'app-mtg-filter',
@@ -11,6 +12,7 @@ import { MtgInventoryService } from '../../mtg-inventory.service';
 })
 export class MtgFilterComponent {
     private inventoryService = inject(MtgInventoryService);
+    private toastService = inject(ToastService);
 
     @ViewChild('setNumberInput') setNumberInput!: ElementRef<HTMLInputElement>;
 
@@ -19,8 +21,7 @@ export class MtgFilterComponent {
     selectedSet = model<string | null>(null);
     searchTerm = model<string>('');
 
-    // Outputs
-    toast = output<{ message: string, type: 'success' | 'error' }>();
+
 
     // Local State
     inputSetNumber = signal<string>('');
@@ -58,12 +59,12 @@ export class MtgFilterComponent {
             number = input.substring(separatorIndex + 1).trim();
         } else {
             // No hyphen found, show error
-            this.toast.emit({ message: 'Format: SET-# (z.B. MH2-405)', type: 'error' });
+            this.toastService.show('Format: SET-# (z.B. MH2-405)', 'error');
             return;
         }
 
         if (!set || !number) {
-            this.toast.emit({ message: 'Format: SET-# (z.B. MH2-405)', type: 'error' });
+            this.toastService.show('Format: SET-# (z.B. MH2-405)', 'error');
             return;
         }
 
@@ -74,9 +75,9 @@ export class MtgFilterComponent {
 
             if (success) {
                 this.inputSetNumber.set('');
-                this.toast.emit({ message: 'Karte hinzugefügt!', type: 'success' });
+                this.toastService.show('Karte hinzugefügt!', 'success');
             } else {
-                this.toast.emit({ message: 'Karte nicht gefunden.', type: 'error' });
+                this.toastService.show('Karte nicht gefunden.', 'error');
             }
         } finally {
             this.isAddingCard.set(false);

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppsLauncher } from '../../shared/apps-launcher/apps-launcher';
 import { SidebarService } from '../../shared/sidebar.service';
+import { ToastService } from '../../shared/toast.service';
 import { FlashcardsService } from './flashcards.service';
 import { Flashcard, Deck } from './flashcard.model';
 
@@ -15,7 +16,6 @@ import { NewDeckModalComponent } from './components/modals/new-deck-modal/new-de
 import { ImportModalComponent } from './components/modals/import-modal/import-modal.component';
 import { SaveDeckModalComponent } from './components/modals/save-deck-modal/save-deck-modal.component';
 import { SettingsModalComponent } from './components/modals/settings-modal/settings-modal.component';
-import { ToastComponent } from './components/toast/toast.component';
 
 @Component({
     selector: 'app-flashcards',
@@ -31,14 +31,14 @@ import { ToastComponent } from './components/toast/toast.component';
         NewDeckModalComponent,
         ImportModalComponent,
         SaveDeckModalComponent,
-        SettingsModalComponent,
-        ToastComponent
+        SettingsModalComponent
     ],
     templateUrl: './flashcards.component.html'
 })
 export class FlashcardsComponent {
     protected flashcardsService = inject(FlashcardsService);
     private sidebarService = inject(SidebarService);
+    private toastService = inject(ToastService);
 
     @ViewChild(DrawingCanvasComponent) drawingCanvas!: DrawingCanvasComponent;
     @ViewChild(ImportModalComponent) importModal!: ImportModalComponent;
@@ -90,9 +90,7 @@ export class FlashcardsComponent {
     editingCard = signal<Flashcard | null>(null);
     editingDeck = signal<Deck | null>(null);
 
-    // Toast
-    toastMessage = signal<string>('');
-    toastType = signal<'success' | 'error'>('success');
+
 
     constructor() {
         effect(() => {
@@ -197,14 +195,14 @@ export class FlashcardsComponent {
 
     saveCardEdit(data: { id: string; front: string; back: string }): void {
         this.flashcardsService.updateCard(data.id, data.front, data.back);
-        this.showToast('Karte aktualisiert', 'success');
+        this.toastService.show('Karte aktualisiert', 'success');
         this.closeEditCardModal();
     }
 
     deleteCard(id: string): void {
         if (confirm('Karte wirklich löschen?')) {
             this.flashcardsService.removeCard(id);
-            this.showToast('Karte gelöscht', 'success');
+            this.toastService.show('Karte gelöscht', 'success');
         }
     }
 
@@ -221,7 +219,7 @@ export class FlashcardsComponent {
 
     saveEditDeck(data: { id: string; name: string }): void {
         this.flashcardsService.renameDeck(data.id, data.name);
-        this.showToast('Deck umbenannt', 'success');
+        this.toastService.show('Deck umbenannt', 'success');
         this.closeEditDeckModal();
     }
 
@@ -237,7 +235,7 @@ export class FlashcardsComponent {
     createDeck(name: string): void {
         const deck = this.flashcardsService.createEmptyDeck(name);
         if (deck) {
-            this.showToast(`Deck "${name}" erstellt!`, 'success');
+            this.toastService.show(`Deck "${name}" erstellt!`, 'success');
             this.closeNewDeckModal();
         }
     }
@@ -253,7 +251,7 @@ export class FlashcardsComponent {
 
     createCard(data: { front: string; back: string }): void {
         this.flashcardsService.addCard(data.front, data.back);
-        this.showToast('Karte erstellt!', 'success');
+        this.toastService.show('Karte erstellt!', 'success');
         this.closeNewCardModal();
     }
 
@@ -270,7 +268,7 @@ export class FlashcardsComponent {
     executeImport(data: { content: string; deckName: string }): void {
         const result = this.flashcardsService.importFromText(data.content, data.deckName || undefined);
         this.importModal?.setImportResult(result);
-        this.showToast(`Deck "${data.deckName}" mit ${result.success} Karten importiert!`, 'success');
+        this.toastService.show(`Deck "${data.deckName}" mit ${result.success} Karten importiert!`, 'success');
     }
 
     // --- Save Deck Modal ---
@@ -285,7 +283,7 @@ export class FlashcardsComponent {
     saveDeck(name: string): void {
         const deck = this.flashcardsService.saveDeck(name);
         if (deck) {
-            this.showToast(`Deck "${name}" gespeichert!`, 'success');
+            this.toastService.show(`Deck "${name}" gespeichert!`, 'success');
             this.closeSaveDeckModal();
         }
     }
@@ -295,13 +293,13 @@ export class FlashcardsComponent {
         this.flashcardsService.loadDeck(deckId);
         this.isFlipped.set(false);
         this.drawingCanvas?.clear();
-        this.showToast('Deck geladen!', 'success');
+        this.toastService.show('Deck geladen!', 'success');
     }
 
     deleteDeck(deckId: string): void {
         if (confirm('Deck wirklich löschen?')) {
             this.flashcardsService.deleteDeck(deckId);
-            this.showToast('Deck gelöscht.', 'success');
+            this.toastService.show('Deck gelöscht.', 'success');
         }
     }
 
@@ -309,7 +307,7 @@ export class FlashcardsComponent {
     exportCards(deckId: string): void {
         const text = this.flashcardsService.exportToText(deckId || undefined);
         if (!text) {
-            this.showToast('Keine Karten zum Exportieren.', 'error');
+            this.toastService.show('Keine Karten zum Exportieren.', 'error');
             return;
         }
 
@@ -326,27 +324,18 @@ export class FlashcardsComponent {
         a.download = `${filename}.txt`;
         a.click();
         URL.revokeObjectURL(url);
-        this.showToast('Export gestartet!', 'success');
+        this.toastService.show('Export gestartet!', 'success');
     }
 
     // --- Clear ---
     clearAllCards(): void {
         if (confirm('Alle Karten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
             this.flashcardsService.clearAllCards();
-            this.showToast('Alle Karten gelöscht.', 'success');
+            this.toastService.show('Alle Karten gelöscht.', 'success');
         }
     }
 
-    // --- Toast ---
-    private showToast(message: string, type: 'success' | 'error'): void {
-        this.toastMessage.set(message);
-        this.toastType.set(type);
-        setTimeout(() => this.toastMessage.set(''), 3000);
-    }
 
-    hideToast(): void {
-        this.toastMessage.set('');
-    }
 
     // --- Helpers ---
     private scrollToCard(cardId: string): void {
