@@ -140,7 +140,7 @@
                     <div>
                         <label
                             class="block text-xs font-bold text-dash-text-dim uppercase mb-1 tracking-wider">Datum</label>
-                        <input type="date" name="date" required [value]="transaction.date"
+                        <input type="date" name="date" required [value]="transaction.date | date:'yyyy-MM-dd'"
                             [disabled]="!isEditingInline(transaction.id)"
                             class="w-full bg-dash-bg border border-dash-border text-dash-text px-2 py-1.5 rounded-sm text-sm focus:outline-none focus:border-dash-accent disabled:opacity-50 disabled:cursor-not-allowed">
                     </div>
