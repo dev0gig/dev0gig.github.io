@@ -39,5 +39,11 @@ export class App {
           break;
       }
     }
+
+    // Alt+S for toggling permanent sidebars
+    if (event.altKey && !event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      this.sidebarService.togglePermanent();
+    }
   }
 }

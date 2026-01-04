@@ -53,6 +53,10 @@ export class SidebarService {
         }
     }
 
+    togglePermanent() {
+        this.setPermanentSidebars(!this.permanentSidebars());
+    }
+
     // Check if overlay should be shown (sidebars not permanent and any sidebar is open)
     shouldShowOverlay(): boolean {
         return !this.permanentSidebars() && (this.isOpen() || this.isRightOpen());
