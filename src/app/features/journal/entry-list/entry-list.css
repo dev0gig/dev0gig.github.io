@@ -36,3 +36,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     border-radius: 2px;
     font-weight: 500;
 }
+
+/* Edit mode border styling */
+.edit-mode-border {
+    border: 2px dashed #d97706 !important; /* amber-600 equivalent */
+}
