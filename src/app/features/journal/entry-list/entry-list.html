@@ -5,7 +5,7 @@
             @for (entry of filteredEntries(); track entry.id) {
             <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative border border-dash-border/50 hover:border-dash-accent/50"
                 [class.border-dashed]="editingEntryId === entry.id" [class.border-2]="editingEntryId === entry.id"
-                [class.border-amber-500]="editingEntryId === entry.id">
+                [class.border-amber-600]="editingEntryId === entry.id">
                 <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-2">
                         @if (editingDateId === entry.id) {
