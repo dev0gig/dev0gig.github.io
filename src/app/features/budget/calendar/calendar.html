@@ -1,45 +1,4 @@
-<div class="h-full flex flex-col bg-dash-card border border-dash-border p-4 rounded-sm">
-    <div class="flex justify-between items-center mb-4">
-        <button (click)="prevMonth()"
-            class="text-dash-text-dim hover:text-white transition-colors p-1 flex items-center justify-center">
-            <span class="material-symbols-sharp text-sm">chevron_left</span>
-        </button>
-        <div class="flex items-center gap-2">
-            <span class="font-bold text-sm tracking-widest">{{ monthName() | uppercase }}</span>
-            <button (click)="goToToday()"
-                class="text-dash-text-dim hover:text-dash-accent transition-colors px-2 py-0.5 text-[10px] border border-dash-border rounded-sm hover:border-dash-accent">
-                TODAY
-            </button>
-        </div>
-        <button (click)="nextMonth()"
-            class="text-dash-text-dim hover:text-white transition-colors p-1 flex items-center justify-center">
-            <span class="material-symbols-sharp text-sm">chevron_right</span>
-        </button>
-    </div>
-
-    <div class="grid grid-cols-8 gap-1 text-center text-[10px] text-dash-text-dim mb-2 font-bold">
-        <span>KW</span><span>MO</span><span>TU</span><span>WE</span><span>TH</span><span>FR</span><span>SA</span><span>SU</span>
-    </div>
-
-    <div class="grid grid-cols-8 gap-1 text-center text-xs flex-1">
-        @for (item of days(); track $index) {
-        @if (item.type === 'week') {
-        <div class="aspect-square flex items-center justify-center text-dash-text-dim text-[10px] font-mono opacity-50">
-            {{ item.value }}
-        </div>
-        } @else {
-        <div class="aspect-square flex items-center justify-center rounded-sm transition-all duration-200 relative group"
-            [class.text-dash-text-dim]="!item.hasEntry && !item.isToday" [class.bg-dash-card-hover]="item.hasEntry"
-            [class.text-white]="item.hasEntry" [class.border]="item.isToday" [class.border-dash-accent]="item.isToday"
-            [class.text-dash-accent]="item.isToday">
-
-            {{ item.value?.getDate() || '' }}
-
-            @if(item.hasEntry) {
-            <div class="absolute bottom-1 w-1 h-1 rounded-full bg-dash-accent"></div>
-            }
-        </div>
-        }
-        }
-    </div>
+<div class="h-full flex flex-col gradient-card p-4 rounded-sm">
+    <app-shared-calendar [viewDate]="currentDate()" [markers]="markers()" (viewDateChange)="onViewDateChange($event)">
+    </app-shared-calendar>
 </div>
