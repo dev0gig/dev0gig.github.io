@@ -3,7 +3,7 @@
     <div class="flex-1 overflow-y-auto flex flex-col custom-scrollbar">
         <div class="p-6 flex flex-col gap-4">
             @for (entry of filteredEntries(); track entry.id) {
-            <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative border-2 border-dash-border/50 hover:border-dash-accent/50"
+            <div class="bg-dash-bg/30 rounded-sm p-4 transition-all group relative border border-dash-border/50 hover:border-dash-accent/50"
                 [class.edit-mode-border]="editingEntryId === entry.id">
                 <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center gap-2">

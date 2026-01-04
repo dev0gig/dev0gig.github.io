@@ -39,5 +39,5 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 /* Edit mode border styling */
 .edit-mode-border {
-    border: 2px dashed #d97706 !important; /* amber-600 equivalent */
+    border: 1px dashed #d97706 !important; /* amber-600 equivalent */
 }
